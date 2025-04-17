@@ -28,7 +28,7 @@ struct __attribute__((__packed__))__ tcp_header_timestamps{ //Il packed serve pe
     __u8 length;
     __u32 tval;
     __u32 tser;
-} inner_map SEC (".maps");
+};
 
 struct latency_map{
    __uint(type,BPF_MAP_TYPE_HASH);
@@ -145,7 +145,7 @@ int xdp_pass(struct xdp_md *ctx)
     bool lock = false;
     struct tcp_header_reader *appoggio;
 
-    while(prova!=8 && count<8 && (struct tcp_header_reader *)((unsigned char *)tcp + 20 + count)<dataa_end){
+    while(prova!=8 && count<8 && (void *)((unsigned char *)tcp + 20 + count)<dataa_end){
         appoggio = (struct tcp_header_reader *)((unsigned char *)tcp + 20 + count);
         prova = appoggio -> kind;
         if(prova == 8)
@@ -154,15 +154,16 @@ int xdp_pass(struct xdp_md *ctx)
     }
 
     if(lock){
-        count = count + 1;
+        count = count - 1;
         struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);
         bpf_printk("Kind: %d", options -> kind);
         bpf_printk("Length %d", options -> length);
-        bpf_printk("Tval: %u", options -> tval);
-        bpf_printk("Tsecr: %d", options -> tsecr);
-        bpf_printk("IP: %pI4", ip -> saddr);
-        bpf_printk("Seq: %u", tcp -> seq);
-        bpf_printk("Ack: %u", tcp -> ack);
+        bpf_printk("Tval: %u", bpf_ntohl(options -> tval));
+        bpf_printk("Tsecr: %u", bpf_ntohl(options -> tsecr));
+        bpf_printk("IP: %pI4", &ip -> saddr);
+        bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
+        bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
+        bpf_printk("_________________________________");
     }
 
 
