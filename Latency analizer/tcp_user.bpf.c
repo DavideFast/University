@@ -23,11 +23,11 @@ struct tcp_header_reader{
     __u8 kind;
  };
 
-struct __attribute__((__packed__))__ tcp_header_timestamps{ //Il packed serve per evitare che la struttura venga formattata ed evitare che non salvi i file
+struct __attribute__((__packed__)) tcp_header_timestamps{ //Il packed serve per evitare che la struttura venga formattata ed evitare che non salvi i file
     __u8 kind;
     __u8 length;
     __u32 tval;
-    __u32 tser;
+    __u32 tsecr;
 };
 
 struct latency_map{
