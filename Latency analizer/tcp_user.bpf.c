@@ -133,7 +133,7 @@ int xdp_pass(struct xdp_md *ctx)
     // Parse TCP header
     struct tcphdr *tcp = (struct tcphdr *)((unsigned char *)ip + ip_hdr_len);
 
-    bpf_printk("Il pacchetto ip inizia a %d", (unsigned char *)ip + ip_hdr_len);
+    bpf_printk("Il pacchetto tcp inizia a %d", (unsigned char *)ip + ip_hdr_len);
     
 
     // Ensure TCP header is within packet bounds
