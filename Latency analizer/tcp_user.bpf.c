@@ -114,6 +114,8 @@ int xdp_pass(struct xdp_md *ctx)
         return XDP_PASS;
     }
 
+    bpf_printk("Il pacchetto ip inizia a %d", eth + 1);
+
     // Cast to IP header
     struct iphdr *ip = (struct iphdr *)(eth + 1);
 
@@ -130,6 +132,9 @@ int xdp_pass(struct xdp_md *ctx)
 
     // Parse TCP header
     struct tcphdr *tcp = (struct tcphdr *)((unsigned char *)ip + ip_hdr_len);
+
+    bpf_printk("Il pacchetto ip inizia a %d", (unsigned char *)ip + ip_hdr_len);
+    
 
     // Ensure TCP header is within packet bounds
     if ((void *)(tcp + 1) > dataa_end) {
@@ -212,6 +217,7 @@ int xdp_pass(struct xdp_md *ctx)
     }
 
     bpf_ringbuf_submit(ringbuf_space, 0);
+    bpf_printk("La fine del pacchetto si colloca a %d", ctx -> data_end);
 
     return XDP_PASS;
 }
