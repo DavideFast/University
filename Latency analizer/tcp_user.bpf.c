@@ -19,7 +19,7 @@ struct inner_map{
    __type(value, unsigned long);
 } inner_map SEC (".maps");
 
-struct tcp_header_reader{
+struct __attribute__((__packed__)) tcp_header_reader{
     __u8 kind;
  };
 
@@ -153,34 +153,33 @@ int xdp_pass(struct xdp_md *ctx)
 	return XDP_PASS;
     bpf_printk("Il pacchetto TCP termina a %u", (unsigned char *)tcp + tcp_header_bytes);
 
-    int prova=0;
+    __u8 prova=0;
     int count =0;
     bool lock = false;
-    struct tcp_header_reader *appoggio;
+    //struct tcp_header_reader *appoggio;
+    __u8 appoggio = 0;
 
-    while(prova!=8 && count<8 && ((void *) ((unsigned char *)tcp + 20 + count))<dataa_end){
-	appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
-	bpf_printk("Dentro il loop: %u, count: %d", (unsigned char *)tcp + 20 +count, count);
-	bpf_printk("Dentro il loop diretto %u", (unsigned char *)appoggio);
-        prova = appoggio -> kind;
-        if(prova == 8)
+    while(prova!=8 &&  count<12 && ((void *)((unsigned char *)tcp + 20 + count + 1))<dataa_end){
+	//appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
+	appoggio = *((unsigned char *)tcp + 20 +count);
+        //prova = appoggio -> kind;
+	prova = appoggio;
+	bpf_printk("Loop: %d", appoggio);
+	bpf_printk("Loop appoggio size: %d", sizeof(appoggio));
+	bpf_printk("Loop prova size: %d", sizeof(prova));
+        if(appoggio == 8){
             lock = true;
+	    bpf_printk("Eppur si muove");
+	}
         count = count + 1;
     }
-    if(count != 0)
-    	count = count - 1;
-    bpf_printk("%d", count); 
-    bpf_printk("Data end: %u", dataa_end);
-    bpf_printk("Dopo loop: %u",(void *) ((unsigned char *)tcp + 20 + count ));
-    bpf_printk("Dopo loop diretto: %u", (void *)((unsigned char *)appoggio));
-    
-    bpf_printk("Finally: %s", appoggio);
 
-    if(lock && (void *)((unsigned char *)tcp + 20 + count)<=dataa_end){
+    count = count - 1;
+
+
+    if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=dataa_end){
 	bpf_printk("-------------------------------------");
-        struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);
-	unsigned int tval = bpf_ntohl(options->tval);
-	unsigned int tsecr = bpf_ntohl(options->tsecr);	
+        struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);	
 	bpf_printk("Inizio options: %u", (void *)(unsigned char*)options);
 	bpf_printk("Options piu dimensione options: %u", (void *)((unsigned char *)options + sizeof(options)));
 	bpf_printk("Dimensione options: %u",sizeof(options));
@@ -188,16 +187,19 @@ int xdp_pass(struct xdp_md *ctx)
 	bpf_printk("Dimensione length: %u", sizeof(options->length));
 	bpf_printk("Dimensione tval: %u", sizeof(options->tval));
 	bpf_printk("Dimensione tsecr: %u", sizeof(options->tsecr));
-	bpf_printk("Options seconda modalita: %u", (void *)((unsigned char *)tcp + 20 + count));
-        //bpf_printk("Kind: %d", options -> kind);
-        //bpf_printk("Length %d", options -> length);
-        //bpf_printk("Tval: %u", tval);
-	//bpf_printk("Tval indirizzo %u", &options -> tval);
-        //bpf_printk("Tsecr: %u", tsecr);
+
+        bpf_printk("Kind: %d", options -> kind);
+        bpf_printk("Length %d", options -> length);
+        bpf_printk("Tval: %u", options->tval);
+        bpf_printk("Tsecr: %u", options->tsecr);
         bpf_printk("IP: %pI4", &ip -> saddr);
         bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
         bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
         bpf_printk("----------------------------------------------");
+    }
+    else{
+	bpf_printk("Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
+	bpf_printk("%u",(void *)((unsigned char *)tcp + 20 + count + 10));
     }
 
 
@@ -252,7 +254,7 @@ int xdp_pass(struct xdp_md *ctx)
     }
 
     bpf_ringbuf_submit(ringbuf_space, 0);
-    bpf_printk("La fine del pacchetto si colloca a %d", ctx -> data_end);
+    bpf_printk("La fine del pacchetto si colloca a %u", ctx -> data_end);
     bpf_printk("________________________________________________________");
     return XDP_PASS;
 }
