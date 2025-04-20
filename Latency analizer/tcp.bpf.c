@@ -132,7 +132,7 @@ int egress_filter(struct __sk_buff *ctx){
     bool lock = false;
     struct tcp_header_reader *appoggio;
 
-    while((prova !=8) && (count < 40) && (void *)((unsigned char *)tcp + 20 + count)<dataa_end){
+    while((prova !=8) && (count < 40) && (void *)((unsigned char *)tcp + 20 + count)<data_end){
 	    appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
         prova = appoggio->kind;
         if(prova == 8){
@@ -144,7 +144,7 @@ int egress_filter(struct __sk_buff *ctx){
     count = count - 1;
 
 
-    if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=dataa_end){
+    if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=data_end){
         struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);	
     }
     else{
