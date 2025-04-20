@@ -115,7 +115,7 @@ int egress_filter(struct __sk_buff *ctx){
 		bpf_printk("Pacchetto ip troppo lungo");
         return TC_ACT_SHOT;
 	}
-    bpf_printk("La lunghezza è &d",&lunghezza);
+    bpf_printk("La lunghezza è %d",&lunghezza);
 
 	// Define the number of bytes you want to capture from the TCP header
     int offset = tcp -> doff;
