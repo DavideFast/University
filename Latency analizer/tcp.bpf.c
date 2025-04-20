@@ -156,7 +156,7 @@ int egress_filter(struct __sk_buff *ctx){
     }
 
         
-	// Reserve space in the ring buffer
+	/*// Reserve space in the ring buffer
     void *ringbuf_space = bpf_ringbuf_reserve(&ringbuffer, 20, 0);
     if (!ringbuf_space) {
 	    bpf_printk("Problemi con il ring buffer");
@@ -168,13 +168,13 @@ int egress_filter(struct __sk_buff *ctx){
     for (int i = 0; i < 20; i++) {
         unsigned char byte = *((unsigned char *)tcp + i);
         ((unsigned char *)ringbuf_space)[i] = byte;
-    }
+    }*/
 
 	int key = ip->daddr;
 	int ack = bpf_ntohl(tcp -> ack_seq);
 	//long *value = bpf_map_lookup_elem(&number_sequence, &key);
     bpf_map_update_elem(&number_ack_map,&key,&ack,BPF_ANY);
-	bpf_ringbuf_submit(ringbuf_space,0);
+	//bpf_ringbuf_submit(ringbuf_space,0);
 
 	//bpf_printk("Funziona");
 
