@@ -157,7 +157,7 @@ int egress_filter(struct __sk_buff *ctx){
 
         
 	// Reserve space in the ring buffer
-    void *ringbuf_space = bpf_ringbuf_reserve(&ringbuffer, tcp_header_bytes, 0);
+    void *ringbuf_space = bpf_ringbuf_reserve(&ringbuffer, 20, 0);
     if (!ringbuf_space) {
 	    bpf_printk("Problemi con il ring buffer");
         return TC_ACT_SHOT;  // If reservation fails, skip processing
@@ -165,7 +165,7 @@ int egress_filter(struct __sk_buff *ctx){
 
     // Copy the TCP header bytes into the ring buffer
     // Using a loop to ensure compliance with eBPF verifier
-    for (int i = 0; i < tcp_header_bytes; i++) {
+    for (int i = 0; i < 20; i++) {
         unsigned char byte = *((unsigned char *)tcp + i);
         ((unsigned char *)ringbuf_space)[i] = byte;
     }
