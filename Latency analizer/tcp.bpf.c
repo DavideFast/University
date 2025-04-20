@@ -116,6 +116,10 @@ int egress_filter(struct __sk_buff *ctx){
         return TC_ACT_SHOT;
 	}
     bpf_printk("La lunghezza è %d",&lunghezza);
+    
+    if ((void *)(tcp + 1) > data_end) {
+        return TC_ACT_SHOT;
+    }
 
 	// Define the number of bytes you want to capture from the TCP header
     int offset = tcp -> doff;
