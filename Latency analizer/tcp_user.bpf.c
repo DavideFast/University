@@ -153,23 +153,26 @@ int xdp_pass(struct xdp_md *ctx)
 	return XDP_PASS;
     bpf_printk("Il pacchetto TCP termina a %u", (unsigned char *)tcp + tcp_header_bytes);
 
-    __u8 prova=0;
-    int count =0;
+    __u8 prova = 0;
+    int count = 0;
     bool lock = false;
-    //struct tcp_header_reader *appoggio;
-    __u8 appoggio = 0;
+    struct tcp_header_reader *appoggio;
+    //__u8 appoggio = 0;
 
-    while(prova!=8 &&  count<12 && ((void *)((unsigned char *)tcp + 20 + count + 1))<dataa_end){
-	//appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
-	appoggio = *((unsigned char *)tcp + 20 +count);
-        //prova = appoggio -> kind;
-	prova = appoggio;
-	bpf_printk("Loop: %d", appoggio);
-	bpf_printk("Loop appoggio size: %d", sizeof(appoggio));
-	bpf_printk("Loop prova size: %d", sizeof(prova));
-        if(appoggio == 8){
+    while((prova !=8) && (count < 40) && 
+	  (void *)((unsigned char *)tcp + 20 + count)<dataa_end){
+	appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
+	//appoggio = *((unsigned char *)tcp + 20 + count);
+        prova = appoggio->kind;
+	//prova = (__u8)*(((unsigned char *)tcp) + 20 + count);
+	//bpf_printk("Loop: %d", appoggio);
+	//bpf_printk("Attuale: %u", (void *)((unsigned char *)tcp + 20 + count));
+	//bpf_printk("Finale: %u", dataa_end);
+	//bpf_printk("Loop appoggio size: %d", sizeof(appoggio));
+	//bpf_printk("Loop prova size: %d", sizeof(prova));
+        if(prova == 8){
             lock = true;
-	    bpf_printk("Eppur si muove");
+	    //bpf_printk("Eppur si muove");
 	}
         count = count + 1;
     }
@@ -198,8 +201,7 @@ int xdp_pass(struct xdp_md *ctx)
         bpf_printk("----------------------------------------------");
     }
     else{
-	bpf_printk("Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
-	bpf_printk("%u",(void *)((unsigned char *)tcp + 20 + count + 10));
+	bpf_printk("######################### Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
     }
 
 
