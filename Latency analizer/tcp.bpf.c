@@ -45,29 +45,34 @@ struct {
 static bool is_tcp(struct ethhdr *eth, void *data_end){
     // bpf_printk("Il pacchetto contiene...");
     // Ensure Ethernet header is within bounds
-    if ((void *)(eth + 1) > data_end)
+    if ((void *)(eth + 1) > data_end){
+        bpf_printk("Pacchetto corrotto");
         return false;
+    }
 
     // Only handle IPv4 packets
     if (bpf_ntohs(eth->h_proto) != ETH_P_IP){
+        bpf_printk("Pacchetto non IPv4");
         return false;
     }
     else
-        bpf_printk("Non è un pacchetto IPv4");
+        bpf_printk("Pacchetto IPv4");
 
     struct iphdr *ip = (struct iphdr *)(eth + 1);
 
     // Ensure IP header is within bounds
-    if ((void *)(ip + 1) > data_end)
+    if ((void *)(ip + 1) > data_end){
+        bpf_printk("Pacchetto corrotto");
         return false;
+    }
 
     // Check if the protocol is TCP
     if (ip->protocol != IPPROTO_TCP){
-        bpf_printk("Questo non è un pacchetto tcp");
+        bpf_printk("Pacchetto non TCP");
         return false;
     }
     else
-        bpf_printk("Questo è un pacchetto tcp");
+        bpf_printk("Pacchetto TCP");
 
     return true;
 }
@@ -93,12 +98,12 @@ int egress_filter(struct __sk_buff *ctx){
     ip = (struct iphdr *)(eth + 1);
 	
     if(!is_tcp(eth,data_end)){
-		bpf_printk("Non è tcp");
 		return TC_ACT_OK;
 	}
 
 	int ip_hdr_len = ip->ihl * 4;
 
+    // Calculate IP header length
 	if (ip_hdr_len < sizeof(struct iphdr)) {
 		bpf_printk("Ip header fuori range");
         return TC_ACT_OK;
@@ -106,19 +111,17 @@ int egress_filter(struct __sk_buff *ctx){
 
 	tcp = (struct tcphdr *)((unsigned char*)ip + ip_hdr_len);
 
-	// Calculate IP header length
-   	if (ip_hdr_len < sizeof(struct iphdr)) {
-		bpf_printk("Ip header fuori range 2");
-        return TC_ACT_OK;
-    }
-    	// Ensure IP header is within packet bounds
+	
+    // Ensure IP header is within packet bounds
     if ((void *)ip + ip_hdr_len > data_end) {
 		bpf_printk("Pacchetto ip troppo lungo");
         return TC_ACT_OK;
 	}
+
     bpf_printk("La lunghezza è %d",&lunghezza);
     
     if ((void *)(tcp + 1) > data_end) {
+        bpf_printk("Pacchetto tcp troppo lungo");
         return TC_ACT_OK;
     }
 
@@ -150,7 +153,17 @@ int egress_filter(struct __sk_buff *ctx){
 
 
     if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=data_end){
-        struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);	
+        struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);
+        bpf_printk("Kind: %d", options -> kind);
+        bpf_printk("Length: %d", options -> length);
+        bpf_printk("Tval: %u", options -> tval);
+        bpf_printk("Tsecr: %u", options -> tsecr);
+        
+        bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
+        bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
+
+        bpf_printk("IP: %pI4", ip -> daddr);
+
     }
     else{
 	    bpf_printk("######################### Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
@@ -178,6 +191,8 @@ int egress_filter(struct __sk_buff *ctx){
 	bpf_ringbuf_submit(ringbuf_space,0);
 
 	//bpf_printk("Funziona");
+
+    bpf_printk("_______________________________________________________________");
 
 	return TC_ACT_OK;
 
