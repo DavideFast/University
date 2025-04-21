@@ -17,7 +17,7 @@
 struct {
     __uint(type, BPF_MAP_TYPE_RINGBUF);
     __uint(max_entries, 1 << 26);  // 16 MB buffer
-} rb SEC(".maps");
+} ringbuffer SEC(".maps");
 
 struct __attribute__((__packed__)) tcp_header_reader{
     __u8 kind;
@@ -157,7 +157,7 @@ int egress_filter(struct __sk_buff *ctx){
 
         
 	// Reserve space in the ring buffer
-    void *ringbuf_space = bpf_ringbuf_reserve(&rb, 20, 0);
+    void *ringbuf_space = bpf_ringbuf_reserve(&ringbuffer, 20, 0);
     if (!ringbuf_space) {
 	    bpf_printk("Problemi con il ring buffer");
         return TC_ACT_OK;  // If reservation fails, skip processing
