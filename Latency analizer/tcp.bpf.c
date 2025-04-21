@@ -162,7 +162,7 @@ int egress_filter(struct __sk_buff *ctx){
         bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
         bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
 
-        bpf_printk("IP: %pI4", ip -> daddr);
+        bpf_printk("IP: %pI4", &ip -> daddr);
 
     }
     else{
