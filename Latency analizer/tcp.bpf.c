@@ -17,7 +17,7 @@
 struct {
     __uint(type, BPF_MAP_TYPE_RINGBUF);
     __uint(max_entries, 1 << 26);  // 16 MB buffer
-} ringbuffer SEC(".maps");
+} rb SEC(".maps");
 
 struct __attribute__((__packed__)) tcp_header_reader{
     __u8 kind;
@@ -156,8 +156,8 @@ int egress_filter(struct __sk_buff *ctx){
     }
 
         
-	/*// Reserve space in the ring buffer
-    void *ringbuf_space = bpf_ringbuf_reserve(&ringbuffer, 20, 0);
+	// Reserve space in the ring buffer
+    void *ringbuf_space = bpf_ringbuf_reserve(&rb, 20, 0);
     if (!ringbuf_space) {
 	    bpf_printk("Problemi con il ring buffer");
         return TC_ACT_SHOT;  // If reservation fails, skip processing
@@ -168,7 +168,7 @@ int egress_filter(struct __sk_buff *ctx){
     for (int i = 0; i < 20; i++) {
         unsigned char byte = *((unsigned char *)tcp + i);
         ((unsigned char *)ringbuf_space)[i] = byte;
-    }*/
+    }
 
 	int key = ip->daddr;
 	int ack = bpf_ntohl(tcp -> ack_seq);
