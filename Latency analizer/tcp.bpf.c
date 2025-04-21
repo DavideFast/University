@@ -100,7 +100,7 @@ int egress_filter(struct __sk_buff *ctx){
 
 	if (ip_hdr_len < sizeof(struct iphdr)) {
 		bpf_printk("Ip header fuori range");
-        return TC_ACT_SHOT;
+        return TC_ACT_OK;
     	}
 
 	tcp = (struct tcphdr *)((unsigned char*)ip + ip_hdr_len);
@@ -108,17 +108,17 @@ int egress_filter(struct __sk_buff *ctx){
 	// Calculate IP header length
    	if (ip_hdr_len < sizeof(struct iphdr)) {
 		bpf_printk("Ip header fuori range 2");
-        return TC_ACT_SHOT;
+        return TC_ACT_OK;
     }
     	// Ensure IP header is within packet bounds
     if ((void *)ip + ip_hdr_len > data_end) {
 		bpf_printk("Pacchetto ip troppo lungo");
-        return TC_ACT_SHOT;
+        return TC_ACT_OK;
 	}
     bpf_printk("La lunghezza è %d",&lunghezza);
     
     if ((void *)(tcp + 1) > data_end) {
-        return TC_ACT_SHOT;
+        return TC_ACT_OK;
     }
 
 	// Define the number of bytes you want to capture from the TCP header
@@ -128,7 +128,7 @@ int egress_filter(struct __sk_buff *ctx){
     // Ensure that the desired number of bytes does not exceed packet bounds
     if ((void *)tcp + tcp_header_bytes > data_end) {
         bpf_printk("Pacchetto tcp troppo lungo <-------------------------------------------");
-        return TC_ACT_SHOT;
+        return TC_ACT_OK;
     }
 
     __u8 prova = 0;
@@ -160,7 +160,7 @@ int egress_filter(struct __sk_buff *ctx){
     void *ringbuf_space = bpf_ringbuf_reserve(&rb, 20, 0);
     if (!ringbuf_space) {
 	    bpf_printk("Problemi con il ring buffer");
-        return TC_ACT_SHOT;  // If reservation fails, skip processing
+        return TC_ACT_OK;  // If reservation fails, skip processing
     }
 
     // Copy the TCP header bytes into the ring buffer
