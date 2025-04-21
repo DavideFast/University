@@ -174,7 +174,7 @@ int egress_filter(struct __sk_buff *ctx){
 	int ack = bpf_ntohl(tcp -> ack_seq);
 	//long *value = bpf_map_lookup_elem(&number_sequence, &key);
     bpf_map_update_elem(&number_ack_map,&key,&ack,BPF_ANY);
-	//bpf_ringbuf_submit(ringbuf_space,0);
+	bpf_ringbuf_submit(ringbuf_space,0);
 
 	//bpf_printk("Funziona");
 
