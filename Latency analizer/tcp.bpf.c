@@ -131,7 +131,7 @@ int egress_filter(struct __sk_buff *ctx){
 
     // Ensure that the desired number of bytes does not exceed packet bounds
     if ((void *)tcp + tcp_header_bytes > data_end) {
-        bpf_printk("Pacchetto tcp troppo lungo <-------------------------------------------");
+        bpf_printk("Pacchetto tcp troppo lungo");
         return TC_ACT_OK;
     }
 
