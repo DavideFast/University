@@ -82,7 +82,8 @@ int egress_filter(struct __sk_buff *ctx){
     void *data = (void*) (__u64)ctx->data;
 	int inizio = ctx-> data;
 	int fine = ctx->data_end;
-	int lunghezza = fine-inizio;
+	int lunghezza = fine-inizio;    
+    bpf_printk("Inizio pacchetto in uscita: %u", data);
 	
     struct ethhdr *eth;
     struct iphdr *ip;
