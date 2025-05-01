@@ -6,6 +6,13 @@
 #define ETH_P_IP 0x0800
 
 
+struct connection{
+	__u32 ip_source;
+        __u32 ip_dest;
+	__u16 port_source;
+	__u16 port_dest;
+};
+
 // Define the ring buffer map
 struct {
     __uint(type, BPF_MAP_TYPE_RINGBUF);
@@ -15,7 +22,7 @@ struct {
 struct inner_map{
    __uint(type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,__u32);
+   __type(key,unsigned char[12]);
    __type(value, unsigned long);
 } inner_map SEC (".maps");
 
@@ -33,32 +40,80 @@ struct __attribute__((__packed__))  tcp_header_timestamps{ //Il packed serve per
 struct latency_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,__u32);
+   __type(key,struct connection);
    __type(value, unsigned long);
 } latency_map SEC (".maps");
 
-struct number_sequence_map{
+struct egress_seq_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,__u32);
+   __type(key,struct connection);
    __type(value,__u32);
-} number_sequence_map SEC (".maps");
+} egress_seq_map SEC (".maps");
 
-struct number_ack_map{
+struct ingress_seq_map{
+   __uint(type,BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value,__u32);
+} ingress_seq_map SEC (".maps");
+
+struct egress_ack_map{
+   __uint(type,BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value,__u32);
+} egress_ack_map SEC (".maps");
+
+struct ingress_ack_map{
    __uint(type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,__u32);
+   __type(key,struct connection);
    __type(value,__u32);
    __uint(pinning, LIBBPF_PIN_BY_NAME);
-} number_ack_map SEC (".maps");
+} ingress_ack_map SEC (".maps");
 
-struct dimension_packet_map {
+struct egress_payload_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,__u32);
+   __type(key,struct connection);
    __type(value,int);
-} dimension_packet_map SEC (".maps");
+} egress_payload_map SEC (".maps");
 
+struct ingress_payload_map {
+   __uint (type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value,int);
+} ingress_payload_map SEC (".maps");
+
+struct tsval_map {
+   __uint (type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value,int);
+} tsval_map SEC (".maps");
+
+struct tsecr_map {
+   __uint (type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value,int);
+} tsecr_map SEC (".maps");
+
+struct timestampA_map {
+   __uint (type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value,int);
+} timestampA_map SEC (".maps");
+
+struct timestampB_map {
+   __uint (type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value,int);
+} timestampB_map SEC (".maps");
 
 // Helper function to check if the packet is TCP
 static bool is_tcp(struct ethhdr *eth, void *data_end){
@@ -76,6 +131,7 @@ static bool is_tcp(struct ethhdr *eth, void *data_end){
     }
 
     struct iphdr *ip = (struct iphdr *)(eth + 1);
+
 
     // Ensure IP header is within bounds
     if ((void *)(ip + 1) > data_end){
@@ -96,12 +152,13 @@ static bool is_tcp(struct ethhdr *eth, void *data_end){
 SEC("xdp")
 int xdp_pass(struct xdp_md *ctx)
 {
-    bpf_printk("_________________________________");
     // Pointers to packet data
     void *dataa = (void *)(long)ctx->data;
     void *dataa_end = (void *)(long)ctx->data_end;
     int inizio = ctx -> data;
-    bpf_printk("Inizio pacchetto: %u",inizio);
+    long current_time = bpf_ktime_get_ns();
+    bpf_printk("TIMESTAMP:______________%u___________________",current_time);
+    bpf_printk("Inizio pacchetto in INGRESSO: %u",inizio);
     int fine = ctx -> data_end;
     int lengthPacket;
     lengthPacket = fine - inizio;
@@ -156,7 +213,10 @@ int xdp_pass(struct xdp_md *ctx)
     bool lock = false;
     struct tcp_header_reader *appoggio;
     //__u8 appoggio = 0;
-
+    bpf_printk("IP: %pI4", &ip -> saddr);
+    bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
+    bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
+    bpf_printk("Dimensione payload: %d",lengthPacket - 14 - 20 - tcp_header_bytes);
     while((prova !=8) && (count < 40) && (void *)((unsigned char *)tcp + 20 + count)<dataa_end){
 	    appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
 	    //appoggio = *((unsigned char *)tcp + 20 + count);
@@ -180,21 +240,10 @@ int xdp_pass(struct xdp_md *ctx)
     if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=dataa_end){
 	    bpf_printk("-------------------------------------");
         struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);	
-	    bpf_printk("Inizio options: %u", (void *)(unsigned char*)options);
-	    bpf_printk("Options piu dimensione options: %u", (void *)((unsigned char *)options + sizeof(options)));
-	    bpf_printk("Dimensione options: %u",sizeof(options));
-	    bpf_printk("Dimensione kind: %u", sizeof(options->kind));
-	    bpf_printk("Dimensione length: %u", sizeof(options->length));
-	    bpf_printk("Dimensione tval: %u", sizeof(options->tval));
-	    bpf_printk("Dimensione tsecr: %u", sizeof(options->tsecr));
-
-        bpf_printk("Kind: %d", options -> kind);
+	bpf_printk("Kind: %d", options -> kind);
         bpf_printk("Length %d", options -> length);
-        bpf_printk("Tval: %u", options->tval);
-        bpf_printk("Tsecr: %u", options->tsecr);
-        bpf_printk("IP: %pI4", &ip -> saddr);
-        bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
-        bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
+        bpf_printk("Tval: %u", bpf_ntohl(options->tval));
+        bpf_printk("Tsecr: %u", bpf_ntohl(options->tsecr));
         bpf_printk("----------------------------------------------");
     }
     else{
@@ -216,40 +265,45 @@ int xdp_pass(struct xdp_md *ctx)
     // Copy the TCP header bytes into the ring buffer
     // Using a loop to ensure compliance with eBPF verifier
     for (int i = 0; i < 20; i++) {
-	    if(tcp_header_bytes<=20){
-        	unsigned char byte = *((unsigned char *)tcp + i);
-		    ((unsigned char *)ringbuf_space)[i] = byte;
-	    }
-	    else{
-		    unsigned char byte = 00000000;
-        	((unsigned char *)ringbuf_space)[i] = byte;
-        }
+        unsigned char byte = *((unsigned char *)tcp + i);
+	((unsigned char *)ringbuf_space)[i] = byte;
     }
 
-    int key = ip->saddr;
-    int keyd = ip->daddr;
+    __u32 ip_source = ip->saddr;
+    __u32 ip_destination = ip->daddr;
+    __u16 port_source = bpf_ntohs(tcp -> source);
+    __u16 port_destination = bpf_ntohs(tcp -> dest);
+    bpf_printk("Port source: %u",port_source);
+    bpf_printk("Port destination: %u", port_destination);
+    struct connection connection;
+    connection.ip_source = ip_source;
+    connection.ip_dest = ip_destination;
+    connection.port_source = port_source;
+    connection.port_dest = port_destination;
+    bpf_printk("IP: %u",ip_source);
+    bpf_printk("ID connessione: %u", connection);
+
     int seq = bpf_ntohl(tcp -> seq);
     int ack_seq = bpf_ntohl(tcp -> ack_seq);
-    long current_time = bpf_ktime_get_ns();
-    long *value = bpf_map_lookup_elem(&inner_map, &key);
-    long *value_destination = bpf_map_lookup_elem(&inner_map,&keyd);
+    long *value = bpf_map_lookup_elem(&inner_map, &connection);
+    long *value_destination = bpf_map_lookup_elem(&inner_map,&connection);
     long init = 0;
     //bpf_printk("Risultato lookup %d",value);
     //bpf_printk("Risultato lookup %d", &value);
     //bpf_printk("Indirizzo destinatario %pI4",&keyd);
     if(value){
         long latency = current_time - *value;
-	    bpf_map_update_elem(&inner_map,&key,&current_time,BPF_ANY);
-        bpf_map_update_elem(&latency_map,&key,&latency,BPF_ANY);
-        bpf_map_update_elem(&number_sequence_map,&key,&seq,BPF_ANY);
-        bpf_map_update_elem(&number_ack_map,&key,&ack_seq,BPF_ANY);
-        bpf_map_update_elem(&dimension_packet_map, &key, &lengthPacket, BPF_ANY);
+	bpf_map_update_elem(&inner_map,&connection,&current_time,BPF_ANY);
+        bpf_map_update_elem(&latency_map,&connection,&latency,BPF_ANY);
+        bpf_map_update_elem(&ingress_seq_map,&connection,&seq,BPF_ANY);
+        bpf_map_update_elem(&ingress_ack_map,&connection,&ack_seq,BPF_ANY);
+        bpf_map_update_elem(&ingress_payload_map,&connection, &lengthPacket, BPF_ANY);
     }else{
-        bpf_map_update_elem(&inner_map,&key,&current_time,BPF_ANY);
-        bpf_map_update_elem(&latency_map,&key,&init,BPF_ANY);
-        bpf_map_update_elem(&number_sequence_map,&key,&seq,BPF_ANY);
-        bpf_map_update_elem(&number_ack_map,&key,&ack_seq,BPF_ANY);
-        bpf_map_update_elem(&dimension_packet_map,&key, &lengthPacket, BPF_ANY);
+        bpf_map_update_elem(&inner_map,&connection,&current_time,BPF_ANY);
+        bpf_map_update_elem(&latency_map,&connection,&init,BPF_ANY);
+        bpf_map_update_elem(&ingress_seq_map,&connection,&seq,BPF_ANY);
+        bpf_map_update_elem(&ingress_ack_map,&connection,&ack_seq,BPF_ANY);
+        bpf_map_update_elem(&ingress_payload_map,&connection, &lengthPacket, BPF_ANY);
     }
 
     bpf_ringbuf_submit(ringbuf_space, 0);
