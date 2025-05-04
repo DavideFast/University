@@ -87,7 +87,7 @@ struct ingress_payload_map {
    __type(value,int);
 } ingress_payload_map SEC (".maps");
 
-struct tsval_map {
+/*struct tsval_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
@@ -99,20 +99,20 @@ struct tsecr_map {
    __uint(max_entries,1024);
    __type(key,struct connection);
    __type(value,int);
-} tsecr_map SEC (".maps");
+} tsecr_map SEC (".maps");*/
 
 struct timestampA_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,int);
+   __type(value,__u64);
 } timestampA_map SEC (".maps");
 
 struct timestampB_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,int);
+   __type(value,__u64);
 } timestampB_map SEC (".maps");
 
 // Helper function to check if the packet is TCP
@@ -156,8 +156,8 @@ int xdp_pass(struct xdp_md *ctx)
     void *dataa = (void *)(long)ctx->data;
     void *dataa_end = (void *)(long)ctx->data_end;
     int inizio = ctx -> data;
-    long current_time = bpf_ktime_get_ns();
-    bpf_printk("TIMESTAMP:______________%u___________________",current_time);
+    __u64 current_time = bpf_ktime_get_ns();
+    bpf_printk("TIMESTAMP:______________%llu___________________",(unsigned long long)current_time);
     bpf_printk("Inizio pacchetto in INGRESSO: %u",inizio);
     int fine = ctx -> data_end;
     int lengthPacket;
@@ -236,14 +236,20 @@ int xdp_pass(struct xdp_md *ctx)
 
     count = count - 1;
 
+    struct tcp_header_timestamps *options;
+    __u32 tsval = 0;
+    __u32 tsecr = 0;
+
 
     if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=dataa_end){
 	    bpf_printk("-------------------------------------");
-        struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);	
+        options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);	
 	bpf_printk("Kind: %d", options -> kind);
         bpf_printk("Length %d", options -> length);
         bpf_printk("Tval: %u", bpf_ntohl(options->tval));
         bpf_printk("Tsecr: %u", bpf_ntohl(options->tsecr));
+	tsval = bpf_ntohl(options->tval);
+	tsecr = bpf_ntohl(options->tsecr);
         bpf_printk("----------------------------------------------");
     }
     else{
@@ -280,30 +286,58 @@ int xdp_pass(struct xdp_md *ctx)
     connection.ip_dest = ip_destination;
     connection.port_source = port_source;
     connection.port_dest = port_destination;
-    bpf_printk("IP: %u",ip_source);
-    bpf_printk("ID connessione: %u", connection);
+
+    //bpf_printk("IP: %u",ip_source);
+    //bpf_printk("ID connessione: %u", connection);
 
     int seq = bpf_ntohl(tcp -> seq);
+    int dimensionPacket = lengthPacket - 14 -20 -tcp_header_bytes;
     int ack_seq = bpf_ntohl(tcp -> ack_seq);
-    long *value = bpf_map_lookup_elem(&inner_map, &connection);
-    long *value_destination = bpf_map_lookup_elem(&inner_map,&connection);
+
+    __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
+    __u64 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
+ 
     long init = 0;
+    long incremente = 1;
     //bpf_printk("Risultato lookup %d",value);
     //bpf_printk("Risultato lookup %d", &value);
     //bpf_printk("Indirizzo destinatario %pI4",&keyd);
-    if(value){
-        long latency = current_time - *value;
-	bpf_map_update_elem(&inner_map,&connection,&current_time,BPF_ANY);
+    if(!old_timestampA){/*DO NOTHING*/}
+    else
+    if(!old_timestampB){
+    //Imposta timestampB
+    	__u64 rtt = bpf_ktime_get_ns() - (((__u64)tsval) - *old_timestampA);
+	__u64 new_value = (__u64)tsecr - ((__u64)tsval + rtt/2);
+	bpf_map_update_elem(&timestampB_map,&connection,&new_value,BPF_ANY);
+    }
+    else
+    if(old_timestampA && old_timestampB){}
+
+
+    if(old_timestampA){
+	bpf_printk("ESISTE");
+	//Il conto viene fatto in programma senza salvare nelle mappe tsval e tsecr
+        long latency = tsval - tsecr;
+	if(old_timestampB){ //Incremento il numero di volte che scambio pacchetti della stessa connessione
+		long p = tsecr - tsval;
+		bpf_map_update_elem(&timestampB_map,&connection,&p,BPF_ANY);
+	}
+	
+	//bpf_map_update_elem(&inner_map,&connection,&current_time,BPF_ANY);
         bpf_map_update_elem(&latency_map,&connection,&latency,BPF_ANY);
         bpf_map_update_elem(&ingress_seq_map,&connection,&seq,BPF_ANY);
         bpf_map_update_elem(&ingress_ack_map,&connection,&ack_seq,BPF_ANY);
         bpf_map_update_elem(&ingress_payload_map,&connection, &lengthPacket, BPF_ANY);
     }else{
-        bpf_map_update_elem(&inner_map,&connection,&current_time,BPF_ANY);
+	bpf_map_update_elem(&timestampA_map, &connection,&init,BPF_ANY);
+	bpf_map_update_elem(&timestampB_map, &connection, &init, BPF_ANY);
+	//bpf_map_update_elem(&tsval_map, &connection, &tsval, BPF_ANY);
+	//bpf_map_update_elem(&tsecr_map, &connection, &tsecr, BPF_ANY);
+	//bpf_map_update_elem(&inner_map,&connection,&current_time,BPF_ANY); il timestamp lo scrive solo l'egress program
         bpf_map_update_elem(&latency_map,&connection,&init,BPF_ANY);
         bpf_map_update_elem(&ingress_seq_map,&connection,&seq,BPF_ANY);
         bpf_map_update_elem(&ingress_ack_map,&connection,&ack_seq,BPF_ANY);
-        bpf_map_update_elem(&ingress_payload_map,&connection, &lengthPacket, BPF_ANY);
+        bpf_map_update_elem(&ingress_payload_map,&connection, &dimensionPacket, BPF_ANY);
     }
 
     bpf_ringbuf_submit(ringbuf_space, 0);
