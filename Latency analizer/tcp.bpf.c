@@ -34,7 +34,7 @@ struct __attribute__((__packed__))  tcp_header_timestamps{ //Il packed serve per
 struct {
     __uint(type, BPF_MAP_TYPE_RINGBUF);
     __uint(max_entries, 1 << 26);  // 16 MB buffer
-} rb SEC(".maps");
+} ringbuffer SEC(".maps");
 
 
 //Mappe eBPF necessarie al funzionamento
@@ -119,6 +119,8 @@ int egress_filter(struct __sk_buff *ctx){
 	int inizio = ctx-> data;
 	int fine = ctx->data_end;
 	int lunghezza = fine-inizio;
+    int lengthPacket;
+    lengthPacket = fine - inizio;
     	bpf_printk("Inizio pacchetto in uscita: %u", data);
 
     	struct ethhdr *eth;
@@ -231,8 +233,8 @@ int egress_filter(struct __sk_buff *ctx){
     int dimensionPacket = lengthPacket - 14 -20 -tcp_header_bytes;
     int ack_seq = bpf_ntohl(tcp -> ack_seq);
 
-    __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
-    __u64 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
+    __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
+    __u64 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&conn);
  
     long init = 0;
     long incremente = 1;
