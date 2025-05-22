@@ -15,20 +15,37 @@
 ///@tcopts {"handle":1,"priority":1 }
 
 struct {
-    __uint(type, BPF_MAP_TYPE_RINGBUF);
-    __uint(max_entries, 1 << 26);  // 16 MB buffer
+    	__uint(type, BPF_MAP_TYPE_RINGBUF);
+    	__uint(max_entries, 1 << 26);  // 16 MB buffer
 } ringbuffer SEC(".maps");
 
 struct __attribute__((__packed__)) tcp_header_reader{
-    __u8 kind;
+    	__u8 kind;
  };
 
 struct __attribute__((__packed__))  tcp_header_timestamps{ //Il packed serve per evitare che la struttura venga formattata ed evitare che non salvi i file
-    __u8 kind;
-    __u8 length;
-    __u32 tval;
-    __u32 tsecr;
+    	__u8 kind;
+    	__u8 length;
+    	__u32 tval;
+    	__u32 tsecr;
 };
+
+struct connection{
+	__u32 ip_source;
+	__u32 ip_dest;
+	__u16 port_source;
+	__u16 port_dest;
+
+} connection;
+
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries,1024);
+	__type(key, struct connection);
+	__type(value, unsigned long);
+	__uint(pinning, LIBBPF_PIN_BY_NAME);
+} timestampA_map SEC (".maps");
+
 
 
 
@@ -36,8 +53,8 @@ struct {
 	__uint(type,BPF_MAP_TYPE_HASH);
 	__uint(max_entries,1024);
 	__type(key, __u32);
-    __type(value, __u32);
-    __uint(pinning,LIBBPF_PIN_BY_NAME);
+    	__type(value, __u32);
+    	__uint(pinning,LIBBPF_PIN_BY_NAME);
 } number_ack_map SEC (".maps");
 
 
@@ -82,21 +99,21 @@ static bool is_tcp(struct ethhdr *eth, void *data_end){
 SEC ("tc")
 
 int egress_filter(struct __sk_buff *ctx){
-	
+
 	void *data_end = (void*)(__u64) ctx -> data_end;
-    void *data = (void*) (__u64)ctx->data;
+    	void *data = (void*) (__u64)ctx->data;
 	int inizio = ctx-> data;
 	int fine = ctx->data_end;
-	int lunghezza = fine-inizio;    
-    bpf_printk("Inizio pacchetto in uscita: %u", data);
-	
-    struct ethhdr *eth;
-    struct iphdr *ip;
+	int lunghezza = fine-inizio;
+    	bpf_printk("Inizio pacchetto in uscita: %u", data);
+
+    	struct ethhdr *eth;
+    	struct iphdr *ip;
 	struct tcphdr *tcp;
-	
-    eth = data;
-    ip = (struct iphdr *)(eth + 1);
-	
+
+    	eth = data;
+    	ip = (struct iphdr *)(eth + 1);
+
     if(!is_tcp(eth,data_end)){
 		return TC_ACT_OK;
 	}
@@ -141,16 +158,17 @@ int egress_filter(struct __sk_buff *ctx){
     struct tcp_header_reader *appoggio;
 
     while((prova !=8) && (count < 40) && (void *)((unsigned char *)tcp + 20 + count)<data_end){
-	    appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
+	appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
         prova = appoggio->kind;
         if(prova == 8){
            lock = true;
-	    }
+	}
         count = count + 1;
     }
-
     count = count - 1;
 
+    __u32 tsval = 0;
+    __u32 tsecr = 0;
 
     if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=data_end){
         struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);
@@ -158,12 +176,12 @@ int egress_filter(struct __sk_buff *ctx){
         bpf_printk("Length: %d", options -> length);
         bpf_printk("Tval: %u", options -> tval);
         bpf_printk("Tsecr: %u", options -> tsecr);
-        
         bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
         bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
-
         bpf_printk("IP: %pI4", &ip -> daddr);
 
+	tsval = bpf_ntohl(options -> tval);
+	tsecr = bpf_ntohl(options -> tsecr);
     }
     else{
 	    bpf_printk("######################### Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
@@ -184,10 +202,22 @@ int egress_filter(struct __sk_buff *ctx){
         ((unsigned char *)ringbuf_space)[i] = byte;
     }
 
-	int key = ip->daddr;
+	__u32 ip_destination = ip->daddr;
+	__u32 ip_source = ip->saddr;
+	__u16 port_destination = bpf_ntohs(tcp->dest);
+	__u16 port_source = bpf_ntohs(tcp->source);
+
+	struct connection conn;
+	conn.ip_source = ip_destination;
+	conn.ip_dest = ip_source;
+	conn.port_source = port_destination;
+	conn.port_dest = port_source;
+
 	int ack = bpf_ntohl(tcp -> ack_seq);
+	__u32 conversion = tsval - bpf_ktime_get_ns();
+	bpf_map_update_elem(&timestampA_map, &conn, &conversion, BPF_ANY);
 	//long *value = bpf_map_lookup_elem(&number_sequence, &key);
-    bpf_map_update_elem(&number_ack_map,&key,&ack,BPF_ANY);
+	bpf_map_update_elem(&number_ack_map,&conn,& ack,BPF_ANY);
 	bpf_ringbuf_submit(ringbuf_space,0);
 
 	//bpf_printk("Funziona");
