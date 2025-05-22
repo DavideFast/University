@@ -241,8 +241,8 @@ int egress_filter(struct __sk_buff *ctx){
 
     if(!old_timestampA){
 	    if(tcp->ack==1){
-    	    __u64 new_value = bpf_ktime_get_ns() - (((__u64)tsval) ;
-	        bpf_map_update_elem(&timestampA_map,&connection,&new_value,BPF_ANY);
+    	    __u64 new_value = bpf_ktime_get_ns() - ((__u64)tsval) ;
+	        bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
 	    }
     }
     else
@@ -254,7 +254,7 @@ int egress_filter(struct __sk_buff *ctx){
 	    //Calcola latenza
 	    if(tcp->ack == 1){
 	        __u64 latency = (__u64)tsval + *old_timestampA - (__u64)tsecr - *old_timestampB;
-	        bpf_map_update_elem(&latency_map,&connection,&latency,BPF_ANY);
+	        bpf_map_update_elem(&latency_map,&conn,&latency,BPF_ANY);
         }
     }
 	bpf_ringbuf_submit(ringbuf_space,0);
