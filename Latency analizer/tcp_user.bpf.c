@@ -38,6 +38,7 @@ struct inner_map{
    __uint(max_entries,1024);
    __type(key,unsigned char[12]);
    __type(value, unsigned long);
+   __uint(pinning,LIBBPF_PIN_BY_NAME);
 } inner_map SEC (".maps");
 
 struct latency_ingress_map{
@@ -45,6 +46,7 @@ struct latency_ingress_map{
    __uint(max_entries,1024);
    __type(key,struct connection);
    __type(value, unsigned long);
+   __uint(pinning,LIBBPF_PIN_BY_NAME);
 } latency_ingress_map SEC (".maps");
 
 struct latency_egress_map{
@@ -52,6 +54,7 @@ struct latency_egress_map{
 	__uint(max_entries,1024);
 	__type(key, struct connection);
 	__type(value, unsigned long);
+    __uint(pinning,LIBBPF_PIN_BY_NAME);
 }latency_egress_map SEC (".maps");
 
 struct timestampA_map {
@@ -59,6 +62,7 @@ struct timestampA_map {
    __uint(max_entries,1024);
    __type(key,struct connection);
    __type(value,__u64);
+   __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampA_map SEC (".maps");
 
 struct timestampB_map {
@@ -66,6 +70,7 @@ struct timestampB_map {
    __uint(max_entries,1024);
    __type(key,struct connection);
    __type(value,__u64);
+   __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
 // Helper function to check if the packet is TCP
