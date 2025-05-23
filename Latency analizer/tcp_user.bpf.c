@@ -8,7 +8,7 @@
 //Struttura di sostegno per identificare una connessione
 struct connection{
 	__u32 ip_source;
-    __u32 ip_dest;
+    	__u32 ip_dest;
 	__u16 port_source;
 	__u16 port_dest;
 };
@@ -40,12 +40,19 @@ struct inner_map{
    __type(value, unsigned long);
 } inner_map SEC (".maps");
 
-struct latency_map{
+struct latency_ingress_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
    __type(value, unsigned long);
-} latency_map SEC (".maps");
+} latency_ingress_map SEC (".maps");
+
+struct latency_egress_map{
+	__uint(type,BPF_MAP_TYPE_HASH);
+	__uint(max_entries,1024);
+	__type(key, struct connection);
+	__type(value, unsigned long);
+}latency_egress_map SEC (".maps");
 
 struct timestampA_map {
    __uint (type, BPF_MAP_TYPE_HASH);
@@ -230,15 +237,8 @@ int xdp_pass(struct xdp_md *ctx)
     connection.port_source = port_source;
     connection.port_dest = port_destination;
 
-    int seq = bpf_ntohl(tcp -> seq);
-    int dimensionPacket = lengthPacket - 14 -20 -tcp_header_bytes;
-    int ack_seq = bpf_ntohl(tcp -> ack_seq);
-
     __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
     __u64 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
- 
-    long init = 0;
-    long incremente = 1;
 
     if(!old_timestampA){
 	    /*DO NOTHING*/
@@ -247,10 +247,11 @@ int xdp_pass(struct xdp_md *ctx)
     if(!old_timestampB){
         //Imposta timestamp
 	    if(tcp->ack==1){
-    	    __u64 rtt = bpf_ktime_get_ns() - (((__u64)tsval) - *old_timestampA);
-	        __u64 new_value = (__u64)tsval - ((__u64)tsecr + rtt/2);
-	        bpf_map_update_elem(&latency_map,&connection,&rtt,BPF_ANY);
-	        bpf_map_update_elem(&timestampB_map,&connection,&new_value,BPF_ANY);
+    	    	__u64 rtt = bpf_ktime_get_ns() - (((__u64)tsval) - *old_timestampA);
+	    	__u64 new_value = (__u64)tsval - ((__u64)tsecr + rtt/2);
+	    	bpf_map_update_elem(&latency_ingress_map,&connection,&rtt,BPF_ANY);
+	    	bpf_map_update_elem(&latency_egress_map,&connection,&rtt,BPF_ANY);
+		bpf_map_update_elem(&timestampB_map,&connection,&new_value,BPF_ANY);
 	    }
     }
     else
@@ -258,7 +259,9 @@ int xdp_pass(struct xdp_md *ctx)
 	    //Calcola latenza
 	    if(tcp->ack == 1){
 	        __u64 latency = (__u64)tsval + *old_timestampA - (__u64)tsecr - *old_timestampB;
-	        bpf_map_update_elem(&latency_map,&connection,&latency,BPF_ANY);
+		__u64 latency2 = bpf_ktime_get_ns() - (((__u64)tsval)-*old_timestampB);
+	        bpf_map_update_elem(&latency_egress_map,&connection,&latency,BPF_ANY);
+		bpf_map_update_elem(&latency_ingress_map,&connection,&latency2,BPF_ANY);
         }
     }
 

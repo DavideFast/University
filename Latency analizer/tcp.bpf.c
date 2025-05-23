@@ -13,7 +13,7 @@
 //Struttura di sostegno per identificare una connessione
 struct connection{
 	__u32 ip_source;
-    __u32 ip_dest;
+    	__u32 ip_dest;
 	__u16 port_source;
 	__u16 port_dest;
 };
@@ -44,13 +44,6 @@ struct inner_map{
    __type(key,unsigned char[12]);
    __type(value, unsigned long);
 } inner_map SEC (".maps");
-
-struct latency_map{
-   __uint(type,BPF_MAP_TYPE_HASH);
-   __uint(max_entries,1024);
-   __type(key,struct connection);
-   __type(value, unsigned long);
-} latency_map SEC (".maps");
 
 struct timestampA_map {
    __uint (type, BPF_MAP_TYPE_HASH);
@@ -119,10 +112,7 @@ int egress_filter(struct __sk_buff *ctx){
 	int inizio = ctx-> data;
 	int fine = ctx->data_end;
 	int lunghezza = fine-inizio;
-    int lengthPacket;
-    lengthPacket = fine - inizio;
-    	bpf_printk("Inizio pacchetto in uscita: %u", data);
-
+       	bpf_printk("Inizio pacchetto in uscita: %u", data);
     	struct ethhdr *eth;
     	struct iphdr *ip;
 	struct tcphdr *tcp;
@@ -184,7 +174,6 @@ int egress_filter(struct __sk_buff *ctx){
     count = count - 1;
 
     __u32 tsval = 0;
-    __u32 tsecr = 0;
 
     if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=data_end){
         struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);
@@ -197,7 +186,6 @@ int egress_filter(struct __sk_buff *ctx){
         bpf_printk("IP: %pI4", &ip -> daddr);
 
 	tsval = bpf_ntohl(options -> tval);
-	tsecr = bpf_ntohl(options -> tsecr);
     }
     else{
 	    bpf_printk("######################### Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
@@ -229,37 +217,13 @@ int egress_filter(struct __sk_buff *ctx){
 	conn.port_source = port_destination;
 	conn.port_dest = port_source;
 
-	int seq = bpf_ntohl(tcp -> seq);
-    int dimensionPacket = lengthPacket - 14 -20 -tcp_header_bytes;
-    int ack_seq = bpf_ntohl(tcp -> ack_seq);
-
     __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
-    __u64 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&conn);
- 
-    long init = 0;
-    long incremente = 1;
-
+    
     if(!old_timestampA){
-	    if(tcp->ack==1){
     	    __u64 new_value = bpf_ktime_get_ns() - ((__u64)tsval) ;
-	        bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
-	    }
+	    bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
     }
-    else
-    if(!old_timestampB){
-        /*DO NOTHING*/
-	}
-    else
-    if(old_timestampA && old_timestampB){
-	    //Calcola latenza
-	    if(tcp->ack == 1){
-	        __u64 latency = (__u64)tsval + *old_timestampA - (__u64)tsecr - *old_timestampB;
-	        bpf_map_update_elem(&latency_map,&conn,&latency,BPF_ANY);
-        }
-    }
-	bpf_ringbuf_submit(ringbuf_space,0);
-
-	//bpf_printk("Funziona");
+    bpf_ringbuf_submit(ringbuf_space,0);
 
     bpf_printk("_______________________________________________________________");
 
