@@ -260,11 +260,11 @@ int xdp_pass(struct xdp_md *ctx)
     __u64 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
 
     if(!old_timestampA){
-	    /*DO NOTHING*/
+	    /*Non è pronto per calcolare la latenza*/
     }
     else
     if(!old_timestampB){
-        //Imposta timestamp
+        //Imposta timestamp B
 	    if(tcp->ack==1){
     	    	__u64 rtt = bpf_ktime_get_ns() - (((__u64)tsval) - *old_timestampA);
 	    	__u64 new_value = (__u64)tsval - ((__u64)tsecr + rtt/2);

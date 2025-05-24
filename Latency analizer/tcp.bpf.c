@@ -31,7 +31,8 @@ struct __attribute__((__packed__)) tcp_header_reader{
     __u8 kind;
  };
 
-struct __attribute__((__packed__))  tcp_header_timestamps{ //Il packed serve per evitare che la struttura venga formattata ed evitare che non salvi i file
+//Il packed serve per evitare che la struttura venga formattata ed evitare che non salvi i file
+struct __attribute__((__packed__))  tcp_header_timestamps{ 
     __u8 kind;
     __u8 length;
     __u32 tval;
@@ -141,17 +142,17 @@ SEC ("tc")
 int egress_filter(struct __sk_buff *ctx){
 
 	void *data_end = (void*)(__u64) ctx -> data_end;
-    	void *data = (void*) (__u64)ctx->data;
+    void *data = (void*) (__u64)ctx->data;
 	int inizio = ctx-> data;
 	int fine = ctx->data_end;
 	int lunghezza = fine-inizio;
-       	bpf_printk("Inizio pacchetto in uscita: %u", data);
-    	struct ethhdr *eth;
-    	struct iphdr *ip;
+    bpf_printk("Inizio pacchetto in uscita: %u", data);
+    struct ethhdr *eth;
+    struct iphdr *ip;
 	struct tcphdr *tcp;
 
-    	eth = data;
-    	ip = (struct iphdr *)(eth + 1);
+    eth = data;
+    ip = (struct iphdr *)(eth + 1);
 
     if(!is_tcp(eth,data_end)){
 		return TC_ACT_OK;
@@ -163,7 +164,7 @@ int egress_filter(struct __sk_buff *ctx){
 	if (ip_hdr_len < sizeof(struct iphdr)) {
 		bpf_printk("Ip header fuori range");
         return TC_ACT_OK;
-    	}
+    }
 
 	tcp = (struct tcphdr *)((unsigned char*)ip + ip_hdr_len);
 
@@ -197,15 +198,15 @@ int egress_filter(struct __sk_buff *ctx){
     struct tcp_header_reader *appoggio;
 
     while((prova !=8) && (count < 40) && (void *)((unsigned char *)tcp + 20 + count)<data_end){
-	appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
+	    appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
         prova = appoggio->kind;
         if(prova == 8){
            lock = true;
 	}
         count = count + 1;
     }
-    count = count - 1;
 
+    count = count - 1;
     __u32 tsval = 0;
 
     if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=data_end){
@@ -221,7 +222,7 @@ int egress_filter(struct __sk_buff *ctx){
 	tsval = bpf_ntohl(options -> tval);
     }
     else{
-	    bpf_printk("######################### Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
+	    bpf_printk("Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
     }
 
         
@@ -252,10 +253,12 @@ int egress_filter(struct __sk_buff *ctx){
 
     __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
     
+    //I pacchetti in uscita servono solo per settare i timestamp A e non per calcolare i tempi di latenza
     if(!old_timestampA){
-    	    __u64 new_value = bpf_ktime_get_ns() - ((__u64)tsval) ;
+    	__u64 new_value = bpf_ktime_get_ns() - ((__u64)tsval) ;
 	    bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
     }
+
     bpf_ringbuf_submit(ringbuf_space,0);
 
     bpf_printk("_______________________________________________________________");
