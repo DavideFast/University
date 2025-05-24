@@ -5,10 +5,19 @@
 #include <endian.h>
 #define ETH_P_IP 0x0800
 
+
+
+//####################################################################################################################################
+//####                                                                                                                            ####
+//####                                                         STRUCT NECESSARIE                                                  ####
+//####                                                                                                                            ####
+//####################################################################################################################################
+
+
 //Struttura di sostegno per identificare una connessione
 struct connection{
 	__u32 ip_source;
-    	__u32 ip_dest;
+    __u32 ip_dest;
 	__u16 port_source;
 	__u16 port_dest;
 };
@@ -73,7 +82,12 @@ struct timestampB_map {
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
-// Helper function to check if the packet is TCP
+//####################################################################################################################################
+//####                                                                                                                            ####
+//####                                                         HELPER FUNCTION                                                    ####
+//####                                                                                                                            ####
+//####################################################################################################################################
+
 static bool is_tcp(struct ethhdr *eth, void *data_end){
 
     // Ensure Ethernet header is within bounds

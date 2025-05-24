@@ -10,7 +10,15 @@
 #define TC_ACT_SHOT 2
 #define ETH_P_IP 0x0800
 
-//Struttura di sostegno per identificare una connessione
+
+
+//################################################################################
+//####                                                                        ####
+//####                             STRUCT NECESSARIE                          ####
+//####                                                                        ####
+//################################################################################
+
+
 struct connection{
 	__u32 ip_source;
     	__u32 ip_dest;
@@ -62,8 +70,30 @@ struct timestampB_map {
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
+struct latency_ingress_map{
+   __uint(type,BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value, unsigned long);
+   __uint(pinning,LIBBPF_PIN_BY_NAME);
+} latency_ingress_map SEC (".maps");
 
-// Helper function to check if the packet is TCP
+struct latency_egress_map{
+	__uint(type,BPF_MAP_TYPE_HASH);
+	__uint(max_entries,1024);
+	__type(key, struct connection);
+	__type(value, unsigned long);
+    __uint(pinning,LIBBPF_PIN_BY_NAME);
+}latency_egress_map SEC (".maps");
+
+
+//################################################################################
+//####                                                                        ####
+//####                             HELPER FUNCTION                            ####
+//####                                                                        ####
+//################################################################################
+
+
 static bool is_tcp(struct ethhdr *eth, void *data_end){
     // bpf_printk("Il pacchetto contiene...");
     // Ensure Ethernet header is within bounds
