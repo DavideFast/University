@@ -45,7 +45,7 @@ struct {
 struct inner_map{
    __uint(type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,unsigned char[12]);
+   __type(key,unsigned long);
    __type(value, unsigned long);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } inner_map SEC (".maps");
@@ -266,7 +266,8 @@ int xdp_pass(struct xdp_md *ctx)
     if(!old_timestampB){
         //Imposta timestamp B
 	    if(tcp->ack==1){
-    	    	__u64 rtt = bpf_ktime_get_ns() - (((__u64)tsval) - *old_timestampA);
+            bpf_map_update_elem(&inner_map,ip_destination,port_source,BPF_ANY);
+            __u64 rtt = bpf_ktime_get_ns() - (((__u64)tsval) - *old_timestampA);
 	    	__u64 new_value = (__u64)tsval - ((__u64)tsecr + rtt/2);
 	    	bpf_map_update_elem(&latency_ingress_map,&connection,&rtt,BPF_ANY);
 	    	bpf_map_update_elem(&latency_egress_map,&connection,&rtt,BPF_ANY);
