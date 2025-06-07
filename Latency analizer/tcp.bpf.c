@@ -50,7 +50,7 @@ struct {
 struct inner_map{
    __uint(type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,unsigned char[12]);
+   __type(key,unsigned long);
    __type(value, unsigned long);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } inner_map SEC (".maps");
