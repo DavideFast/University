@@ -40,10 +40,11 @@ int main(){
 	prog2 = bpf_object__find_program_by_name(obj2,"egress_filter");
 	prog_fd = bpf_program__fd(prog);
 	prog_fd2 = bpf_program__fd(prog2);
-	if(bpf_program__attach_xdp(prog,2)){
-		printf("Attach xdp avvenuto con successo\n");
-	}
-	printf("Fd del programma egress %d\n",bpf_object__btf_fd(obj2));
+	if(bpf_program__attach_xdp(prog,2))
+		printf("XDP attach riuscito\n");
+	else
+		printf("XDP attach fallito\n");
+	//printf("Fd del programma egress %d\n",bpf_object__btf_fd(obj2));
 	struct bpf_tc_opts opts = {
 	     .flags = BPF_TC_F_REPLACE,
 	     .sz = sizeof(struct bpf_tc_opts),
@@ -65,9 +66,12 @@ int main(){
 	int size = 20;
 
 
-	libbpf_strerror(-14,buf,size);
-	printf("Errore: %s\n",buf);
-	printf("TC attach... %d\n",bpf_tc_attach(&hook,&opts));
+	//libbpf_strerror(-14,buf,size);
+	//printf("Errore: %s\n",buf);
+	if(bpf_tc_attach(&hook,&opts)==0)
+		printf("TC attach riuscito\n");
+	else
+		printf("TC attach fallito\n");
 
 //Loading e autoattaching dei file
 	struct bpf_map_info info = {};
@@ -88,8 +92,9 @@ int main(){
 	unsigned long * p_buff;
 	unsigned long buff;
 	p_buff = &buff;
-	printf("Valore di inizializzazione: %lu\n",key_value);
+	//printf("Valore di inizializzazione: %lu\n",key_value);
 	const char *name = "latency_egress_map";
+	const char *name2 = "latency_ingress_map";
 	if(egress<=0){
 		printf("Nessuna mappa egress trovata");
 	}
@@ -97,18 +102,19 @@ int main(){
 		egress_map = bpf_object__find_map_by_name(obj,name);
 		struct bpf_map *r = bpf_object__next_map(obj,NULL);
 		if(egress_map){
-			printf("Esito get_next_key: %d\n",
-			     bpf_map_get_next_key(bpf_map__fd(egress_map),
-			     NULL,key));
-			printf("Key presa: %lu\n",key_value.port_source);
+		     if(bpf_map_get_next_key(bpf_map__fd(egress_map),NULL,key)==0)
+			     printf("Key presa: %lu\n",key_value.port_source);
 		}
 	}
 	if(ingress<=0){
-		printf("No FD\n");
+		printf("Nessuna mappa ingress trovata\n");
 	}
 	else {
-		bpf_obj_get_info_by_fd(ingress,&info,&len);
-		//printf("Name: %s\n",info.name);
+		ingress_map = bpf_object__find_map_by_name(obj2,name2);
+		if(ingress_map){
+		     if(bpf_map_get_next_key(bpf_map__fd(ingress_map),NULL,key)==0)
+			     printf("Key presa: %lu\n", key_value.port_source);
+		}
 	}
 
 //Tempo di attesa
@@ -119,10 +125,10 @@ int main(){
 	scanf("%d",&count);
 	start = time(NULL);
 	while(time(NULL)-start<count*60){
-		printf("Latenza in uscita: %d:",
-			bpf_map__lookup_elem(egress_map,(void *)key,
-			(size_t)12,(void *)p_buff,(size_t) 8,flags));
-		printf("%lu nanosecondi\n",buff);
+		if(bpf_map__lookup_elem(egress_map,(void *)key,(size_t)12,(void *)p_buff,(size_t) 8,flags)==0)
+			printf("Latenza in   uscita: %lu nanosecondi\n",buff);
+		if(bpf_map__lookup_elem(ingress_map,(void*)key,(size_t)12,(void*)p_buff,(size_t)8,flags)==0)
+			printf("Latenza in ingresso: %lu nanosecondi\n");
 	}
 
 //Distruzione del programma eBPF
