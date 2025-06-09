@@ -1,4 +1,4 @@
-#include <linux/bpf.h>
+#include <bpf/bpf.h>
 #include <time.h>
 #include <bpf/libbpf.h>
 #include <stdio.h>
@@ -12,6 +12,7 @@ struct connection{
 	__u16 port_dest;
 };
 
+int bpf_obj_get(const char * pathname);
 
 int main(){
 	printf("###############################################\n");
@@ -57,10 +58,13 @@ int main(){
 		.ifindex = 2,
 		.parent = 0,
 		.attach_point = BPF_TC_EGRESS,
-	
 	};
-	
-	printf("HOOK: %d\n",bpf_tc_hook_create(&hook));
+
+
+	if(bpf_tc_hook_create(&hook)==0)
+		printf("QDisc creato con successo\n");
+	else
+		printf("Hook già esistente\n");
 
 	char buf[20] = "";
 	int size = 20;
@@ -103,7 +107,7 @@ int main(){
 		struct bpf_map *r = bpf_object__next_map(obj,NULL);
 		if(egress_map){
 		     if(bpf_map_get_next_key(bpf_map__fd(egress_map),NULL,key)==0)
-			     printf("Key presa: %lu\n",key_value.port_source);
+			     printf("Key egress_map ottenuta\n");
 		}
 	}
 	if(ingress<=0){
@@ -113,27 +117,43 @@ int main(){
 		ingress_map = bpf_object__find_map_by_name(obj2,name2);
 		if(ingress_map){
 		     if(bpf_map_get_next_key(bpf_map__fd(ingress_map),NULL,key)==0)
-			     printf("Key presa: %lu\n", key_value.port_source);
+			     printf("Key ingress_map ottenuta\n");
 		}
 	}
 
 //Tempo di attesa
 	int count=0;
 	__u64 flags=0;
+	printf("Ip_dest: %i4\n",key_value.ip_dest);
+	printf("Ip_source: %i4 \n",key_value.ip_source);
+	printf("Port_source: %d\n", key_value.port_source);
+	printf("Port_dest: %d\n",key_value.port_dest);
 	time_t start = time(NULL);
 	printf("Inserire numero di minuti di cattura\n");
 	scanf("%d",&count);
 	start = time(NULL);
 	while(time(NULL)-start<count*60){
-		if(bpf_map__lookup_elem(egress_map,(void *)key,(size_t)12,(void *)p_buff,(size_t) 8,flags)==0)
-			printf("Latenza in   uscita: %lu nanosecondi\n",buff);
-		if(bpf_map__lookup_elem(ingress_map,(void*)key,(size_t)12,(void*)p_buff,(size_t)8,flags)==0)
-			printf("Latenza in ingresso: %lu nanosecondi\n");
+	     bpf_map_get_next_key(bpf_map__fd(egress_map),NULL,key);
+	     printf("Latenza in   uscita: %lu nanosecondi\n",buff);
+	     while(bpf_map_get_next_key(bpf_map__fd(egress_map),key,key)==0)
+		  if(bpf_map__lookup_elem(egress_map,(void *)key,(size_t)12,
+	          (void *)p_buff, (size_t) 8,flags)==0)
+		       printf("Latenza in   uscita: %lu nanosecondi\n",buff);
+
+             bpf_map_get_next_key(bpf_map__fd(ingress_map),NULL,key);
+	     printf("Latenza in ingresso: %lu nanosecondi\n",buff);
+	     while(bpf_map_get_next_key(bpf_map__fd(ingress_map),key,key)==0)
+		  if(bpf_map__lookup_elem(ingress_map,(void*)key,
+		  (size_t)12,(void*)p_buff,(size_t)8,flags)==0)
+		       printf("Latenza in ingresso: %lu nanosecondi\n",buff);
+
+	     printf("-----------------------------------------------\n");
 	}
 
 //Distruzione del programma eBPF
 	bpf_tc_detach(&hook,&opts);
-	printf("Qdisc eliminato con successo...%d\n",bpf_tc_hook_destroy(&hook));
+	printf("Qdisc eliminato con successo...%d\n",
+		bpf_tc_hook_destroy(&hook));
 	printf("################################################\n");
 	printf("####                 FINISH                 ####\n");
 	printf("################################################\n");
