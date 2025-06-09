@@ -17,7 +17,7 @@
 //Struttura di sostegno per identificare una connessione
 struct connection{
 	__u32 ip_source;
-    __u32 ip_dest;
+    	__u32 ip_dest;
 	__u16 port_source;
 	__u16 port_dest;
 };
@@ -45,8 +45,8 @@ struct {
 struct inner_map{
    __uint(type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,unsigned long);
-   __type(value, unsigned long);
+   __type(key,__u32);
+   __type(value, __u16);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } inner_map SEC (".maps");
 
@@ -265,20 +265,21 @@ int xdp_pass(struct xdp_md *ctx)
     else
     if(!old_timestampB){
         //Imposta timestamp B
-	    if(tcp->ack==1){
-            bpf_map_update_elem(&inner_map,&ip_destination,&port_source,BPF_ANY);
-            __u64 rtt = bpf_ktime_get_ns() - (((__u64)tsval) - *old_timestampA);
-	    	__u64 new_value = (__u64)tsval - ((__u64)tsecr + rtt/2);
-	    	bpf_map_update_elem(&latency_ingress_map,&connection,&rtt,BPF_ANY);
-	    	bpf_map_update_elem(&latency_egress_map,&connection,&rtt,BPF_ANY);
-		bpf_map_update_elem(&timestampB_map,&connection,&new_value,BPF_ANY);
-	    }
+	if(tcp->ack==1){
+            //bpf_map_update_elem(&inner_map,&ip_destination,&port_source,BPF_NOEXIST);
+            __u64 rtt = bpf_ktime_get_ns() - (((__u64)tsecr) + *old_timestampA);
+	    __u64 new_value = (__u64)tsval - ((__u64)tsecr+*old_timestampA + rtt/2);
+	    __u64 lat = rtt/2;
+	    bpf_map_update_elem(&latency_ingress_map,&connection,&lat,BPF_ANY);
+	    bpf_map_update_elem(&latency_egress_map,&connection,&lat,BPF_ANY);
+	    bpf_map_update_elem(&timestampB_map,&connection,&new_value,BPF_ANY);
+	}
     }
     else
     if(old_timestampA && old_timestampB){
 	    //Calcola latenza
 	    if(tcp->ack == 1){
-	        __u64 latency = (__u64)tsval + *old_timestampA - (__u64)tsecr - *old_timestampB;
+	        __u64 latency = (__u64)tsval - *old_timestampB - (__u64)tsecr - *old_timestampA;
 		__u64 latency2 = bpf_ktime_get_ns() - (((__u64)tsval)-*old_timestampB);
 	        bpf_map_update_elem(&latency_egress_map,&connection,&latency,BPF_ANY);
 		bpf_map_update_elem(&latency_ingress_map,&connection,&latency2,BPF_ANY);
