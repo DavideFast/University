@@ -141,6 +141,7 @@ int main(){
 	while(time(NULL)-start<count*60){
 	     sleep(1);
 	     bpf_map_get_next_key(bpf_map__fd(egress_map),NULL,key);
+	     bpf_map__lookup_elem(egress_map,(void*)key,(size_t)12,(void *)p_buff,(size_t)8,flags);
 	     printf("Latenza in uscita verso ");
 	     print_ip(key->ip_source);
 	     printf(": %lu nanosecondi\n",buff);
@@ -154,7 +155,8 @@ int main(){
              bpf_map_get_next_key(bpf_map__fd(ingress_map),NULL,key);
 	     printf("Latenza in ingresso da ");
 	     print_ip(key->ip_source);
-             printf(": %lu nanosecondi\n",buff);
+             bpf_map__lookup_elem(ingress_map,(void*)key,(size_t)12,(void*)p_buff,(size_t)8,flags);
+	     printf(": %lu nanosecondi\n",buff);
 	     while(bpf_map_get_next_key(bpf_map__fd(ingress_map),key,key)==0)
 		  if(bpf_map__lookup_elem(ingress_map,(void*)key,
 		  (size_t)12,(void*)p_buff,(size_t)8,flags)==0){
