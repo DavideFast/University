@@ -1,4 +1,5 @@
 #include <bpf/bpf.h>
+#include <unistd.h>
 #include <time.h>
 #include <bpf/libbpf.h>
 #include <stdio.h>
@@ -7,17 +8,27 @@
 
 struct connection{
 	__u32 ip_source;
-	__u32 ip_dest;
+	__u32 ip_destination;
 	__u16 port_source;
 	__u16 port_dest;
 };
 
-int bpf_obj_get(const char * pathname);
+void print_ip(uint32_t ip){
+	unsigned char octet1 = (ip >>24) & 0xFF;
+	unsigned char octet2 = (ip >> 16) & 0xFF;
+	unsigned char octet3 = (ip >> 8) & 0xFF;
+	unsigned char octet4 = ip & 0xFF;
+	printf("%u.%u.%u.%u",octet4,octet3,octet2,octet1);
+
+
+}
+
+
 
 int main(){
-	printf("###############################################\n");
-	printf("####                 START                 ####\n");
-	printf("###############################################\n");
+	printf("####################################################\n");
+	printf("####                    START                   ####\n");
+	printf("####################################################\n");
 	struct bpf_object *obj;
 	struct bpf_object *obj2;
 
@@ -51,27 +62,28 @@ int main(){
 	     .sz = sizeof(struct bpf_tc_opts),
 	     .prog_fd = prog_fd2,
 	     .handle = 0,
-	     .priority = 1
+	     .priority = 1,
+	     .flags = BPF_TC_F_REPLACE,
 	};
 	struct bpf_tc_hook hook = {
-		.sz = sizeof(struct bpf_tc_hook),
-		.ifindex = 2,
-		.parent = 0,
-		.attach_point = BPF_TC_EGRESS,
+	      .sz = sizeof(struct bpf_tc_hook),
+	      .ifindex = 2,
+	      .parent = 0,
+	      .attach_point = BPF_TC_EGRESS,
 	};
 
 
 	if(bpf_tc_hook_create(&hook)==0)
 		printf("QDisc creato con successo\n");
 	else
-		printf("Hook già esistente\n");
+		printf("Qdisc creazione fallita\n");
 
 	char buf[20] = "";
 	int size = 20;
 
 
-	//libbpf_strerror(-14,buf,size);
-	//printf("Errore: %s\n",buf);
+	libbpf_strerror(-22,buf,size);
+	printf("Errore: %s\n",buf);
 	if(bpf_tc_attach(&hook,&opts)==0)
 		printf("TC attach riuscito\n");
 	else
@@ -84,12 +96,6 @@ int main(){
 	int ingress = bpf_obj_get("/sys/fs/bpf/latency_ingress_map");
 	struct bpf_map *egress_map;
         struct connection *key;
-	struct connection hehe;
-		hehe.ip_source=837969303;
-		hehe.ip_dest=2120526016;
-		hehe.port_source=443;
-		hehe.port_dest=41822;
-		unsigned long *risultato;
 	struct connection key_value;
 	key=&key_value;
 	struct bpf_map *ingress_map;
@@ -124,38 +130,57 @@ int main(){
 //Tempo di attesa
 	int count=0;
 	__u64 flags=0;
-	printf("Ip_dest: %i4\n",key_value.ip_dest);
-	printf("Ip_source: %i4 \n",key_value.ip_source);
-	printf("Port_source: %d\n", key_value.port_source);
-	printf("Port_dest: %d\n",key_value.port_dest);
+	//printf("Ip_dest: %pI4\n",&key->ip_destination);
+	//printf("Ip_source: %u\n",key->ip_source);
+	//printf("Port_source: %d\n", key_value.port_source);
+	//printf("Port_dest: %d\n",key_value.port_dest);
 	time_t start = time(NULL);
 	printf("Inserire numero di minuti di cattura\n");
 	scanf("%d",&count);
 	start = time(NULL);
 	while(time(NULL)-start<count*60){
+	     sleep(1);
 	     bpf_map_get_next_key(bpf_map__fd(egress_map),NULL,key);
-	     printf("Latenza in   uscita: %lu nanosecondi\n",buff);
+	     printf("Latenza in uscita verso ");
+	     print_ip(key->ip_source);
+	     printf(": %lu nanosecondi\n",buff);
 	     while(bpf_map_get_next_key(bpf_map__fd(egress_map),key,key)==0)
 		  if(bpf_map__lookup_elem(egress_map,(void *)key,(size_t)12,
-	          (void *)p_buff, (size_t) 8,flags)==0)
-		       printf("Latenza in   uscita: %lu nanosecondi\n",buff);
-
+	          (void *)p_buff, (size_t) 8,flags)==0){
+		       printf("Latenza in uscita verso ");
+		       print_ip(key->ip_source);
+		       printf(": %lu nanosecondi\n",buff);
+			}
              bpf_map_get_next_key(bpf_map__fd(ingress_map),NULL,key);
-	     printf("Latenza in ingresso: %lu nanosecondi\n",buff);
+	     printf("Latenza in ingresso da ");
+	     print_ip(key->ip_source);
+             printf(": %lu nanosecondi\n",buff);
 	     while(bpf_map_get_next_key(bpf_map__fd(ingress_map),key,key)==0)
 		  if(bpf_map__lookup_elem(ingress_map,(void*)key,
-		  (size_t)12,(void*)p_buff,(size_t)8,flags)==0)
-		       printf("Latenza in ingresso: %lu nanosecondi\n",buff);
-
-	     printf("-----------------------------------------------\n");
+		  (size_t)12,(void*)p_buff,(size_t)8,flags)==0){
+		       printf("Latenza in ingresso da ");
+                       print_ip(key->ip_source);
+		       printf(": %lu nanosecondi\n",buff);
+			}
+	     printf("-------------------------------------------------------------------------\n");
 	}
 
 //Distruzione del programma eBPF
-	bpf_tc_detach(&hook,&opts);
-	printf("Qdisc eliminato con successo...%d\n",
-		bpf_tc_hook_destroy(&hook));
-	printf("################################################\n");
-	printf("####                 FINISH                 ####\n");
-	printf("################################################\n");
+	//int n = bpf_tc_detach(&hook,&opts);
+	printf("Mostra lista dei filtri TC:\n");
+	system("sudo tc filter show dev enp0s3 egress");
+	system("sudo tc filter del dev enp0s3 egress");
+	printf("Sto eliminando il filtro TC\n");
+	system("sudo tc qdisc del dev enp0s3 clsact");
+	printf("Sto eliminando il qdisc clsact\n");
+	system("sudo tc filter show dev enp0s3 egress");
+        system("sudo sh termina.sh");
+	printf("Unpin delle mappe eBPF");
+	//printf("Detatch TC program %d\n",n);
+	//int n2 = bpf_tc_hook_destroy(&hook);
+	//printf("Distruzione hook %d\n",n2);
+	printf("#####################################################\n");
+	printf("####                    FINISH                   ####\n");
+	printf("#####################################################\n");
 	return 0;
 }
