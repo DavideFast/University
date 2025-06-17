@@ -3,6 +3,7 @@
 #include <bpf/bpf_endian.h>
 #include <math.h>
 #include <endian.h>
+//#include <quadmath.h>
 #define ETH_P_IP 0x0800
 
 
@@ -45,8 +46,8 @@ struct {
 struct inner_map{
    __uint(type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,unsigned long);
-   __type(value, unsigned long);
+   __type(key, __u32);
+   __type(value, __int128);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } inner_map SEC (".maps");
 
@@ -54,7 +55,7 @@ struct latency_ingress_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value, unsigned long);
+   __type(value, __int128);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } latency_ingress_map SEC (".maps");
 
@@ -62,7 +63,7 @@ struct latency_egress_map{
 	__uint(type,BPF_MAP_TYPE_HASH);
 	__uint(max_entries,1024);
 	__type(key, struct connection);
-	__type(value, unsigned long);
+	__type(value, __int128);
     __uint(pinning,LIBBPF_PIN_BY_NAME);
 }latency_egress_map SEC (".maps");
 
@@ -70,7 +71,7 @@ struct timestampA_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,int128);
+   __type(value,__int128);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampA_map SEC (".maps");
 
@@ -78,7 +79,7 @@ struct timestampB_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,int128);
+   __type(value,__int128);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
@@ -256,8 +257,8 @@ int xdp_pass(struct xdp_md *ctx)
     connection.port_source = port_source;
     connection.port_dest = port_destination;
 
-    int128 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
-    int128 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
+    __int128 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
+    __int128 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
 
     if(!old_timestampA){
 	    /*Non è pronto per calcolare la latenza*/
@@ -266,9 +267,9 @@ int xdp_pass(struct xdp_md *ctx)
     if(!old_timestampB){
         //Imposta timestamp B
 	    if(tcp->ack==1){
-            bpf_map_update_elem(&inner_map,&ip_destination,&port_source,BPF_ANY);
-            int128 rtt = bpf_ktime_get_ns() - (((int128)tsval) - *old_timestampA);
-	    	int128 new_value = (int128)tsval - ((int128)tsecr + rtt/2);
+            //bpf_map_update_elem(&inner_map,&ip_destination,&port_source,BPF_ANY);
+            __int128 rtt = bpf_ktime_get_ns() - (((__int128)tsval) - *old_timestampA);
+	    	__int128 new_value = (__int128)tsval - ((__int128)tsecr + (__int128)(rtt >> 1));
 	    	bpf_map_update_elem(&latency_ingress_map,&connection,&rtt,BPF_ANY);
 	    	bpf_map_update_elem(&latency_egress_map,&connection,&rtt,BPF_ANY);
 		bpf_map_update_elem(&timestampB_map,&connection,&new_value,BPF_ANY);
@@ -278,10 +279,10 @@ int xdp_pass(struct xdp_md *ctx)
     if(old_timestampA && old_timestampB){
 	    //Calcola latenza
 	    if(tcp->ack == 1){
-	        int128 latency = (int128)tsval + *old_timestampA - (int128)tsecr - *old_timestampB;
-		    int128 latency2 = bpf_ktime_get_ns() - (((int128)tsval)-*old_timestampB);
+	        __int128 latency = (__int128)tsval + *old_timestampA - (__int128)tsecr - *old_timestampB;
+	        __int128 latency2 = bpf_ktime_get_ns() - (((__int128)tsval)-*old_timestampB);
 	        bpf_map_update_elem(&latency_egress_map,&connection,&latency,BPF_ANY);
-		    bpf_map_update_elem(&latency_ingress_map,&connection,&latency2,BPF_ANY);
+	        bpf_map_update_elem(&latency_ingress_map,&connection,&latency2,BPF_ANY);
         }
     }
 

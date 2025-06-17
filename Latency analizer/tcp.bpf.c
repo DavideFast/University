@@ -50,8 +50,8 @@ struct {
 struct inner_map{
    __uint(type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
-   __type(key,unsigned long);
-   __type(value, unsigned long);
+   __type(key, __u32);
+   __type(value, __int128);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } inner_map SEC (".maps");
 
@@ -59,7 +59,7 @@ struct timestampA_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,__u64);
+   __type(value,__int128);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampA_map SEC (".maps");
 
@@ -67,7 +67,7 @@ struct timestampB_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,__u64);
+   __type(value,__int128);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
@@ -75,7 +75,7 @@ struct latency_ingress_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value, unsigned long);
+   __type(value, __int128);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } latency_ingress_map SEC (".maps");
 
@@ -83,7 +83,7 @@ struct latency_egress_map{
 	__uint(type,BPF_MAP_TYPE_HASH);
 	__uint(max_entries,1024);
 	__type(key, struct connection);
-	__type(value, unsigned long);
+	__type(value, __int128);
     __uint(pinning,LIBBPF_PIN_BY_NAME);
 }latency_egress_map SEC (".maps");
 
@@ -142,17 +142,18 @@ SEC ("tc")
 int egress_filter(struct __sk_buff *ctx){
 
 	void *data_end = (void*)(__u64) ctx -> data_end;
-    void *data = (void*) (__u64)ctx->data;
+    	void *data = (void*) (__u64)ctx->data;
 	int inizio = ctx-> data;
 	int fine = ctx->data_end;
 	int lunghezza = fine-inizio;
-    bpf_printk("Inizio pacchetto in uscita: %u", data);
-    struct ethhdr *eth;
-    struct iphdr *ip;
+	__u64 current_time = bpf_ktime_get_ns();
+    	bpf_printk("Inizio pacchetto in uscita: %llu", current_time);
+    	struct ethhdr *eth;
+    	struct iphdr *ip;
 	struct tcphdr *tcp;
 
-    eth = data;
-    ip = (struct iphdr *)(eth + 1);
+    	eth = data;
+    	ip = (struct iphdr *)(eth + 1);
 
     if(!is_tcp(eth,data_end)){
 		return TC_ACT_OK;
@@ -213,8 +214,8 @@ int egress_filter(struct __sk_buff *ctx){
         struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);
         bpf_printk("Kind: %d", options -> kind);
         bpf_printk("Length: %d", options -> length);
-        bpf_printk("Tval: %u", options -> tval);
-        bpf_printk("Tsecr: %u", options -> tsecr);
+        bpf_printk("Tval: %lu", options -> tval);
+        bpf_printk("Tsecr: %lu", options -> tsecr);
         bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
         bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
         bpf_printk("IP: %pI4", &ip -> daddr);
@@ -251,12 +252,12 @@ int egress_filter(struct __sk_buff *ctx){
 	conn.port_source = port_destination;
 	conn.port_dest = port_source;
 
-    __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
+    __int128 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
     
     //I pacchetti in uscita servono solo per settare i timestamp A e non per calcolare i tempi di latenza
     if(!old_timestampA){
-    	__u64 new_value = bpf_ktime_get_ns() - ((__u64)tsval) ;
-	    bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
+        __int128 new_value = bpf_ktime_get_ns() - ((__int128)tsval) ;
+	bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
     }
 
     bpf_ringbuf_submit(ringbuf_space,0);
