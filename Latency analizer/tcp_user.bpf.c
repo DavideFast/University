@@ -283,7 +283,10 @@ int xdp_pass(struct xdp_md *ctx)
 	        __int128 latency2 = bpf_ktime_get_ns() - (((__int128)tsval)-*old_timestampB);
 	        bpf_map_update_elem(&latency_egress_map,&connection,&latency,BPF_ANY);
 	        bpf_map_update_elem(&latency_ingress_map,&connection,&latency2,BPF_ANY);
-        }
+            }else{
+		__int128 latency = bpf_ktime_get_ns() - (((__int128)tsval) - *old_timestampB);
+		bpf_map_update_elem(&latency_ingress_map,&connection,&latency,BPF_ANY);
+	    }
     }
 
     bpf_ringbuf_submit(ringbuf_space, 0);
