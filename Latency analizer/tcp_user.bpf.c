@@ -1,8 +1,8 @@
 #include "vmlinux.h"
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
-#include <math.h>
-#include <endian.h>
+//#include <math.h>
+//#include <endian.h>
 //#include <quadmath.h>
 #define ETH_P_IP 0x0800
 
@@ -268,8 +268,8 @@ int xdp_pass(struct xdp_md *ctx)
         //Imposta timestamp B
 	    if(tcp->ack==1){
             //bpf_map_update_elem(&inner_map,&ip_destination,&port_source,BPF_ANY);
-            __int128 rtt = bpf_ktime_get_ns() - (((__int128)tsval) - *old_timestampA);
-	    	__int128 new_value = (__int128)tsval - ((__int128)tsecr + (__int128)(rtt >> 1));
+            	__int128 rtt = bpf_ktime_get_ns() - (((__int128)tsecr) + *old_timestampA);
+	    	__int128 new_value = -(__int128)tsval + ((__int128)tsecr + *old_timestampA + (__int128)(rtt >> 1));
 	    	bpf_map_update_elem(&latency_ingress_map,&connection,&rtt,BPF_ANY);
 	    	bpf_map_update_elem(&latency_egress_map,&connection,&rtt,BPF_ANY);
 		bpf_map_update_elem(&timestampB_map,&connection,&new_value,BPF_ANY);
@@ -279,12 +279,12 @@ int xdp_pass(struct xdp_md *ctx)
     if(old_timestampA && old_timestampB){
 	    //Calcola latenza
 	    if(tcp->ack == 1){
-	        __int128 latency = (__int128)tsval + *old_timestampA - (__int128)tsecr - *old_timestampB;
-	        __int128 latency2 = bpf_ktime_get_ns() - (((__int128)tsval)-*old_timestampB);
+	        __int128 latency = (__int128)tsval + *old_timestampB - (__int128)tsecr - *old_timestampA;
+	        __int128 latency2 = bpf_ktime_get_ns() - (((__int128)tsval)+*old_timestampB);
 	        bpf_map_update_elem(&latency_egress_map,&connection,&latency,BPF_ANY);
 	        bpf_map_update_elem(&latency_ingress_map,&connection,&latency2,BPF_ANY);
             }else{
-		__int128 latency = bpf_ktime_get_ns() - (((__int128)tsval) - *old_timestampB);
+		__int128 latency = bpf_ktime_get_ns() - (((__int128)tsval)+ *old_timestampB);
 		bpf_map_update_elem(&latency_ingress_map,&connection,&latency,BPF_ANY);
 	    }
     }
