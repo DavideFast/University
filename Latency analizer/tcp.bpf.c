@@ -2,8 +2,8 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 #include <bpf/bpf_tracing.h>
-#include <endian.h>
-#include <math.h>
+//#include <endian.h>
+//#include <math.h>
 
 
 #define TC_ACT_OK 0
@@ -59,7 +59,7 @@ struct timestampA_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,__int128);
+   __type(value,__u32);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampA_map SEC (".maps");
 
@@ -67,7 +67,7 @@ struct timestampB_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,__int128);
+   __type(value,__u32);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
@@ -75,16 +75,16 @@ struct latency_ingress_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value, __int128);
+   __type(value, __u32);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } latency_ingress_map SEC (".maps");
 
 struct latency_egress_map{
-	__uint(type,BPF_MAP_TYPE_HASH);
-	__uint(max_entries,1024);
-	__type(key, struct connection);
-	__type(value, __int128);
-    __uint(pinning,LIBBPF_PIN_BY_NAME);
+   __uint(type,BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key, struct connection);
+   __type(value, __u32);
+   __uint(pinning,LIBBPF_PIN_BY_NAME);
 }latency_egress_map SEC (".maps");
 
 
@@ -252,12 +252,18 @@ int egress_filter(struct __sk_buff *ctx){
 	conn.port_source = port_destination;
 	conn.port_dest = port_source;
 
-    __int128 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
+    __u32 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
     
     //I pacchetti in uscita servono solo per settare i timestamp A e non per calcolare i tempi di latenza
     if(!old_timestampA){
-        __int128 new_value = bpf_ktime_get_ns() - ((__int128)tsval) ;
+        //__int128 new_value = bpf_ktime_get_ns() - ((__int128)tsval) ;
+	__u32 new_value = tsval;
 	bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
+    }
+    else{
+	__u32 latenza = tsval - *old_timestampA;
+	bpf_map_update_elem(&timestampA_map,&conn,&tsval,BPF_ANY);
+	bpf_map_update_elem(&latency_egress_map,&conn,&latenza,BPF_ANY);
     }
 
     bpf_ringbuf_submit(ringbuf_space,0);

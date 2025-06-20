@@ -55,7 +55,7 @@ struct latency_ingress_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value, __int128);
+   __type(value, __u32);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } latency_ingress_map SEC (".maps");
 
@@ -63,7 +63,7 @@ struct latency_egress_map{
 	__uint(type,BPF_MAP_TYPE_HASH);
 	__uint(max_entries,1024);
 	__type(key, struct connection);
-	__type(value, __int128);
+	__type(value, __u32);
     __uint(pinning,LIBBPF_PIN_BY_NAME);
 }latency_egress_map SEC (".maps");
 
@@ -71,7 +71,7 @@ struct timestampA_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,__int128);
+   __type(value,__u32);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampA_map SEC (".maps");
 
@@ -79,7 +79,7 @@ struct timestampB_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,__int128);
+   __type(value,__u32);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
@@ -257,14 +257,22 @@ int xdp_pass(struct xdp_md *ctx)
     connection.port_source = port_source;
     connection.port_dest = port_destination;
 
-    __int128 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
-    __int128 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
+    __u32 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
+    __u32 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
 
     if(!old_timestampA){
 	    /*Non è pronto per calcolare la latenza*/
     }
-    else
-    if(!old_timestampB){
+    else{
+	if(tcp->ack==1){
+		
+	}
+	else{
+		__u32 nullo = 0;
+		bpf_map_update_elem(&timestampA_map,&connection,&nullo,BPF_ANY);
+	}
+    }
+    /*if(!old_timestampB){
         //Imposta timestamp B
 	    if(tcp->ack==1){
             //bpf_map_update_elem(&inner_map,&ip_destination,&port_source,BPF_ANY);
@@ -287,7 +295,7 @@ int xdp_pass(struct xdp_md *ctx)
 		__int128 latency = bpf_ktime_get_ns() - (((__int128)tsval)+ *old_timestampB);
 		bpf_map_update_elem(&latency_ingress_map,&connection,&latency,BPF_ANY);
 	    }
-    }
+    }*/
 
     bpf_ringbuf_submit(ringbuf_space, 0);
     bpf_printk("La fine del pacchetto si colloca a %u", ctx -> data_end);

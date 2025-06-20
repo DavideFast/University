@@ -3,8 +3,8 @@
 #include <time.h>
 #include <bpf/libbpf.h>
 #include <stdio.h>
-#include "tcp_user.skel.h"
-#include "tcp.skel.h" 
+//#include "tcp_user.skel.h"
+//#include "tcp.skel.h" 
 
 struct connection{
 	__u32 ip_source;
@@ -99,8 +99,8 @@ int main(){
 	struct connection key_value;
 	key=&key_value;
 	struct bpf_map *ingress_map;
-	__int128 * p_buff;
-	__int128 buff;
+	__u32 * p_buff;
+	__u32 buff=0;
 	p_buff = &buff;
 	//printf("Valore di inizializzazione: %lu\n",key_value);
 	const char *name = "latency_egress_map";
@@ -140,30 +140,32 @@ int main(){
 	start = time(NULL);
 	while(time(NULL)-start<count*60){
 	     sleep(1);
-	     bpf_map_get_next_key(bpf_map__fd(egress_map),NULL,key);
-	     bpf_map__lookup_elem(egress_map,(void*)key,(size_t)12,(void *)p_buff,(size_t)16,flags);
+	     int result = bpf_map_get_next_key(bpf_map__fd(egress_map),NULL,key);
+	     if(result==0){
+	     bpf_map__lookup_elem(egress_map,(void*)key,(size_t)12,(void *)p_buff,(size_t)4,flags);
 	     printf("Latenza in uscita verso ");
 	     print_ip(key->ip_source);
-	     printf(": %lld nanosecondi\n",buff);
+	     printf(": %u ms\n",buff);
 	     while(bpf_map_get_next_key(bpf_map__fd(egress_map),key,key)==0)
 		  if(bpf_map__lookup_elem(egress_map,(void *)key,(size_t)12,
-	          (void *)p_buff, (size_t) 16,flags)==0){
+	          (void *)p_buff, (size_t) 4,flags)==0){
 		       printf("Latenza in uscita verso ");
 		       print_ip(key->ip_source);
-		       printf(": %lld nanosecondi\n",buff);
-			}
-             bpf_map_get_next_key(bpf_map__fd(ingress_map),NULL,key);
+		       printf(":%u ms\n",buff);
+		   }
+	     }
+             /*bpf_map_get_next_key(bpf_map__fd(ingress_map),NULL,key);
 	     printf("Latenza in ingresso da ");
 	     print_ip(key->ip_source);
-             bpf_map__lookup_elem(ingress_map,(void*)key,(size_t)12,(void*)p_buff,(size_t)16,flags);
+             bpf_map__lookup_elem(ingress_map,(void*)key,(size_t)12,(void*)p_buff,(size_t)4,flags);
 	     printf(": %lld nanosecondi\n",buff);
 	     while(bpf_map_get_next_key(bpf_map__fd(ingress_map),key,key)==0)
 		  if(bpf_map__lookup_elem(ingress_map,(void*)key,
-		  (size_t)12,(void*)p_buff,(size_t)16,flags)==0){
+		  (size_t)12,(void*)p_buff,(size_t)4,flags)==0){
 		       printf("Latenza in ingresso da ");
                        print_ip(key->ip_source);
 		       printf(": %lld nanosecondi\n",buff);
-			}
+			}*/
 	     printf("-------------------------------------------------------------------------\n");
 	}
 
@@ -177,7 +179,7 @@ int main(){
 	printf("Sto eliminando il qdisc clsact\n");
 	system("sudo tc filter show dev enp0s3 egress");
         system("sudo sh termina.sh");
-	printf("Unpin delle mappe eBPF");
+	printf("Unpin delle mappe eBPF\n");
 	//printf("Detatch TC program %d\n",n);
 	//int n2 = bpf_tc_hook_destroy(&hook);
 	//printf("Distruzione hook %d\n",n2);
