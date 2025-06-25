@@ -3,8 +3,6 @@
 #include <time.h>
 #include <bpf/libbpf.h>
 #include <stdio.h>
-//#include "tcp_user.skel.h"
-//#include "tcp.skel.h" 
 
 struct connection{
 	__u32 ip_source;
@@ -19,8 +17,6 @@ void print_ip(uint32_t ip){
 	unsigned char octet3 = (ip >> 8) & 0xFF;
 	unsigned char octet4 = ip & 0xFF;
 	printf("%u.%u.%u.%u",octet4,octet3,octet2,octet1);
-
-
 }
 
 
@@ -102,7 +98,6 @@ int main(){
 	__u32 * p_buff;
 	__u32 buff=0;
 	p_buff = &buff;
-	//printf("Valore di inizializzazione: %lu\n",key_value);
 	const char *name = "latency_egress_map";
 	const char *name2 = "latency_ingress_map";
 	if(egress<=0){
@@ -116,6 +111,7 @@ int main(){
 			     printf("Key egress_map ottenuta\n");
 		}
 	}
+
 	if(ingress<=0){
 		printf("Nessuna mappa ingress trovata\n");
 	}
@@ -130,10 +126,6 @@ int main(){
 //Tempo di attesa
 	int count=0;
 	__u64 flags=0;
-	//printf("Ip_dest: %pI4\n",&key->ip_destination);
-	//printf("Ip_source: %u\n",key->ip_source);
-	//printf("Port_source: %d\n", key_value.port_source);
-	//printf("Port_dest: %d\n",key_value.port_dest);
 	time_t start = time(NULL);
 	printf("Inserire numero di minuti di cattura\n");
 	scanf("%d",&count);
@@ -142,35 +134,22 @@ int main(){
 	     sleep(1);
 	     int result = bpf_map_get_next_key(bpf_map__fd(egress_map),NULL,key);
 	     if(result==0){
-	     bpf_map__lookup_elem(egress_map,(void*)key,(size_t)12,(void *)p_buff,(size_t)4,flags);
-	     printf("Latenza in uscita verso ");
-	     print_ip(key->ip_source);
-	     printf(": %u ms\n",buff);
-	     while(bpf_map_get_next_key(bpf_map__fd(egress_map),key,key)==0)
-		  if(bpf_map__lookup_elem(egress_map,(void *)key,(size_t)12,
-	          (void *)p_buff, (size_t) 4,flags)==0){
-		       printf("Latenza in uscita verso ");
-		       print_ip(key->ip_source);
-		       printf(":%u ms\n",buff);
-		   }
+	     	bpf_map__lookup_elem(egress_map,(void*)key,(size_t)12,(void *)p_buff,(size_t)4,flags);
+	     	printf("Latenza ");
+	     	print_ip(key->ip_source);
+	     	printf(": %u micros\n",1000*buff/2);
+	     	while(bpf_map_get_next_key(bpf_map__fd(egress_map),key,key)==0)
+			if(bpf_map__lookup_elem(egress_map,(void *)key,(size_t)12,
+	          	(void *)p_buff, (size_t) 4,flags)==0){
+		       		printf("Latenza ");
+		       		print_ip(key->ip_source);
+		       		printf(":%u micros\n",1000*buff/2);
+		        }
 	     }
-             /*bpf_map_get_next_key(bpf_map__fd(ingress_map),NULL,key);
-	     printf("Latenza in ingresso da ");
-	     print_ip(key->ip_source);
-             bpf_map__lookup_elem(ingress_map,(void*)key,(size_t)12,(void*)p_buff,(size_t)4,flags);
-	     printf(": %lld nanosecondi\n",buff);
-	     while(bpf_map_get_next_key(bpf_map__fd(ingress_map),key,key)==0)
-		  if(bpf_map__lookup_elem(ingress_map,(void*)key,
-		  (size_t)12,(void*)p_buff,(size_t)4,flags)==0){
-		       printf("Latenza in ingresso da ");
-                       print_ip(key->ip_source);
-		       printf(": %lld nanosecondi\n",buff);
-			}*/
 	     printf("-------------------------------------------------------------------------\n");
 	}
 
 //Distruzione del programma eBPF
-	//int n = bpf_tc_detach(&hook,&opts);
 	printf("Mostra lista dei filtri TC:\n");
 	system("sudo tc filter show dev enp0s3 egress");
 	system("sudo tc filter del dev enp0s3 egress");
@@ -180,9 +159,6 @@ int main(){
 	system("sudo tc filter show dev enp0s3 egress");
         system("sudo sh termina.sh");
 	printf("Unpin delle mappe eBPF\n");
-	//printf("Detatch TC program %d\n",n);
-	//int n2 = bpf_tc_hook_destroy(&hook);
-	//printf("Distruzione hook %d\n",n2);
 	printf("#####################################################\n");
 	printf("####                    FINISH                   ####\n");
 	printf("#####################################################\n");
