@@ -2,8 +2,6 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 #include <bpf/bpf_tracing.h>
-//#include <endian.h>
-//#include <math.h>
 
 
 #define TC_ACT_OK 0
@@ -38,12 +36,6 @@ struct __attribute__((__packed__))  tcp_header_timestamps{
     __u32 tval;
     __u32 tsecr;
 };
-
-// Define the ring buffer map
-struct {
-    __uint(type, BPF_MAP_TYPE_RINGBUF);
-    __uint(max_entries, 1 << 26);  // 16 MB buffer
-} ringbuffer SEC(".maps");
 
 
 //Mappe eBPF necessarie al funzionamento
@@ -226,22 +218,8 @@ int egress_filter(struct __sk_buff *ctx){
 	    bpf_printk("Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
     }
 
-        
-	// Reserve space in the ring buffer
-    void *ringbuf_space = bpf_ringbuf_reserve(&ringbuffer, 20, 0);
-    if (!ringbuf_space) {
-	    bpf_printk("Problemi con il ring buffer");
-        return TC_ACT_OK;  // If reservation fails, skip processing
-    }
 
-    // Copy the TCP header bytes into the ring buffer
-    // Using a loop to ensure compliance with eBPF verifier
-    for (int i = 0; i < 20; i++) {
-        unsigned char byte = *((unsigned char *)tcp + i);
-        ((unsigned char *)ringbuf_space)[i] = byte;
-    }
-
-	__u32 ip_destination = ip->daddr;
+        __u32 ip_destination = ip->daddr;
 	__u32 ip_source = ip->saddr;
 	__u16 port_destination = bpf_ntohs(tcp->dest);
 	__u16 port_source = bpf_ntohs(tcp->source);
@@ -253,20 +231,19 @@ int egress_filter(struct __sk_buff *ctx){
 	conn.port_dest = port_source;
 
     __u32 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
-    
+
     //I pacchetti in uscita servono solo per settare i timestamp A e non per calcolare i tempi di latenza
     if(!old_timestampA){
-        //__int128 new_value = bpf_ktime_get_ns() - ((__int128)tsval) ;
 	__u32 new_value = tsval;
 	bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
     }
     else{
 	__u32 latenza = tsval - *old_timestampA;
-	bpf_map_update_elem(&timestampA_map,&conn,&tsval,BPF_ANY);
-	bpf_map_update_elem(&latency_egress_map,&conn,&latenza,BPF_ANY);
+	if(latenza!=0){
+		bpf_map_update_elem(&timestampA_map,&conn,&tsval,BPF_ANY);
+		bpf_map_update_elem(&latency_egress_map,&conn,&latenza,BPF_ANY);
+    	}
     }
-
-    bpf_ringbuf_submit(ringbuf_space,0);
 
     bpf_printk("_______________________________________________________________");
 

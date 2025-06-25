@@ -1,9 +1,6 @@
 #include "vmlinux.h"
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
-//#include <math.h>
-//#include <endian.h>
-//#include <quadmath.h>
 #define ETH_P_IP 0x0800
 
 
@@ -18,29 +15,10 @@
 //Struttura di sostegno per identificare una connessione
 struct connection{
 	__u32 ip_source;
-    __u32 ip_dest;
+	__u32 ip_dest;
 	__u16 port_source;
 	__u16 port_dest;
 };
-
-//Struttura necessaria all'estrazione del campo opzioni del pacchetto TCP
-struct __attribute__((__packed__)) tcp_header_reader{
-    __u8 kind;
- };
-
-struct __attribute__((__packed__))  tcp_header_timestamps{ //Il packed serve per evitare che la struttura venga formattata ed evitare che non salvi i file
-    __u8 kind;
-    __u8 length;
-    __u32 tval;
-    __u32 tsecr;
-};
-
-// Define the ring buffer map
-struct {
-    __uint(type, BPF_MAP_TYPE_RINGBUF);
-    __uint(max_entries, 1 << 26);  // 16 MB buffer
-} rb SEC(".maps");
-
 
 //Mappe eBPF necessarie al funzionamento
 struct inner_map{
@@ -187,63 +165,12 @@ int xdp_pass(struct xdp_md *ctx)
 	    return XDP_PASS;
     bpf_printk("Il pacchetto TCP termina a %u", (unsigned char *)tcp + tcp_header_bytes);
 
-    __u8 prova = 0;
-    int count = 0;
-    bool lock = false;
-    struct tcp_header_reader *appoggio;
-    bpf_printk("IP: %pI4", &ip -> saddr);
-    bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
-    bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
-    bpf_printk("Dimensione payload: %d",lengthPacket - 14 - 20 - tcp_header_bytes);
-    while((prova !=8) && (count < 40) && (void *)((unsigned char *)tcp + 20 + count)<dataa_end){
-	    appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
-        prova = appoggio->kind;
-        if(prova == 8){
-            lock = true;
-	    }
-        count = count + 1;
-    }
-
-    count = count - 1;
-
-    struct tcp_header_timestamps *options;
-    __u32 tsval = 0;
-    __u32 tsecr = 0;
-
-
-    if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=dataa_end){
-	    bpf_printk("-------------------------------------");
-        options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);	
-	bpf_printk("Kind: %d", options -> kind);
-        bpf_printk("Length %d", options -> length);
-        bpf_printk("Tval: %u", bpf_ntohl(options->tval));
-        bpf_printk("Tsecr: %u", bpf_ntohl(options->tsecr));
-	tsval = bpf_ntohl(options->tval);
-	tsecr = bpf_ntohl(options->tsecr);
-        bpf_printk("----------------------------------------------");
-    }
-    else{
-	    bpf_printk("######################### Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
-    }
-
 
     // Ensure that the desired number of bytes does not exceed packet bounds
     if ((void *)tcp + tcp_header_bytes > dataa_end) {
         return XDP_PASS;
     }
 
-    // Reserve space in the ring buffer
-    void *ringbuf_space = bpf_ringbuf_reserve(&rb, 20, 0); //Al posto di 20 ci va messo se non funziona tcp_header_bytes con valore 32
-    if (!ringbuf_space) {
-        return XDP_PASS;  // If reservation fails, skip processing
-    }
-
-    // Copy the TCP header bytes into the ring buffer
-    // Using a loop to ensure compliance with eBPF verifier
-    for (int i = 0; i < 20; i++) {
-        unsigned char byte = *((unsigned char *)tcp + i);
-	((unsigned char *)ringbuf_space)[i] = byte;
-    }
 
     __u32 ip_source = ip->saddr;
     __u32 ip_destination = ip->daddr;
@@ -258,46 +185,20 @@ int xdp_pass(struct xdp_md *ctx)
     connection.port_dest = port_destination;
 
     __u32 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
-    __u32 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
 
     if(!old_timestampA){
-	    /*Non è pronto per calcolare la latenza*/
+	    /*Nessun timestamp memorizzato*/
     }
     else{
 	if(tcp->ack==1){
-		
+
 	}
 	else{
 		__u32 nullo = 0;
 		bpf_map_update_elem(&timestampA_map,&connection,&nullo,BPF_ANY);
 	}
     }
-    /*if(!old_timestampB){
-        //Imposta timestamp B
-	    if(tcp->ack==1){
-            //bpf_map_update_elem(&inner_map,&ip_destination,&port_source,BPF_ANY);
-            	__int128 rtt = bpf_ktime_get_ns() - (((__int128)tsecr) + *old_timestampA);
-	    	__int128 new_value = -(__int128)tsval + ((__int128)tsecr + *old_timestampA + (__int128)(rtt >> 1));
-	    	bpf_map_update_elem(&latency_ingress_map,&connection,&rtt,BPF_ANY);
-	    	bpf_map_update_elem(&latency_egress_map,&connection,&rtt,BPF_ANY);
-		bpf_map_update_elem(&timestampB_map,&connection,&new_value,BPF_ANY);
-	    }
-    }
-    else
-    if(old_timestampA && old_timestampB){
-	    //Calcola latenza
-	    if(tcp->ack == 1){
-	        __int128 latency = (__int128)tsval + *old_timestampB - (__int128)tsecr - *old_timestampA;
-	        __int128 latency2 = bpf_ktime_get_ns() - (((__int128)tsval)+*old_timestampB);
-	        bpf_map_update_elem(&latency_egress_map,&connection,&latency,BPF_ANY);
-	        bpf_map_update_elem(&latency_ingress_map,&connection,&latency2,BPF_ANY);
-            }else{
-		__int128 latency = bpf_ktime_get_ns() - (((__int128)tsval)+ *old_timestampB);
-		bpf_map_update_elem(&latency_ingress_map,&connection,&latency,BPF_ANY);
-	    }
-    }*/
 
-    bpf_ringbuf_submit(ringbuf_space, 0);
     bpf_printk("La fine del pacchetto si colloca a %u", ctx -> data_end);
     bpf_printk("________________________________________________________");
     return XDP_PASS;
