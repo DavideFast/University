@@ -7,7 +7,7 @@
 
 //####################################################################################################################################
 //####                                                                                                                            ####
-//####                                                         STRUCT NECESSARIE                                                  ####
+//####                                                        NECESSARY STRUCT                                                    ####
 //####                                                                                                                            ####
 //####################################################################################################################################
 
@@ -61,9 +61,11 @@ struct timestampB_map {
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
+
+
 //####################################################################################################################################
 //####                                                                                                                            ####
-//####                                                         HELPER FUNCTION                                                    ####
+//####                                                       INTERNAL FUNCTION                                                    ####
 //####                                                                                                                            ####
 //####################################################################################################################################
 
@@ -102,7 +104,7 @@ static bool is_tcp(struct ethhdr *eth, void *data_end){
 
 //####################################################################################################################################
 //####                                                                                                                            ####
-//####                                                         INIZIO PROGRAMMA                                                   ####
+//####                                                           eBPF PROGRAM                                                     ####
 //####                                                                                                                            ####
 //####################################################################################################################################
 
@@ -114,8 +116,7 @@ int xdp_pass(struct xdp_md *ctx)
     void *dataa_end = (void *)(long)ctx->data_end;
     int inizio = ctx -> data;
     __u64 current_time = bpf_ktime_get_ns();
-    bpf_printk("TIMESTAMP:______________%llu___________________",(unsigned long long)current_time);
-    bpf_printk("Inizio pacchetto in INGRESSO: %u",inizio);
+    bpf_printk("\nPacchetto in INGRESSO: %u",inizio);
     int fine = ctx -> data_end;
     int lengthPacket;
     lengthPacket = fine - inizio;
@@ -128,8 +129,6 @@ int xdp_pass(struct xdp_md *ctx)
     if (!is_tcp(eth, dataa_end)) {
         return XDP_PASS;
     }
-     
-    bpf_printk("Il pacchetto IP inizia a %u", eth + 1);
 
     // Cast to IP header
     struct iphdr *ip = (struct iphdr *)(eth + 1);
@@ -148,8 +147,6 @@ int xdp_pass(struct xdp_md *ctx)
 
     // Parse TCP header
     struct tcphdr *tcp = (struct tcphdr *)((unsigned char *)ip + ip_hdr_len);
-
-    bpf_printk("Il pacchetto TCP inizia a %u", (unsigned char *)ip + ip_hdr_len);
     
 
     // Ensure TCP header is within packet bounds
@@ -163,7 +160,6 @@ int xdp_pass(struct xdp_md *ctx)
     const int tcp_header_bytes = offset * 4;
     if((void *)(unsigned char*)tcp+tcp_header_bytes>dataa_end)
 	    return XDP_PASS;
-    bpf_printk("Il pacchetto TCP termina a %u", (unsigned char *)tcp + tcp_header_bytes);
 
 
     // Ensure that the desired number of bytes does not exceed packet bounds
@@ -176,8 +172,14 @@ int xdp_pass(struct xdp_md *ctx)
     __u32 ip_destination = ip->daddr;
     __u16 port_source = bpf_ntohs(tcp -> source);
     __u16 port_destination = bpf_ntohs(tcp -> dest);
-    bpf_printk("Port source: %u",port_source);
-    bpf_printk("Port destination: %u", port_destination);
+
+    bpf_printk("Src Port: %u",port_source);
+    bpf_printk("Dst Port: %u", port_destination);
+    bpf_printk("Src IP: %pI4",&ip_source);
+    bpf_printk("Dst IP: %pI4",&ip_destination);
+    bpf_printk("Ack sequence Number: %u",&tcp->ack_seq);
+    bpf_printk("Sequence Number: %u",&tcp->seq);
+    
     struct connection connection;
     connection.ip_source = ip_source;
     connection.ip_dest = ip_destination;
@@ -191,7 +193,6 @@ int xdp_pass(struct xdp_md *ctx)
     }
     else{
 	if(tcp->ack==1){
-
 	}
 	else{
 		__u32 nullo = 0;
@@ -199,8 +200,6 @@ int xdp_pass(struct xdp_md *ctx)
 	}
     }
 
-    bpf_printk("La fine del pacchetto si colloca a %u", ctx -> data_end);
-    bpf_printk("________________________________________________________");
     return XDP_PASS;
 }
 

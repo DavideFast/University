@@ -12,7 +12,7 @@
 
 //################################################################################
 //####                                                                        ####
-//####                             STRUCT NECESSARIE                          ####
+//####                              NECESSARY STRUCT                          ####
 //####                                                                        ####
 //################################################################################
 
@@ -82,7 +82,7 @@ struct latency_egress_map{
 
 //################################################################################
 //####                                                                        ####
-//####                             HELPER FUNCTION                            ####
+//####                            INTERNAL FUNCTION                           ####
 //####                                                                        ####
 //################################################################################
 
@@ -124,7 +124,7 @@ static bool is_tcp(struct ethhdr *eth, void *data_end){
 
 //################################################################################
 //####                                                                        ####
-//####                             INIZIO PROGRAMMA                           ####
+//####                                eBPF PROGRAM                            ####
 //####                                                                        ####
 //################################################################################
 
@@ -139,7 +139,7 @@ int egress_filter(struct __sk_buff *ctx){
 	int fine = ctx->data_end;
 	int lunghezza = fine-inizio;
 	__u64 current_time = bpf_ktime_get_ns();
-    	bpf_printk("Inizio pacchetto in uscita: %llu", current_time);
+    	bpf_printk("\nPacchetto in USCITA");
     	struct ethhdr *eth;
     	struct iphdr *ip;
 	struct tcphdr *tcp;
