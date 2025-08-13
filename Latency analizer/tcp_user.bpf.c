@@ -116,7 +116,7 @@ int xdp_pass(struct xdp_md *ctx)
     void *dataa_end = (void *)(long)ctx->data_end;
     int inizio = ctx -> data;
     __u64 current_time = bpf_ktime_get_ns();
-    bpf_printk("\nPacchetto in INGRESSO: %u",inizio);
+    bpf_printk("Pacchetto in INGRESSO");
     int fine = ctx -> data_end;
     int lengthPacket;
     lengthPacket = fine - inizio;
@@ -172,14 +172,30 @@ int xdp_pass(struct xdp_md *ctx)
     __u32 ip_destination = ip->daddr;
     __u16 port_source = bpf_ntohs(tcp -> source);
     __u16 port_destination = bpf_ntohs(tcp -> dest);
-
+    __u16 dimensionPayload=(long)ctx->data_end-(long)((unsigned char*)tcp+tcp_header_bytes);
+    
+    if((long)((unsigned char*)tcp+tcp_header_bytes)==(long)ctx->data_end){}
+    else
+	dimensionPayload=0;
+    
     bpf_printk("Src Port: %u",port_source);
     bpf_printk("Dst Port: %u", port_destination);
     bpf_printk("Src IP: %pI4",&ip_source);
     bpf_printk("Dst IP: %pI4",&ip_destination);
-    bpf_printk("Ack sequence Number: %u",&tcp->ack_seq);
-    bpf_printk("Sequence Number: %u",&tcp->seq);
+    bpf_printk("Ack sequence Number: %u",bpf_ntohl(tcp->ack_seq));
+
+    bpf_printk("Sequence Number: %u",bpf_ntohl(tcp->seq));
+    bpf_printk("Header Ethernet: 14 bytes");
+    bpf_printk("Header IP: %u bytes",ip_hdr_len);
+    bpf_printk("Header TCP: %u bytes",tcp_header_bytes);
+    bpf_printk("Payload: %u bytes",dimensionPayload );
     
+    bpf_printk("Start address: %u",ctx->data);
+    bpf_printk("Start IP address: %u",(unsigned char*)ip);
+    bpf_printk("Start TCP address: %u",(unsigned char*)tcp);
+    bpf_printk("End TCP address: %u", (unsigned char *)tcp+tcp_header_bytes);
+    bpf_printk("End packet address: %u", ctx->data_end);
+
     struct connection connection;
     connection.ip_source = ip_source;
     connection.ip_dest = ip_destination;

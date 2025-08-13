@@ -223,6 +223,14 @@ int egress_filter(struct __sk_buff *ctx){
 	__u32 ip_source = ip->saddr;
 	__u16 port_destination = bpf_ntohs(tcp->dest);
 	__u16 port_source = bpf_ntohs(tcp->source);
+	__u16 dimensionPayload = (long)ctx->data_end-(long)((unsigned char*)tcp+tcp_header_bytes);
+
+	bpf_printk("Lunghezza pacchetto: %u", (long)ctx->data_end - (long) ctx->data);
+	bpf_printk("Payload: %u", dimensionPayload);
+
+	if((long)((unsigned char*)tcp+tcp_header_bytes)==(long)ctx->data_end){}
+	else
+		dimensionPayload=0;
 
 	struct connection conn;
 	conn.ip_source = ip_destination;
@@ -236,6 +244,7 @@ int egress_filter(struct __sk_buff *ctx){
     if(!old_timestampA){
 	__u32 new_value = tsval;
 	bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
+	//Bisogna aggiungere un rilevatore di ack e numero sequenza
     }
     else{
 	__u32 latenza = tsval - *old_timestampA;
