@@ -254,7 +254,7 @@ int xdp_pass(struct xdp_md *ctx)
 
     __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
     __u32 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
-    bpf_printk("%u",tsecr);
+    //bpf_printk("%u",tsecr);
     /*if(old_timestampA)
     	bpf_printk("------------ %llu",*old_timestampA);
     if(old_timestampB){
@@ -263,17 +263,20 @@ int xdp_pass(struct xdp_md *ctx)
     }*/
 
     if(!old_timestampA || *old_timestampA==0){
+		bpf_printk("ENTRO IN VUOTO");
 	    /*Nessun timestamp memorizzato*/
     }
     else{
 	if(old_timestampB && tcp->ack==1 && tsecr==*old_timestampB){
-		bpf_printk("************************************************************************************");
 		__u64 nullo = 0;
 		__u64 newValue = (bpf_ktime_get_ns()-*old_timestampA)/2;
-		bpf_printk("----------- %llu",newValue);
+		bpf_printk("Entrato con tsecr:  %llu",tsecr);
 		bpf_map_update_elem(&latency_egress_map,&connection,&newValue,BPF_ANY);
 		bpf_map_update_elem(&timestampA_map,&connection,&nullo,BPF_ANY);
 	}
+	else
+	   if(old_timestampB)
+	      bpf_printk("Non sono entrato perche tsecr: %llu mentre tsval era: %llu",tsecr,*old_timestampB);
     }
 
     
