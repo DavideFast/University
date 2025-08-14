@@ -51,7 +51,7 @@ struct timestampA_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,__u32);
+   __type(value,__u64);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampA_map SEC (".maps");
 
@@ -67,7 +67,7 @@ struct latency_ingress_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value, __u32);
+   __type(value, __u64);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } latency_ingress_map SEC (".maps");
 
@@ -139,7 +139,7 @@ int egress_filter(struct __sk_buff *ctx){
 	int fine = ctx->data_end;
 	int lunghezza = fine-inizio;
 	__u64 current_time = bpf_ktime_get_ns();
-    	bpf_printk("\nPacchetto in USCITA");
+    	bpf_printk("Pacchetto in USCITA");
     	struct ethhdr *eth;
     	struct iphdr *ip;
 	struct tcphdr *tcp;
@@ -201,18 +201,20 @@ int egress_filter(struct __sk_buff *ctx){
 
     count = count - 1;
     __u32 tsval = 0;
+    __u32 tsecr = 0;
 
     if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=data_end){
         struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp + 20 + count);
-        bpf_printk("Kind: %d", options -> kind);
+        /*bpf_printk("Kind: %d", options -> kind);
         bpf_printk("Length: %d", options -> length);
         bpf_printk("Tval: %lu", options -> tval);
         bpf_printk("Tsecr: %lu", options -> tsecr);
         bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
         bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
-        bpf_printk("IP: %pI4", &ip -> daddr);
+        bpf_printk("IP: %pI4", &ip -> daddr);*/
 
 	tsval = bpf_ntohl(options -> tval);
+	tsecr = bpf_ntohl(options -> tsecr);
     }
     else{
 	    bpf_printk("Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
@@ -225,8 +227,8 @@ int egress_filter(struct __sk_buff *ctx){
 	__u16 port_source = bpf_ntohs(tcp->source);
 	__u16 dimensionPayload = (long)ctx->data_end-(long)((unsigned char*)tcp+tcp_header_bytes);
 
-	bpf_printk("Lunghezza pacchetto: %u", (long)ctx->data_end - (long) ctx->data);
-	bpf_printk("Payload: %u", dimensionPayload);
+	//bpf_printk("Lunghezza pacchetto: %u", (long)ctx->data_end - (long) ctx->data);
+	//bpf_printk("Payload: %u", dimensionPayload);
 
 	if((long)((unsigned char*)tcp+tcp_header_bytes)==(long)ctx->data_end){}
 	else
@@ -238,20 +240,14 @@ int egress_filter(struct __sk_buff *ctx){
 	conn.port_source = port_destination;
 	conn.port_dest = port_source;
 
-    __u32 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
+    __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
 
     //I pacchetti in uscita servono solo per settare i timestamp A e non per calcolare i tempi di latenza
-    if(!old_timestampA){
-	__u32 new_value = tsval;
+    if((!old_timestampA || *old_timestampA==0) && tsval!=0){
+	//__u32 new_value = tsval;
+	__u64 new_value = bpf_ktime_get_ns();
 	bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
-	//Bisogna aggiungere un rilevatore di ack e numero sequenza
-    }
-    else{
-	__u32 latenza = tsval - *old_timestampA;
-	if(latenza!=0){
-		bpf_map_update_elem(&timestampA_map,&conn,&tsval,BPF_ANY);
-		bpf_map_update_elem(&latency_egress_map,&conn,&latenza,BPF_ANY);
-    	}
+	bpf_map_update_elem(&timestampB_map,&conn,&tsval,BPF_ANY);
     }
 
     bpf_printk("_______________________________________________________________");

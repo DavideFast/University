@@ -95,8 +95,8 @@ int main(){
 	struct connection key_value;
 	key=&key_value;
 	struct bpf_map *ingress_map;
-	__u32 * p_buff;
-	__u32 buff=0;
+	__u64 * p_buff;
+	__u64 buff=0;
 	p_buff = &buff;
 	const char *name = "latency_egress_map";
 	const char *name2 = "latency_ingress_map";
@@ -137,13 +137,13 @@ int main(){
 	     	bpf_map__lookup_elem(egress_map,(void*)key,(size_t)12,(void *)p_buff,(size_t)4,flags);
 	     	printf("Latenza ");
 	     	print_ip(key->ip_source);
-	     	printf(": %u micros\n",1000*buff/2);
+	     	printf(": %llu micros\n",buff/1000);
 	     	while(bpf_map_get_next_key(bpf_map__fd(egress_map),key,key)==0)
 			if(bpf_map__lookup_elem(egress_map,(void *)key,(size_t)12,
 	          	(void *)p_buff, (size_t) 4,flags)==0){
 		       		printf("Latenza ");
 		       		print_ip(key->ip_source);
-		       		printf(":%u micros\n",1000*buff/2);
+		       		printf(":%llu micros\n",1000*buff/1000);
 		        }
 	     }
 	     printf("-------------------------------------------------------------------------\n");

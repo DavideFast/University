@@ -20,6 +20,20 @@ struct connection{
 	__u16 port_dest;
 };
 
+//Struttura necessaria all'estrazione del campo opzioni del pacchetto TCP
+struct __attribute__((__packed__)) tcp_header_reader{
+    __u8 kind;
+ };
+
+//Il packed serve per evitare che la struttura venga formattata ed evitare che non salvi i file
+struct __attribute__((__packed__))  tcp_header_timestamps{ 
+    __u8 kind;
+    __u8 length;
+    __u32 tval;
+    __u32 tsecr;
+};
+
+
 //Mappe eBPF necessarie al funzionamento
 struct inner_map{
    __uint(type, BPF_MAP_TYPE_HASH);
@@ -33,7 +47,7 @@ struct latency_ingress_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value, __u32);
+   __type(value, __u64);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } latency_ingress_map SEC (".maps");
 
@@ -49,7 +63,7 @@ struct timestampA_map {
    __uint (type, BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
    __type(key,struct connection);
-   __type(value,__u32);
+   __type(value,__u64);
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampA_map SEC (".maps");
 
@@ -120,7 +134,7 @@ int xdp_pass(struct xdp_md *ctx)
     int fine = ctx -> data_end;
     int lengthPacket;
     lengthPacket = fine - inizio;
-    bpf_printk("Lunghezza pacchetto: %u", lengthPacket);
+    //bpf_printk("Lunghezza pacchetto: %u", lengthPacket);
 
     // Parse Ethernet header
     struct ethhdr *eth = dataa;
@@ -178,7 +192,7 @@ int xdp_pass(struct xdp_md *ctx)
     else
 	dimensionPayload=0;
     
-    bpf_printk("Src Port: %u",port_source);
+    /*bpf_printk("Src Port: %u",port_source);
     bpf_printk("Dst Port: %u", port_destination);
     bpf_printk("Src IP: %pI4",&ip_source);
     bpf_printk("Dst IP: %pI4",&ip_destination);
@@ -194,7 +208,43 @@ int xdp_pass(struct xdp_md *ctx)
     bpf_printk("Start IP address: %u",(unsigned char*)ip);
     bpf_printk("Start TCP address: %u",(unsigned char*)tcp);
     bpf_printk("End TCP address: %u", (unsigned char *)tcp+tcp_header_bytes);
-    bpf_printk("End packet address: %u", ctx->data_end);
+    bpf_printk("End packet address: %u", ctx->data_end);*/
+
+    __u8 prova = 0;
+    int count = 0;
+    bool lock = false;
+    struct tcp_header_reader *appoggio;
+
+    while((prova !=8) && (count < 40) && (void *)((unsigned char *)tcp + 20 + count)<dataa_end){
+            appoggio = (struct tcp_header_reader *)((unsigned char *)tcp +20 +count);
+        prova = appoggio->kind;
+        if(prova == 8){
+           lock = true;
+        }
+        count = count + 1;
+    }
+
+    count = count - 1;
+    __u32 tsval = 0;
+    __u32 tsecr = 0;
+ 
+    if(lock && (void *)((unsigned char *)tcp + 20 + count + 10)<=dataa_end){
+        struct tcp_header_timestamps *options = (struct tcp_header_timestamps *)((unsigned char *)tcp +20 + count);
+        /*bpf_printk("Kind: %d", options -> kind);
+        bpf_printk("Length: %d", options -> length);
+        bpf_printk("Tval: %lu", options -> tval);
+        bpf_printk("Tsecr: %lu", options -> tsecr);
+        bpf_printk("Seq: %u", bpf_ntohl(tcp -> seq));
+        bpf_printk("Ack: %u", bpf_ntohl(tcp -> ack));
+        bpf_printk("IP: %pI4", &ip -> daddr);*/
+
+        tsval = bpf_ntohl(options -> tval);
+        tsecr = bpf_ntohl(options -> tsecr);
+    }
+    else{
+            bpf_printk("Pacchetto non processato, motivo: %d, %d, %d", tcp_header_bytes, prova, lock);
+    }
+
 
     struct connection connection;
     connection.ip_source = ip_source;
@@ -202,19 +252,31 @@ int xdp_pass(struct xdp_md *ctx)
     connection.port_source = port_source;
     connection.port_dest = port_destination;
 
-    __u32 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
+    __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
+    __u32 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
+    bpf_printk("%u",tsecr);
+    /*if(old_timestampA)
+    	bpf_printk("------------ %llu",*old_timestampA);
+    if(old_timestampB){
+	bpf_printk("------------ %llu",*old_timestampB);
+        bpf_printk("------------ %llu",old_timestampB);
+    }*/
 
-    if(!old_timestampA){
+    if(!old_timestampA || *old_timestampA==0){
 	    /*Nessun timestamp memorizzato*/
     }
     else{
-	if(tcp->ack==1){
-	}
-	else{
-		__u32 nullo = 0;
+	if(old_timestampB && tcp->ack==1 && tsecr==*old_timestampB){
+		bpf_printk("************************************************************************************");
+		__u64 nullo = 0;
+		__u64 newValue = (bpf_ktime_get_ns()-*old_timestampA)/2;
+		bpf_printk("----------- %llu",newValue);
+		bpf_map_update_elem(&latency_egress_map,&connection,&newValue,BPF_ANY);
 		bpf_map_update_elem(&timestampA_map,&connection,&nullo,BPF_ANY);
 	}
     }
+
+    
 
     return XDP_PASS;
 }
