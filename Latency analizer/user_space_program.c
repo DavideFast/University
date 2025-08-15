@@ -29,8 +29,8 @@ int main(){
 	struct bpf_object *obj2;
 
 //Apertura del file
-	obj = bpf_object__open_file("tcp_user.bpf.o",NULL);
-	obj2 = bpf_object__open_file("tcp.bpf.o",NULL);
+	obj = bpf_object__open_file("ingress_tcp.bpf.o",NULL);
+	obj2 = bpf_object__open_file("egress_tcp.bpf.o",NULL);
 	if(libbpf_get_error(obj))
 		return 1;
 	if(libbpf_get_error(obj2))
@@ -44,8 +44,8 @@ int main(){
 	int prog_fd2;
 	struct bpf_program *prog;
 	struct bpf_program *prog2;
-	prog = bpf_object__find_program_by_name(obj,"xdp_pass");
-	prog2 = bpf_object__find_program_by_name(obj2,"egress_filter");
+	prog = bpf_object__find_program_by_name(obj,"ingress_tcp");
+	prog2 = bpf_object__find_program_by_name(obj2,"egress_tcp");
 	prog_fd = bpf_program__fd(prog);
 	prog_fd2 = bpf_program__fd(prog2);
 	if(bpf_program__attach_xdp(prog,2))
