@@ -11,7 +11,7 @@ wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Lat
 wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/termina.sh
 wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/user_space_program.c
 
-echo Compile downloaded files 
+echo Compile downloaded files
 sudo gcc -o user_space_program user_space_program.c -lbpf
 sudo clang -target bpf -g -O2 -Wall -v -c tcp_user.bpf.c -o tcp_user.bpf.o
 sudo clang -target bpf -g -O2 -Wall -v -c tcp.bpf.c -o tcp.bpf.o
