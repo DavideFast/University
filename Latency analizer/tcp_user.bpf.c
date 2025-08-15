@@ -76,7 +76,6 @@ struct timestampB_map {
 } timestampB_map SEC (".maps");
 
 
-
 //####################################################################################################################################
 //####                                                                                                                            ####
 //####                                                       INTERNAL FUNCTION                                                    ####
@@ -275,8 +274,14 @@ int xdp_pass(struct xdp_md *ctx)
 		bpf_map_update_elem(&timestampA_map,&connection,&nullo,BPF_ANY);
 	}
 	else
-	   if(old_timestampB)
-	      bpf_printk("Non sono entrato perche tsecr: %llu mentre tsval era: %llu",tsecr,*old_timestampB);
+	   if(bpf_ktime_get_ns()-*old_timestampA>500000000){
+		bpf_printk("........................................................");
+		__u64 nullo = 0;
+		__u64 valore = 500000000;
+		bpf_map_update_elem(&latency_egress_map,&connection,&valore,BPF_ANY);
+		bpf_map_update_elem(&timestampA_map,&connection,&nullo,BPF_ANY);
+          }
+	      
     }
 
     

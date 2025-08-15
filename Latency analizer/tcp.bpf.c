@@ -228,11 +228,12 @@ int egress_filter(struct __sk_buff *ctx){
 	__u16 dimensionPayload = (long)ctx->data_end-(long)((unsigned char*)tcp+tcp_header_bytes);
 
 	//bpf_printk("Lunghezza pacchetto: %u", (long)ctx->data_end - (long) ctx->data);
-	//bpf_printk("Payload: %u", dimensionPayload);
 
 	if((long)((unsigned char*)tcp+tcp_header_bytes)==(long)ctx->data_end){}
 	else
 		dimensionPayload=0;
+	
+	bpf_printk("Payload: %u", dimensionPayload);
 
 	struct connection conn;
 	conn.ip_source = ip_destination;
@@ -243,15 +244,13 @@ int egress_filter(struct __sk_buff *ctx){
     __u64 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
     __u32 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&conn);
     //I pacchetti in uscita servono solo per settare i timestamp A e non per calcolare i tempi di latenza
-    if((!old_timestampA || *old_timestampA==0) && tsval!=0 && dimensionPayload>0){
+    if((!old_timestampA || *old_timestampA==0) && tsval!=0 ){
 	//__u32 new_value = tsval;
 	bpf_printk("Entrato con tsval: %llu",tsval);
 	__u64 new_value = bpf_ktime_get_ns();
 	bpf_map_update_elem(&timestampA_map,&conn,&new_value,BPF_ANY);
 	bpf_map_update_elem(&timestampB_map,&conn,&tsval,BPF_ANY);
-    }else
-	if(old_timestampB)
-	bpf_printk("Non entro perche tsval: %llu, mentre il vecchio tsval e: %llu", tsval,*old_timestampB);
+    }
 
     bpf_printk("_______________________________________________________________");
 
