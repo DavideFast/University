@@ -143,7 +143,7 @@ int main(){
 	          	(void *)p_buff, (size_t) 4,flags)==0){
 		       		printf("Latenza ");
 		       		print_ip(key->ip_source);
-		       		printf(":%llu micros\n",1000*buff/1000);
+		       		printf(":%llu micros\n",buff/1000);
 		        }
 	     }
 	     printf("-------------------------------------------------------------------------\n");
