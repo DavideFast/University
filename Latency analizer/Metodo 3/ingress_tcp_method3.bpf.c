@@ -263,17 +263,19 @@ int ingress_tcp(struct xdp_md *ctx)
     __u32 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
     int64_t *diffB = bpf_map_lookup_elem(&differenzialeB_map,&connection);
 
-    if(!diffB && !old_timestampA || *old_timestampA==0){
+    if(!diffB && (!old_timestampA || *old_timestampA==0)){
         bpf_map_update_elem(&timestampA_map,&connection,&tsval,BPF_ANY);
         bpf_map_update_elem(&timestampB_map,&connection,&tsecr,BPF_ANY);
     }else{
         if(!diffB && old_timestampA && (tsval-*old_timestampA)>500){
             __u32 nullo = 0;
             bpf_map_update_elem(&timestampA_map,&connection,&nullo,BPF_ANY);
-	    }
+	    bpf_map_update_elem(&timestampB_map,&connection,&nullo,BPF_ANY);
+	}
     }
     if(diffB){
         int64_t lat_egress = (tsval-*diffB) - tsecr;
+	bpf_map_update_elem(&differenzialeB_map,&connection, &lat_egress,BPF_ANY);
     }
 
     return XDP_PASS;

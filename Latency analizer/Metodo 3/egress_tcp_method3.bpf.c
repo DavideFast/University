@@ -253,16 +253,6 @@ int egress_tcp(struct __sk_buff *ctx){
     __u32 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&conn);
     int64_t *diffB = bpf_map_lookup_elem(&differenzialeB_map,&conn);
 
-    /*Prendo RTT
-    A->B
-
-    B->A
-    
-    
-    
-    
-    */
-
     //I pacchetti in uscita servono solo per settare i timestamp A e non per calcolare i tempi di latenza
     if(old_timestampA && old_timestampB  && tsecr==*old_timestampA && tcp->ack==1 && diffB){
 
@@ -271,13 +261,14 @@ int egress_tcp(struct __sk_buff *ctx){
         int64_t diff = *old_timestampA - (*old_timestampB + lat);
 
         __u32 nullo = 0;
-
         bpf_map_update_elem(&timestampA_map,&conn,&nullo,BPF_ANY);
         bpf_map_update_elem(&differenzialeB_map,&conn,&diff,BPF_ANY);
         bpf_map_update_elem(&latency_egress_map,&conn,&lat,BPF_ANY);
     }
     if(diffB){
-        int64_t lat_ingress = tsval - (tsecr+*diffB);
+        int64_t lat_ingress = tsval - (tsecr - *diffB);
+	bpf_printk("%llu - %llu - %llu - %llu",tsval,tsecr,*diffB,tsecr - *diffB);
+    	bpf_map_update_elem(&latency_egress_map,&conn,&lat_ingress,BPF_ANY);
     }
     bpf_printk("_______________________________________________________________");
 
