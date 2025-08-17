@@ -275,7 +275,8 @@ int ingress_tcp(struct xdp_md *ctx)
     }
     if(diffB){
         int64_t lat_egress = (tsval-*diffB) - tsecr;
-	bpf_map_update_elem(&differenzialeB_map,&connection, &lat_egress,BPF_ANY);
+	bpf_printk("%llu - %llu - %llu - %llu",tsval,tsecr,*diffB,tsval-*diffB);
+	bpf_map_update_elem(&latency_egress_map,&connection, &lat_egress,BPF_ANY);
     }
 
     return XDP_PASS;
