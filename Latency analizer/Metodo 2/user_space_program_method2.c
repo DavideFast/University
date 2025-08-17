@@ -29,8 +29,8 @@ int main(){
 	struct bpf_object *obj2;
 
 //Apertura del file
-	obj = bpf_object__open_file("ingress_tcp.bpf.o",NULL);
-	obj2 = bpf_object__open_file("egress_tcp.bpf.o",NULL);
+	obj = bpf_object__open_file("ingress_tcp_method2.bpf.o",NULL);
+	obj2 = bpf_object__open_file("egress_tcp_method2.bpf.o",NULL);
 	if(libbpf_get_error(obj))
 		return 1;
 	if(libbpf_get_error(obj2))
@@ -140,7 +140,7 @@ int main(){
 		if(buff==500000000)
 			printf(": - mS\n");
 		else
-	     		printf(": %llu mS\n",buff/1000000);
+	     		printf(": %llu mS\n",buff/1000);
 	     	while(bpf_map_get_next_key(bpf_map__fd(egress_map),key,key)==0)
 			if(bpf_map__lookup_elem(egress_map,(void *)key,(size_t)12,
 	          	(void *)p_buff, (size_t) 4,flags)==0){
@@ -149,7 +149,7 @@ int main(){
 				if(buff==500000000)
 					printf(": - mS\n");
 				else
-		       			printf(": %llu mS\n",buff/1000000);
+		       			printf(": %llu mS\n",buff/1000);
 		        }
 	     }
 	     printf("-------------------------------------------------------------------------\n");
