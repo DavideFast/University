@@ -63,6 +63,14 @@ struct timestampB_map {
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
+struct differenzialeB_map {
+   __uint (type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value,int64_t);
+   __uint(pinning,LIBBPF_PIN_BY_NAME);
+} differenzialeB_map SEC (".maps");
+
 struct latency_ingress_map{
    __uint(type,BPF_MAP_TYPE_HASH);
    __uint(max_entries,1024);
@@ -243,16 +251,34 @@ int egress_tcp(struct __sk_buff *ctx){
 
     __u32 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&conn);
     __u32 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&conn);
+    int64_t *diffB = bpf_map_lookup_elem(&differenzialeB_map,&conn);
+
+    /*Prendo RTT
+    A->B
+
+    B->A
+    
+    
+    
+    
+    */
 
     //I pacchetti in uscita servono solo per settare i timestamp A e non per calcolare i tempi di latenza
-    if(old_timestampA && old_timestampB  && tsecr==*old_timestampA && tcp->ack==1 ){
-	__u32 new_value = (tsval - *old_timestampB)*500;
-	bpf_printk("%llu - %llu", tsval,*old_timestampB);
-	__u32 nullo = 0;
-	bpf_map_update_elem(&timestampA_map,&conn,&nullo,BPF_ANY);
-	bpf_map_update_elem(&latency_egress_map,&conn,&new_value,BPF_ANY);
-    }
+    if(old_timestampA && old_timestampB  && tsecr==*old_timestampA && tcp->ack==1 && diffB){
 
+        __u32 rtt = tsval - *old_timestampB;
+        __u32 lat = rtt/2;
+        int64_t diff = *old_timestampA - (*old_timestampB + lat);
+
+        __u32 nullo = 0;
+
+        bpf_map_update_elem(&timestampA_map,&conn,&nullo,BPF_ANY);
+        bpf_map_update_elem(&differenzialeB_map,&conn,&diff,BPF_ANY);
+        bpf_map_update_elem(&latency_egress_map,&conn,&lat,BPF_ANY);
+    }
+    if(diffB){
+        int64_t lat_ingress = tsval - (tsecr+*diffB);
+    }
     bpf_printk("_______________________________________________________________");
 
 	return TC_ACT_OK;

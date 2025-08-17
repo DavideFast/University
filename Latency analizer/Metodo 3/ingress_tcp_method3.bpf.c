@@ -75,6 +75,14 @@ struct timestampB_map {
    __uint(pinning,LIBBPF_PIN_BY_NAME);
 } timestampB_map SEC (".maps");
 
+struct differenzialeB_map {
+   __uint (type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries,1024);
+   __type(key,struct connection);
+   __type(value,int64_t);
+   __uint(pinning,LIBBPF_PIN_BY_NAME);
+} differenzialeB_map SEC (".maps");
+
 
 //####################################################################################################################################
 //####                                                                                                                            ####
@@ -253,22 +261,19 @@ int ingress_tcp(struct xdp_md *ctx)
 
     __u32 *old_timestampA = bpf_map_lookup_elem(&timestampA_map,&connection);
     __u32 *old_timestampB = bpf_map_lookup_elem(&timestampB_map,&connection);
-    //bpf_printk("%u",tsecr);
-    /*if(old_timestampA)
-    	bpf_printk("------------ %llu",*old_timestampA);
-    if(old_timestampB){
-	bpf_printk("------------ %llu",*old_timestampB);
-        bpf_printk("------------ %llu",old_timestampB);
-    }*/
+    int64_t *diffB = bpf_map_lookup_elem(&differenzialeB_map,&connection);
 
-    if(!old_timestampA || *old_timestampA==0){
-	bpf_map_update_elem(&timestampA_map,&connection,&tsval,BPF_ANY);
-	bpf_map_update_elem(&timestampB_map,&connection,&tsecr,BPF_ANY);
+    if(!diffB && !old_timestampA || *old_timestampA==0){
+        bpf_map_update_elem(&timestampA_map,&connection,&tsval,BPF_ANY);
+        bpf_map_update_elem(&timestampB_map,&connection,&tsecr,BPF_ANY);
     }else{
-	if(old_timestampA && (tsval-*old_timestampA)>500){
-		__u32 nullo = 0;
-		bpf_map_update_elem(&timestampA_map,&connection,&nullo,BPF_ANY);
-	}
+        if(!diffB && old_timestampA && (tsval-*old_timestampA)>500){
+            __u32 nullo = 0;
+            bpf_map_update_elem(&timestampA_map,&connection,&nullo,BPF_ANY);
+	    }
+    }
+    if(diffB){
+        int64_t lat_egress = (tsval-*diffB) - tsecr;
     }
 
     return XDP_PASS;
