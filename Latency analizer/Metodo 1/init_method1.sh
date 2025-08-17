@@ -5,12 +5,12 @@ sudo apt install libbpf-dev
 sudo apt install clang
 
 echo Download from DavideFast GitHub Account the Latency Analyzer kit
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/ingress_tcp_method1.bpf.c
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/egress_tcp_method1.bpf.c
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/vmlinux.h
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/termina.sh
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/user_space_program_method1.c
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/update_method1.sh
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%201/ingress_tcp_method1.bpf.c
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%201/egress_tcp_method1.bpf.c
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%201/vmlinux.h
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%201/termina.sh
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%201/user_space_program_method1.c
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%201/update_method1.sh
 
 sudo gcc -o user_space_program_method1 user_space_program_method1.c -lbpf
 sudo clang -target bpf -g -O2 -Wall -v -c egress_tcp_method1.bpf.c -o egress_tcp_method1.bpf.o
