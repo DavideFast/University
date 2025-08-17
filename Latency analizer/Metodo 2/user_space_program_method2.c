@@ -52,6 +52,7 @@ int main(){
 		printf("XDP attach riuscito\n");
 	else
 		printf("XDP attach fallito\n");
+
 	//printf("Fd del programma egress %d\n",bpf_object__btf_fd(obj2));
 	struct bpf_tc_opts opts = {
 	     .flags = BPF_TC_F_REPLACE,
@@ -91,7 +92,7 @@ int main(){
 	int egress = bpf_obj_get("/sys/fs/bpf/latency_egress_map");
 	int ingress = bpf_obj_get("/sys/fs/bpf/latency_ingress_map");
 	struct bpf_map *egress_map;
-        struct connection *key;
+    struct connection *key;
 	struct connection key_value;
 	key=&key_value;
 	struct bpf_map *ingress_map;
@@ -163,7 +164,7 @@ int main(){
 	system("sudo tc qdisc del dev enp0s3 clsact");
 	printf("Sto eliminando il qdisc clsact\n");
 	system("sudo tc filter show dev enp0s3 egress");
-        system("sudo sh termina.sh");
+    system("sudo sh termina.sh");
 	printf("Unpin delle mappe eBPF\n");
 	printf("#####################################################\n");
 	printf("####                    FINISH                   ####\n");
