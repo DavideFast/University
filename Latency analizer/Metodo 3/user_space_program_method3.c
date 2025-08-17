@@ -29,8 +29,8 @@ int main(){
 	struct bpf_object *obj2;
 
 //Apertura del file
-	obj = bpf_object__open_file("ingress_tcp_method2.bpf.o",NULL);
-	obj2 = bpf_object__open_file("egress_tcp_method2.bpf.o",NULL);
+	obj = bpf_object__open_file("ingress_tcp_method3.bpf.o",NULL);
+	obj2 = bpf_object__open_file("egress_tcp_method3.bpf.o",NULL);
 	if(libbpf_get_error(obj))
 		return 1;
 	if(libbpf_get_error(obj2))
