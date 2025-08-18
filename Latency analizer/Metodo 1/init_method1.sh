@@ -3,6 +3,7 @@ cp usr/src/linux-headers-6.8.0-45-generic/tools/bpf/resolve_btfids/libbpf/includ
 sudo apt-get update
 sudo apt install libbpf-dev
 sudo apt install clang
+sudo apt install gcc
 
 echo Download from DavideFast GitHub Account the Latency Analyzer kit
 wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%201/ingress_tcp_method1.bpf.c
