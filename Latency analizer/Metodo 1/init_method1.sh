@@ -14,7 +14,7 @@ wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Lat
 
 sudo gcc -o user_space_program_method1 user_space_program_method1.c -lbpf
 sudo clang -target bpf -g -O2 -Wall -v -c egress_tcp_method1.bpf.c -o egress_tcp_method1.bpf.o
-sudo clang -target bpf -g -O2 -Wall -v -c ingress_tcp_method1.bpf.c -o ingress_tcp_methdo1.bpf.o
+sudo clang -target bpf -g -O2 -Wall -v -c ingress_tcp_method1.bpf.c -o ingress_tcp_method1.bpf.o
 
 echo Avvio del programma
 sudo ./user_space_program_method1
