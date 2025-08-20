@@ -9,7 +9,7 @@ echo Download from DavideFast GitHub Account the Latency Analyzer kit
 wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_1/ingress_tcp_method1.bpf.c
 wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_1/egress_tcp_method1.bpf.c
 wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_1/vmlinux.h
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_1/termina.sh
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_1/close.sh
 wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_1/user_space_program_method1.c
 wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_1/update_method1.sh
 
