@@ -6,12 +6,12 @@ sudo apt install clang
 sudo apt install gcc
 
 echo Download from DavideFast GitHub Account the Latency Analyzer kit
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%203/ingress_tcp_method3.bpf.c
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%203/egress_tcp_method3.bpf.c
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%203/vmlinux.h
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%203/termina.sh
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%203/user_space_program_method3.c
-wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency%20analizer/Metodo%203/update_method3.sh
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_3/ingress_tcp_method3.bpf.c
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_3/egress_tcp_method3.bpf.c
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_3/vmlinux.h
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_3/termina.sh
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_3/user_space_program_method3.c
+wget https://raw.githubusercontent.com/DavideFast/University/refs/heads/main/Latency_Analyzer/Method_3/update_method3.sh
 
 sudo gcc -o user_space_program_method3 user_space_program_method3.c -lbpf
 sudo clang -target bpf -g -O2 -Wall -v -c egress_tcp_method3.bpf.c -o egress_tcp_method3.bpf.o
