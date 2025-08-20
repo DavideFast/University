@@ -3,6 +3,7 @@
 #include <time.h>
 #include <bpf/libbpf.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 struct connection{
 	__u32 ip_source;
