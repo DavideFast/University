@@ -164,7 +164,7 @@ int main(){
 	system("sudo tc qdisc del dev enp0s3 clsact");
 	printf("Sto eliminando il qdisc clsact\n");
 	system("sudo tc filter show dev enp0s3 egress");
-    system("sudo sh termina.sh");
+    system("sudo sh close.sh");
 	printf("Unpin delle mappe eBPF\n");
 	printf("#####################################################\n");
 	printf("####                    FINISH                   ####\n");
