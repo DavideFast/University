@@ -1,6 +1,6 @@
 # RECOMMENDATION
 > [!WARNING]
-> This program has been developed in a Ubuntu Server LTS 24.04.1 LTS version Operative System. Different versions couldn't work.<br/>
+> This program has been developed in a Ubuntu Server LTS 24.04.1 LTS version Operative System. <br/> Different versions couldn't work.
 
 > [!IMPORTANT]
 > If LRO is enabled, XDP won't work, disable it with the following command: <br/>
@@ -8,6 +8,8 @@
 
 > [!IMPORTANT]
 > In Ubuntu 25 may be problem with system function of *stdlib.h* library in *ingress/egress_tcp_methodx.bpf.c* files.
+
+<br/>
 
 # USEFUL COMMANDS
 
