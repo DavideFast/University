@@ -68,7 +68,7 @@ If XDP programs:
 
 # HOW IT WORKS
 ## METHOD N°1
-The TC program observe all the egress packets and get per each connection the timestamp.
+The TC program (egress_tcp_methodX.bpf.c) observe all the egress packets and get per each connection the timestamp.
 The XDP program observe all the ingress packet and match the corrispective ACK and calculate the difference.
 
 
