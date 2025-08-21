@@ -29,7 +29,8 @@ List of all objects of certain categories (it will show id, name and other infor
   ```
       sudo tc filter show dev eth0 <ingress|egress>
   ```
-  
+
+
 If you need to show a particular object:
 ```
     sudo bpftool prog show id < number >
