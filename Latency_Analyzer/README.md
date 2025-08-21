@@ -119,9 +119,9 @@ Then the user_space_program_method1.c program show the respective latency.
 <br/>
 
 ## Method n°2
-The XDP program (ingress_tcp_method2.bpf.c)observe all the ingress packet and set the correspective timestamp <br/>
-The TC program (egress_tcp_method2.bpf.c) observe all the egress packets and catch the ACK of the correspective ingress packet and calculate the latency. <br/>
-Then the user_space_program_method2.c program show the respective latency.
+The XDP program (**ingress_tcp_method2.bpf.c**)observe all the ingress packet and set the correspective timestamp <br/>
+The TC program (**egress_tcp_method2.bpf.c**) observe all the egress packets and catch the ACK of the correspective ingress packet and calculate the latency. <br/>
+Then the **user_space_program_method2.c** program show the respective latency.
 
 <br/>
 
