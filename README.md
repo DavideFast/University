@@ -1,6 +1,6 @@
 # RECOMMENDATION
-
-This program has been developed in a Ubuntu Server LTS 24.04.1 LTS version Operative System. Different versions couldn't work.<br/>
+> [!NOTE]
+> This program has been developed in a Ubuntu Server LTS 24.04.1 LTS version Operative System. Different versions couldn't work.<br/>
 
 > [!WARNING]
 > If LRO is enabled, XDP won't work, disable it with the following command: <br/>
