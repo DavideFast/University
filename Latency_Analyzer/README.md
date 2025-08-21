@@ -60,7 +60,10 @@ Same things are possible with maps.
 
 ## Attach programs to newtork interface
 If the program is XDP
+
+> ```
 > sudo bpftool net attach xdp name <name> dev eth0
+> ```
 
 If the program is TC first we need to create the qdisc:
 > sudo tc qdisc add dev eth0 clsact <br/>
