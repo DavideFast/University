@@ -16,16 +16,17 @@
 function test() {
   console.log("This code will have a copy button to the right of it");
 }
-```
+
 
 # USEFUL COMMANDS
 
 ## Show eBPF object
 List of all objects of certain categories (it will show id, name and other information): <br/>
-> sudo bpftool prog list <br/>
-> sudo bpftool net list <br/>
-> sudo bftool map list <br/>
-> sudo tc filter show dev eth0 <ingress|egress> <br/>
+``` sudo bpftool prog list <br/>
+sudo bpftool net list <br/>
+sudo bftool map list <br/>
+sudo tc filter show dev eth0 <ingress|egress> <br/>
+```
   
 If you need to show a particular object:
 > sudo bpftool prog show id < number >
