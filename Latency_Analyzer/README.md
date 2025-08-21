@@ -66,22 +66,22 @@ If XDP programs:
 
 <br/>
 
-# `HOW IT WORKS`
-## Method n°1
+# HOW IT WORKS
+ - ## Method n°1
 The TC program (egress_tcp_method1.bpf.c) observe all the egress packets and get per each connection the timestamp. <br/>
 The XDP program (ingress_tcp_method1.bpf.c) observe all the ingress packet and match the corrispective ACK and calculate the difference. <br/>
 Then the user_space_program_method1.c program show the respective latency.
 
 <br/>
 
-## Method n°2
+ - ## Method n°2
 The XDP program (ingress_tcp_method2.bpf.c)observe all the ingress packet and set the correspective timestamp <br/>
 The TC program (egress_tcp_method2.bpf.c) observe all the egress packets and catch the ACK of the correspective ingress packet and calculate the latency. <br/>
 Then the user_space_program_method2.c program show the respective latency.
 
 <br/>
 
-## Method n°3
+ - ## Method n°3
 This method use the other two to find a value that permit to synchronize the remote and local host clock.<br/>
 In this way it's not necessary to wait for packets to calculate latency, but it's possible to get from the TSVAL and TSECR of the same packet.
 The user_space_program_method3 always print the latency value.
