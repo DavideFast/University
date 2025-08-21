@@ -42,6 +42,7 @@ If you need to show a particular object:
 > ```
 >sudo bpftool prog show id <number>
 > ```
+
 > ```
 >sudo bpftool prog show name <name>
 > ```
