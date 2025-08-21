@@ -43,7 +43,7 @@ If TC programs:
 > sudo tc qdisc del dev eth0 clsact <br/>
 
 If XDP programs:
-> sudo bpftool net detach xdp dev eth0
+> sudo bpftool net detach xdp dev eth0 <br/>
 > sudo rm /sys/fs/bpf/<name>
 
 
