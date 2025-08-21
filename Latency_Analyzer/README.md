@@ -66,13 +66,17 @@ If the program is XDP
 > ```
 
 If the program is TC first we need to create the qdisc:
+> ```
 > sudo tc qdisc add dev eth0 clsact <br/>
+> ```
 
 Then is possible to attach the program
-
+> ```
 > sudo tc filter add dev eth0 ingress bpf direct-action obj < name >.bpf.o sec tc <br/>
+>  ```
+> ```
 > sudo tc filter add dev eth0 egress bpf direct-action obj < name >.bpf.o sec tc <br/>
-
+> ```
 <br/>
 
 ## Detach programs from network interface
