@@ -1,5 +1,5 @@
 # RECOMMENDATION
-> [!WARNING]
+> [!NOTE]
 > This program has been developed in a Ubuntu Server 24.04.1 LTS version Operative System. <br/> Different versions couldn't work.
 
 > [!IMPORTANT]
