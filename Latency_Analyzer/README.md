@@ -91,7 +91,7 @@ The user_space_program_method3 always print the latency value.
 <br/>
 <br/>
 
-<code style="color : blue"> # HOW TO INSTALL AND MAKE IT WORKS </code>
+# HOW TO INSTALL AND MAKE IT WORKS
 It's very simple. <br/>
 It's necessary to download the init_methodX.sh file and launch it. <br/>
 It is going to:
