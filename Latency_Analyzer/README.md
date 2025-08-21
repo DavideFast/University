@@ -53,7 +53,7 @@ Same things are possible with maps.
 ## Loading programs in kernel
 
 > ```
-> sudo bpftool prog load < name >.bpf.o /sys/fs/bpf/<name>
+> sudo bpftool prog load <name>.bpf.o /sys/fs/bpf/<name>
 > ```
 
 <br/>
