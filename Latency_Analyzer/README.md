@@ -17,8 +17,7 @@
 
 ## Show eBPF object
 List of all objects of certain categories (it will show id, name and other information): <br/>
-  >
-  ```
+  > ```
   sudo bpftool prog list
   ```
   > ```
