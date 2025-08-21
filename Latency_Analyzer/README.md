@@ -22,15 +22,15 @@ List of all objects of certain categories (it will show id, name and other infor
 > sudo tc filter show dev eth0 <ingress|egress> <br/>
   
 If you need to show a particular object:
-> sudo bpftool prog show id <number>
-> sudo bpftool prog show name <name>
+> sudo bpftool prog show id < number >
+> sudo bpftool prog show name < name >
 Same things are possible with maps.
   
 <br/>
 
  - ## Loading programs in kernel
 
-> sudo bpftool prog load <name>.bpf.o /sys/fs/bpf/<name>
+> sudo bpftool prog load < name >.bpf.o /sys/fs/bpf/< name >
 
 <br/>
 
@@ -43,8 +43,8 @@ If the program is TC first we need to create the qdisc:
 
 Then is possible to attach the program
 
-> sudo tc filter add dev eth0 ingress bpf direct-action obj <name>.bpf.o sec tc <br/>
-> sudo tc filter add dev eth0 egress bpf direct-action obj <name>.bpf.o sec tc <br/>
+> sudo tc filter add dev eth0 ingress bpf direct-action obj < name >.bpf.o sec tc <br/>
+> sudo tc filter add dev eth0 egress bpf direct-action obj < name >.bpf.o sec tc <br/>
 
 <br/>
 
@@ -56,13 +56,13 @@ If TC programs:
   
 If XDP programs:
 > sudo bpftool net detach xdp dev eth0 <br/>
-> sudo rm /sys/fs/bpf/<name>
+> sudo rm /sys/fs/bpf/< name >
 
 <br/>
 
  - ## Compile
- > sudo clang -target bpf -g -O2 -Wall -v -c <name>.bpf.c -o <name>.bpf.o <br/>
- > sudo gcc -o < name > <name>.c -lbpf
+ > sudo clang -target bpf -g -O2 -Wall -v -c < name >.bpf.c -o < name >.bpf.o <br/>
+ > sudo gcc -o < name > < name >.c -lbpf
 
 <br/>
 <br/>
