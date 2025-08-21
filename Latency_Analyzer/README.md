@@ -110,6 +110,10 @@ If XDP programs:
 <br/>
 <br/>
 
+
+# WHAT IS eBPF
+eBPF is an incredible technology that permit to create kernel program. For major info click [here](https://www.cilium.com)
+
 # HOW IT WORKS
 ## Method n°1
 The TC program (egress_tcp_method1.bpf.c) observe all the egress packets and get per each connection the timestamp. <br/>
