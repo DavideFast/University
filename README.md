@@ -59,7 +59,7 @@ If XDP programs:
 <br/>
 
 ## Compile
-> sudo clang -target bpf -g -O2 -Wall -v -c <name>.bpf.c -o <name>.bpf.o
+> sudo clang -target bpf -g -O2 -Wall -v -c <name>.bpf.c -o <name>.bpf.o <br/>
 > sudo gcc -o <name> <name>.c -lbpf
 
 
