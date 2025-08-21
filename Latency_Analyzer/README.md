@@ -64,7 +64,10 @@ If XDP programs:
 > sudo clang -target bpf -g -O2 -Wall -v -c <name>.bpf.c -o <name>.bpf.o <br/>
 > sudo gcc -o <name> <name>.c -lbpf
 
-
+# HOW IT WORKS
+## METHOD N°1
+The TC program observe all the egress packets and get per each connection the timestamp.
+The XDP program observe all the ingress packet and match the corrispective ACK and calculate the difference.
 
 
 
