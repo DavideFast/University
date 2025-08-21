@@ -29,12 +29,12 @@ If the program is XDP
 > sudo bpftool net attach
 
 If the program is TC first we need to create the qdisc:
-> sudo tc qdisc add dev lo clsact <br/>
+> sudo tc qdisc add dev eth0 clsact <br/>
 
 Then is possible to attach the program
 
-> sudo tc filter add dev lo ingress bpf direct-action obj <name>.bpf.o sec tc <br/>
-> sudo tc filter add dev lo egress bpf direct-action obj <name>.bpf.o sec tc
+> sudo tc filter add dev et0 ingress bpf direct-action obj <name>.bpf.o sec tc <br/>
+> sudo tc filter add dev et0 egress bpf direct-action obj <name>.bpf.o sec tc
 
 
 
