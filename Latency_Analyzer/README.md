@@ -1,4 +1,4 @@
-# RECOMMENDATION
+# Recommandation
 > [!NOTE]
 > This program has been developed in a [Ubuntu Server 24.04.1 LTS](https://www.ubuntu.com/download/desktop) version Operative System. <br/> Different versions wouldn't work.
 
@@ -15,7 +15,7 @@
 <br/>
 
 
-# 1. USEFUL COMMANDS
+# 1. Useful commands
 
 ## Show eBPF object
 List of all objects of certain categories (it will show id, name and other information): <br/>
@@ -116,14 +116,14 @@ If XDP programs:
 <br/>
 
 
-# 2. WHAT IS eBPF
+# 2. What is eBPF
 eBPF is an incredible technology that permit to create kernel program. For major info click [here](https://www.ebpf.io). <br/>
 Further information [here](https://docs.ebpf.io).
 
 <br/>
 <br/>
 
-# 3. HOW IT WORKS
+# 3. How it works
 ## Method n°1
 The TC program (egress_tcp_method1.bpf.c) observe all the egress packets and get per each connection the timestamp. <br/>
 The XDP program (ingress_tcp_method1.bpf.c) observe all the ingress packet and match the corrispective ACK and calculate the difference. <br/>
@@ -146,7 +146,7 @@ The user_space_program_method3 always print the latency value.
 <br/>
 <br/>
 
-# 4. HOW TO INSTALL AND MAKE IT WORKS
+# 4. How to install the latency program
 To install and prepare the entire environment it's necessary to download the init_methodX.sh file and launch it. <br/>
 It will:
   -  Install necessary dependencies
