@@ -72,10 +72,10 @@ If the program is TC first we need to create the qdisc:
 
 Then is possible to attach the program
 > ```
-> sudo tc filter add dev eth0 ingress bpf direct-action obj < name >.bpf.o sec tc
+> sudo tc filter add dev eth0 ingress bpf direct-action obj <name>.bpf.o sec tc
 >  ```
 > ```
-> sudo tc filter add dev eth0 egress bpf direct-action obj < name >.bpf.o sec tc
+> sudo tc filter add dev eth0 egress bpf direct-action obj <name>.bpf.o sec tc
 > ```
 <br/>
 
@@ -100,8 +100,12 @@ If XDP programs:
 <br/>
 
 ## Compile
-> sudo clang -target bpf -g -O2 -Wall -v -c < name >.bpf.c -o < name >.bpf.o <br/>
+> ```
+> sudo clang -target bpf -g -O2 -Wall -v -c < name >.bpf.c -o < name >.bpf.o
+> ```
+> ```
 > sudo gcc -o < name > < name >.c -lbpf
+> ```
 
 <br/>
 <br/>
