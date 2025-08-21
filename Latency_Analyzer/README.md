@@ -19,15 +19,19 @@
 
 ## Show eBPF object
 List of all objects of certain categories (it will show id, name and other information): <br/>
+
   > ```
     >   sudo bpftool prog list
   > ```
+
   > ```
     >   sudo bpftool net list
   > ```
+
   > ```
     >   sudo bftool map list
   > ```
+
   > ```
     >   sudo tc filter show dev eth0 <ingress|egress>
   > ```
