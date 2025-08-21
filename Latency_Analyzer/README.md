@@ -4,7 +4,7 @@
 
 > [!IMPORTANT]
 > If LRO is enabled, XDP won't work, disable it with the following command: <br/>
-```
+> ```
 sudo ethtool -K eth0 lro off <br/>
 ```
 
