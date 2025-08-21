@@ -84,6 +84,6 @@ Then the user_space_program_method2.c program show the respective latency.
 ## Method n°3
 This method use the other two to find a value that permit to synchronize the remote and local host clock.<br/>
 In this way it's not necessary to wait for packets to calculate latency, but it's possible to get from the TSVAL and TSECR of the same packet.
-The userspace program always print the latency value.
+The user_space_program_method3 always print the latency value.
 
 
