@@ -74,6 +74,7 @@ Then is possible to attach the program
 > ```
 > sudo tc filter add dev eth0 ingress bpf direct-action obj <name>.bpf.o sec tc
 >  ```
+
 > ```
 > sudo tc filter add dev eth0 egress bpf direct-action obj <name>.bpf.o sec tc
 > ```
@@ -85,6 +86,7 @@ If TC programs:
 > ```
 > sudo tc filter del dev eth0 <ingress|egress>
 > ```
+
 > ```
 > sudo tc qdisc del dev eth0 clsact
 > ```
@@ -93,6 +95,7 @@ If XDP programs:
 > ```
 > sudo bpftool net detach xdp dev eth0
 > ```
+
 > ```
 > sudo rm /sys/fs/bpf/<name>
 > ```
@@ -103,6 +106,7 @@ If XDP programs:
 > ```
 > sudo clang -target bpf -g -O2 -Wall -v -c <name>.bpf.c -o <name>.bpf.o
 > ```
+
 > ```
 > sudo gcc -o <name> <name>.c -lbpf
 > ```
