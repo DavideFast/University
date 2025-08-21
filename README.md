@@ -25,11 +25,13 @@ If you need to show a particular object:
 Same things are possible with maps.
 
 <br/>
+
 ## Loading programs in kernel
 
 > sudo bpftool prog load <name>.bpf.o /sys/fs/bpf/<name>
 
 <br/>
+
 ## Attach programs to newtork interface
 If the program is XDP
 > sudo bpftool net attach xdp name <name> dev eth0
@@ -43,6 +45,7 @@ Then is possible to attach the program
 > sudo tc filter add dev eth0 egress bpf direct-action obj <name>.bpf.o sec tc <br/>
 
 <br/>
+
 ## Detach programs from network interface
 
 If TC programs:
@@ -54,6 +57,7 @@ If XDP programs:
 > sudo rm /sys/fs/bpf/<name>
 
 <br/>
+
 ## Compile
 > sudo clang -target bpf -g -O2 -Wall -v -c <name>.bpf.c -o <name>.bpf.o
 > sudo gcc -o <name> <name>.c -lbpf
