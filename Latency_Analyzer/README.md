@@ -112,7 +112,8 @@ If XDP programs:
 
 
 # WHAT IS eBPF
-eBPF is an incredible technology that permit to create kernel program. For major info click [here](https://www.ebpf.io)
+eBPF is an incredible technology that permit to create kernel program. For major info click [here](https://www.ebpf.io).
+Further information [here](https://docs.ebpf.io).
 
 <br/>
 <br/>
