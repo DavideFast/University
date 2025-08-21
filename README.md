@@ -7,7 +7,7 @@
 > > *sudo ethtool -K eth0 lro off* <br/>
 
 > [!IMPORTANT]
-> In Ubuntu 25 may be problem with system function of stdlib.h library in *ingress/egress_tcp_methodx.bpf.c* files.
+> In Ubuntu 25 may be problem with system function of *stdlib.h* library in *ingress/egress_tcp_methodx.bpf.c* files.
 
 # USEFUL COMMANDS
 
