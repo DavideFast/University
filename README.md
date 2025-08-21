@@ -39,8 +39,12 @@ Then is possible to attach the program
 ## Detach programs from network interface
 
 If TC programs:
-> sudo tc filter del dev eth0 <ingress|egress>
-> sudo tc qdisc del dev eth0 clsact
+> sudo tc filter del dev eth0 <ingress|egress> <br/>
+> sudo tc qdisc del dev eth0 clsact <br/>
+
+If XDP programs:
+> sudo bpftool net detach xdp dev eth0
+> sudo rm /sys/fs/bpf/<name>
 
 
 
