@@ -39,12 +39,12 @@ List of all objects of certain categories (it will show id, name and other infor
 <br/>
 
 If you need to show a particular object:
-```
-    sudo bpftool prog show id < number >
-```
-```
-    sudo bpftool prog show name < name >
-```
+> ```
+>    sudo bpftool prog show id < number >
+> ```
+> ```
+>    sudo bpftool prog show name < name >
+> ```
 
 Same things are possible with maps.
   
