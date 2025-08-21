@@ -88,4 +88,8 @@ This method use the other two to find a value that permit to synchronize the rem
 In this way it's not necessary to wait for packets to calculate latency, but it's possible to get from the TSVAL and TSECR of the same packet.
 The user_space_program_method3 always print the latency value.
 
+<br/>
+<br/>
 
+# HOW TO INSTALL AND MAKE IT WORKS
+It's very simple: it's necessary to download the init_methodX.sh file and launch it. That's all.
