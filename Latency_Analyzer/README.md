@@ -40,10 +40,10 @@ List of all objects of certain categories (it will show id, name and other infor
 
 If you need to show a particular object:
 > ```
->sudo bpftool prog show id < number >
+>sudo bpftool prog show id < umber>
 > ```
 > ```
->sudo bpftool prog show name < name >
+>sudo bpftool prog show name <name>
 > ```
 
 Same things are possible with maps.
@@ -53,7 +53,7 @@ Same things are possible with maps.
 ## Loading programs in kernel
 
 > ```
-> sudo bpftool prog load < name >.bpf.o /sys/fs/bpf/< name >
+> sudo bpftool prog load < name >.bpf.o /sys/fs/bpf/<name>
 > ```
 
 <br/>
