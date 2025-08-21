@@ -13,7 +13,7 @@
 
 # USEFUL COMMANDS
 
-## Show eBPF object
+ - ## Show eBPF object
 
 List of all objects of certain categories (it will show id, name and other information): <br/>
 > sudo bpftool prog list <br/>
@@ -28,13 +28,13 @@ Same things are possible with maps.
 
 <br/>
 
-## Loading programs in kernel
+ - ## Loading programs in kernel
 
 > sudo bpftool prog load <name>.bpf.o /sys/fs/bpf/<name>
 
 <br/>
 
-## Attach programs to newtork interface
+ - ## Attach programs to newtork interface
 If the program is XDP
 > sudo bpftool net attach xdp name <name> dev eth0
 
@@ -48,7 +48,7 @@ Then is possible to attach the program
 
 <br/>
 
-## Detach programs from network interface
+ - ## Detach programs from network interface
 
 If TC programs:
 > sudo tc filter del dev eth0 <ingress|egress> <br/>
@@ -60,7 +60,7 @@ If XDP programs:
 
 <br/>
 
-## Compile
+ - ## Compile
 > sudo clang -target bpf -g -O2 -Wall -v -c <name>.bpf.c -o <name>.bpf.o <br/>
 > sudo gcc -o <name> <name>.c -lbpf
 
