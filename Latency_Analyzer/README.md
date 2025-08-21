@@ -92,4 +92,11 @@ The user_space_program_method3 always print the latency value.
 <br/>
 
 # HOW TO INSTALL AND MAKE IT WORKS
-It's very simple: it's necessary to download the init_methodX.sh file and launch it. That's all.
+It's very simple: it's necessary to download the init_methodX.sh file and launch it.
+It is going to:
+  -  Install necessary dependencies
+  -  Download all the files in the various folders
+  -  Compile the programs
+  -  Launch the userspace program
+
+
