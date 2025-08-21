@@ -1,4 +1,4 @@
-# Recommandation
+# RECOMMENDATIONS
 > [!NOTE]
 > This program has been developed in a [Ubuntu Server 24.04.1 LTS](https://www.ubuntu.com/download/desktop) version Operative System. <br/> Different versions wouldn't work.
 
