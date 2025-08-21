@@ -1,1 +1,1 @@
-# Hey there, here all my university project
+# HEY THERE, HERE ALL MY UNIVERSITY'S PROJECT
