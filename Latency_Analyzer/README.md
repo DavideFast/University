@@ -9,7 +9,7 @@
 > ```
 
 > [!IMPORTANT]
-> In Ubuntu 25.X.X may be problem with system function of *stdlib.h* library in *ingress/egress_tcp_methodx.bpf.c* files.
+> In [Ubuntu 25.X.X](https://www.ubuntu.com/download/desktop) may be problem with system function of *stdlib.h* library in *ingress/egress_tcp_methodx.bpf.c* files.
 
 <br/>
 <br/>
