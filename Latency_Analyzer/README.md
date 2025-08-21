@@ -101,10 +101,10 @@ If XDP programs:
 
 ## Compile
 > ```
-> sudo clang -target bpf -g -O2 -Wall -v -c < name >.bpf.c -o < name >.bpf.o
+> sudo clang -target bpf -g -O2 -Wall -v -c <name>.bpf.c -o <name>.bpf.o
 > ```
 > ```
-> sudo gcc -o < name > < name >.c -lbpf
+> sudo gcc -o <name> <name>.c -lbpf
 > ```
 
 <br/>
