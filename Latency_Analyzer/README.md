@@ -68,8 +68,8 @@ If XDP programs:
 
 # HOW IT WORKS
 ## Method n°1
-The TC program (egress_tcp_methodX.bpf.c) observe all the egress packets and get per each connection the timestamp.
-The XDP program observe all the ingress packet and match the corrispective ACK and calculate the difference.
-
+The TC program (egress_tcp_method1.bpf.c) observe all the egress packets and get per each connection the timestamp. <br/>
+The XDP program (ingress_tcp_method1.bpf.c) observe all the ingress packet and match the corrispective ACK and calculate the difference. <br/>
+Then the user_space_program_method1.c program show the respective latency.
 
 
