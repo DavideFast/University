@@ -13,7 +13,8 @@ In Ubuntu 25 may be problem with system function of stdlib.h library in *ingress
 List all object of certain category (it will show id, name and other information): <br/>
 > sudo bpftool prog list <br/>
 > sudo bpftool net list <br/>
-> sudo pbftool map list <br/>
+> sudo bftool map list <br/>
+> sudo tc filter show dev eth0 <ingress|egress> <br/>
 
 If you need to show a particular object:
 > sudo bpftool prog show id <number>
