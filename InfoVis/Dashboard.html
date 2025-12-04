@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Progetto InfoVis</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+      function includeHTML() {
+        var z, i, elmnt, file, xhttp;
+        /* Loop through a collection of all HTML elements: */
+        z = document.getElementsByTagName("*");
+        for (i = 0; i < z.length; i++) {
+          elmnt = z[i];
+          /*search for elements with a certain atrribute:*/
+          file = elmnt.getAttribute("w3-include-html");
+          if (file) {
+            /* Make an HTTP request using the attribute value as the file name: */
+            xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+              if (this.readyState == 4) {
+                if (this.status == 200) {
+                  elmnt.innerHTML = this.responseText;
+                }
+                if (this.status == 404) {
+                  elmnt.innerHTML = "Page not found.";
+                }
+                /* Remove the attribute, and call this function once more: */
+                elmnt.removeAttribute("w3-include-html");
+                includeHTML();
+              }
+            };
+            xhttp.open("GET", file, true);
+            xhttp.send();
+            /* Exit the function: */
+            return;
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background-color: #f6f7f8;
+        padding: 20px;
+      }
+      svg {
+        border: 1px solid #ccc;
+        border-radius: 50px;
+        background-color: #ffffff;
+        box-shadow: 10px 10px 2px 1px rgb(0 0 255 / 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: rgb(0, 17, 255);
+        font-size: 70px;
+        margin-bottom: 100px;
+      }
+      h2 {
+        color: rgb(0, 17, 255);
+        margin-top: 150px;
+      }
+      .node {
+        stroke: #fff;
+        stroke-width: 2px;
+        cursor: pointer;
+      }
+      .link {
+        stroke: #999;
+        stroke-opacity: 0.6;
+      }
+      .container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-width: 90vw;
+        justify-content: space-evenly;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .container-div {
+        text-align: justify;
+        font-size: x-large;
+        padding: 10px;
+        margin-bottom: 15px;
+        box-shadow: 10px 10px 2px 1px rgb(0 0 255 / 0.1);
+        height: 280px;
+        min-width: 30vw;
+        margin-left: 100px;
+        border: 1px solid #ccc;
+        border-radius: 50px;
+        background-color: #ffffff;
+        text-align: center;
+        color: rgb(0, 17, 255);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>TENNIS TAVOLO 2.0</h1>
+    <div w3-include-html="menu.html"></div>
+    <h3 for="intervallo-temporale">Seleziona il periodo temporale</h3>
+    <select name="intervallo-temporale" id="selettore periodo">
+      <option value="">--Seleziona--</option>
+      <option value="settimana">Settimana</option>
+      <option value="mese">Mese</option>
+      <option value="anno">Anno</option>
+    </select>
+    <br />
+    <br />
+    <br />
+    <br />
+    <div class="container">
+      <div class="container-div">SPAZI LIBERI</div>
+      <div class="container-div">ASSENZE</div>
+      <div class="container-div">VARIAZIONI</div>
+      <div class="container-div">PERCENTUALE RIEMPIMENTO</div>
+    </div>
+    <script>
+      includeHTML();
+    </script>
+  </body>
+</html>
