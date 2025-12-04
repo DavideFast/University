@@ -27,6 +27,9 @@
         color: rgb(0, 17, 255);
         margin-top: 150px;
       }
+      svg {
+        margin-left: 5vw;
+      }
       div {
         text-align: justify;
         font-size: x-large;
@@ -65,19 +68,8 @@
     </style>
   </head>
   <body>
-    <h1>TENNIS TAVOLO 2.0</h1>
-
-    <h3 for="intervallo-temporale">Seleziona il periodo temporale</h3>
-    <select name="intervallo-temporale" id="selettore periodo">
-      <option value="">--Seleziona--</option>
-      <option value="settimana">Settimana</option>
-      <option value="mese">Mese</option>
-      <option value="anno">Anno</option>
-    </select>
-
-    <br />
     <h2>ORGANIZZAZIONE SETTIMANALE</h2>
-    <svg id="straight-line" width="99%" height="90vh">
+    <svg id="straight-line" width="90%" height="90vh">
       <g></g>
       <g></g>
     </svg>
@@ -194,116 +186,81 @@
 
     <br />
     <h2>ORGANIZZAZIONE SETTIMANALE</h2>
-    <svg id="no-straight-line" width="99%" height="90vh"></svg>
+    <svg id="no-straight-line" width="90%" height="90vh"></svg>
 
     <script>
-      // Example data for the graph
-      const data_2 = {
-        nodes: [
-          { id: "A", group: 1 },
-          { id: "B", group: 1 },
-          { id: "C", group: 2 },
-          { id: "D", group: 2 },
-          { id: "E", group: 3 },
-          { id: "F", group: 1 },
-          { id: "G", group: 2 },
-          { id: "H", group: 2 },
-        ],
-        links: [
-          { source: "A", target: "B", value: 1 },
-          { source: "A", target: "C", value: 2 },
-          { source: "B", target: "D", value: 1 },
-          { source: "C", target: "E", value: 3 },
-          { source: "A", target: "C", value: 2 },
-          { source: "B", target: "G", value: 1 },
-          { source: "C", target: "F", value: 3 },
-        ],
-      };
+      // set the dimensions and margins of the graph
+      const margin = { top: 10, right: 30, bottom: 30, left: 60 }; /*,
+        width = 1200 - margin.left - margin.right,
+        height = 800 - margin.top - margin.bottom;*/
 
-      // Select the SVG element
-      const svg_2 = d3.select("#no-straight-line");
-      var width = svg_2.attr("width");
-      var height = svg_2.attr("height");
-
-      width = parseInt(width);
-      height = parseInt(height);
-      width =
-        document.getElementById("straight-line").width.baseVal.value *
-        width *
-        0.01;
-      height =
-        document.getElementById("straight-line").height.baseVal.value *
-        height *
-        0.01;
-      console.log(width + " " + height);
-      const color_2 = d3.scaleOrdinal(d3.schemeCategory10);
-
-      // Create simulation
-      const simulation_2 = d3
-        .forceSimulation(data_2.nodes)
-        .force(
-          "link",
-          d3.forceLink(data_2.links).id((d) => d.id)
-        )
-        .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(width / 2, height / 2));
-
-      // Draw links
-      const link_2 = svg_2
+      // append the svg object to the body of the page
+      const svg_2 = d3
+        .select("#no-straight-line")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
         .append("g")
-        .attr("stroke", "#999")
-        .attr("stroke-opacity", 0.6)
-        .selectAll("line")
-        .data(data_2.links)
-        .join("line")
-        .attr("stroke-width", (d) => Math.sqrt(d.value));
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      // Draw nodes
-      const node_2 = svg_2
-        .append("g")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1.5)
-        .selectAll("circle")
-        .data(data_2.nodes)
-        .join("circle")
-        .attr("r", 10)
-        .attr("fill", (d) => color(d.group))
-        .call(
-          d3
-            .drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended)
-        );
+      //Read the data
+      d3.csv(
+        "https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
 
-      node_2.append("title").text((d) => d.id);
+        // When reading the csv, I must format variables:
+        function (d) {
+          return { date: d3.timeParse("%Y-%m-%d")(d.date), value: d.value };
+        }
+      ).then(
+        // Now I can use this dataset:
+        function (data) {
+          console.log(data);
+          // Add X axis --> it is a date format
+          const x = d3
+            .scaleTime()
+            .domain(
+              d3.extent(data, function (d) {
+                return d.date;
+              })
+            )
+            .range([0, width]);
+          svg_2
+            .append("g")
+            .attr("transform", `translate(0, ${height})`)
+            .call(d3.axisBottom(x));
 
-      simulation_2.on("tick", () => {
-        link_2
-          .attr("x1", (d) => d.source.x)
-          .attr("y1", (d) => d.source.y)
-          .attr("x2", (d) => d.target.x)
-          .attr("y2", (d) => d.target.y);
+          // Add Y axis
+          const y = d3
+            .scaleLinear()
+            .domain([
+              0,
+              d3.max(data, function (d) {
+                return +d.value;
+              }),
+            ])
+            .range([height, 0]);
+          svg_2.append("g").call(d3.axisLeft(y));
 
-        node_2.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-      });
-
-      function dragstarted(event, d) {
-        if (!event.active) simulation_2.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-      }
-
-      function dragged(event, d) {
-        d.fx = event.x;
-        d.fy = event.y;
-      }
-
-      function dragended(event, d) {
-        if (!event.active) simulation_2.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
-      }
+          // Add the line
+          svg_2
+            .append("path")
+            .datum(data)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 1.5)
+            .attr(
+              "d",
+              d3
+                .line()
+                .x(function (d) {
+                  return x(d.date);
+                })
+                .y(function (d) {
+                  return y(d.value);
+                })
+            );
+        }
+      );
     </script>
   </body>
 </html>
