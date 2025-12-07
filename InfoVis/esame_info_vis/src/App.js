@@ -9,6 +9,7 @@ function App() {
   const [lock, setLock] = React.useState(true);
 
   const drawGraph = () => {
+      
       const data = {
         nodes: [
           { id: "A", group: 1 },
@@ -33,6 +34,10 @@ function App() {
 
       // Select the SVG element
       const svg = d3.select("#straight-line");
+
+      const elements = svg.selectAll('#straight-line').data(data, d => d.id);
+
+      elements.exit().remove();
       var width = svg.attr("width");
       var height = svg.attr("height");
 
