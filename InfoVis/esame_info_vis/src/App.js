@@ -2,8 +2,11 @@ import logo from './logo.svg';
 import './App.css';
 import * as d3 from 'd3';
 import { useEffect } from 'react';
+import React from 'react';
+
 
 function App() {
+  const [lock, setLock] = React.useState(true);
 
   const drawGraph = () => {
       const data = {
@@ -224,9 +227,12 @@ function App() {
   }
   
   useEffect(() => {
+    if(lock){
     drawGraph();
     drawGraph2();
-  }, []);
+    setLock(false);
+    }
+  }, [lock]);
 
   return (
     <div className="App">
@@ -245,8 +251,7 @@ function App() {
         </a>
       </header>
       <h1>TENNIS TAVOLO 2.0</h1>
-    <noscript><div w3-include-html="menu.html"></div></noscript>
-    <h3 for="intervallo-temporale">Seleziona il periodo temporale</h3>
+    <h3 htmlFor="intervallo-temporale">Seleziona il periodo temporale</h3>
     <select name="intervallo-temporale" id="selettore periodo">
       <option value="">--Seleziona--</option>
       <option value="settimana">Settimana</option>
@@ -257,11 +262,11 @@ function App() {
     <br />
     <br />
     <br />
-    <div class="container">
-      <div class="container-div">SPAZI LIBERI</div>
-      <div class="container-div">ASSENZE</div>
-      <div class="container-div">VARIAZIONI</div>
-      <div class="container-div">PERCENTUALE RIEMPIMENTO</div>
+    <div className="container">
+      <div className="container-div">SPAZI LIBERI</div>
+      <div className="container-div">ASSENZE</div>
+      <div className="container-div">VARIAZIONI</div>
+      <div className="container-div">PERCENTUALE RIEMPIMENTO</div>
     </div>
 
     <h2>ORGANIZZAZIONE SETTIMANALE</h2>
