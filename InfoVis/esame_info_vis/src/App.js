@@ -6,9 +6,7 @@ import React from 'react';
 
 
 function App() {
-  const [lock, setLock] = React.useState(true);
-  
-  var contatore = lock;
+
   const drawGraph = () => {
       
       const data = {
@@ -235,14 +233,8 @@ function App() {
   }
   
   useEffect(() => {
-    //console.log("useEffect lock:", lock);
-    //if(lock && contatore){
-      contatore=false;
       drawGraph();
       drawGraph2();
-      setLock(false);
-    //}
-    //console.log("useEffect end");
   }, []);
 
   return (
