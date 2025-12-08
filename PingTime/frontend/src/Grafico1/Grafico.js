@@ -1,12 +1,17 @@
 import React from 'react';  
 import * as d3 from 'd3';
+import styles from "./Grafico.module.css";
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 function App2(){
 
+  const [age, setAge] = React.useState(0);
+
 // set the dimensions and margins of the graph
 const margin = {top: 80, right: 25, bottom: 30, left: 40},
-  width = 1920 - margin.left - margin.right,
-  height = 1080 - margin.top - margin.bottom;
+  width = 1200 - margin.left - margin.right,
+  height = 1200 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 const svg = d3.select("#my_dataviz")
@@ -101,29 +106,31 @@ d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/he
     .on("mouseleave", mouseleave)
 })
 
-// Add title to graph
-svg.append("text")
-        .attr("x", 0)
-        .attr("y", -50)
-        .attr("text-anchor", "left")
-        .style("font-size", "22px")
-        .text("A d3.js heatmap");
-
-// Add subtitle to graph
-svg.append("text")
-        .attr("x", 0)
-        .attr("y", -20)
-        .attr("text-anchor", "left")
-        .style("font-size", "14px")
-        .style("fill", "grey")
-        .style("max-width", 400)
-        .text("A short description of the take-away message of this chart.");
 
 
     return (
 
-        <div>
-            <div id="my_dataviz"></div>
+        <div className={styles.container}>
+            <br/>
+            <br/>
+            <h2> ORGANIZZAZIONE/... </h2>
+            <br/>
+            <br/>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={age}
+              label="Age"
+              onChange={(event)=>setAge(event.target.value)}
+            >
+              <MenuItem value={0}><em>None</em></MenuItem>
+              <MenuItem value={10}>Ten</MenuItem>
+              <MenuItem value={20}>Twenty</MenuItem>
+              <MenuItem value={30}>Thirty</MenuItem>
+            </Select> 
+            <br/>
+            <br/>      
+            <svg width={1200} height={1200} id="my_dataviz"></svg>
         </div>
     )
 }
