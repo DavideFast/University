@@ -235,14 +235,14 @@ function App() {
   }
   
   useEffect(() => {
-    console.log("useEffect lock:", lock);
-    if(lock && contatore){
+    //console.log("useEffect lock:", lock);
+    //if(lock && contatore){
       contatore=false;
       drawGraph();
       drawGraph2();
       setLock(false);
-    }
-    console.log("useEffect end");
+    //}
+    //console.log("useEffect end");
   }, []);
 
   return (
