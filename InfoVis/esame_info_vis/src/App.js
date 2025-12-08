@@ -7,7 +7,7 @@ import React from 'react';
 
 function App() {
   const [lock, setLock] = React.useState(true);
-
+  var contatore = 0;
   const drawGraph = () => {
       
       const data = {
@@ -33,9 +33,15 @@ function App() {
       };
 
       // Select the SVG element
+      
+      
       const svg = d3.select("#straight-line");
       var width = svg.attr("width");
       var height = svg.attr("height");
+
+      console.log("Before remove");
+      //d3.select("#straight-line").remove();
+      //d3.select("#straight-line").append("svg");
 
       width = parseInt(width);
       height = parseInt(height);
@@ -228,10 +234,11 @@ function App() {
   }
   
   useEffect(() => {
-    if(lock){
-    drawGraph();
-    drawGraph2();
-    setLock(false);
+    if(lock && contatore===0){
+      contatore=1;
+      drawGraph();
+      drawGraph2();
+      setLock(false);
     }
   }, [lock]);
 
