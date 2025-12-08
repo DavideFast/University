@@ -1,6 +1,7 @@
 # RECOMMENDATIONS
 
 > [!NOTE]
-> MODELS AND ALGORITHMS FOR DATA VISUALIZATION
+> PINGTIME
 
-This project is about a PingPong Organization Application.
+PingTime is an application developed for "Models and Alghoritms For Data Visualization" exam.
+This project is made by Mirko Bruschi, Michele Dalmonte and me.
