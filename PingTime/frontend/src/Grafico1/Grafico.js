@@ -5,8 +5,8 @@ function App2(){
 
 // set the dimensions and margins of the graph
 const margin = {top: 80, right: 25, bottom: 30, left: 40},
-  width = 450 - margin.left - margin.right,
-  height = 450 - margin.top - margin.bottom;
+  width = 1920 - margin.left - margin.right,
+  height = 1080 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 const svg = d3.select("#my_dataviz")
