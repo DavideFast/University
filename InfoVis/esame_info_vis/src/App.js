@@ -7,7 +7,8 @@ import React from 'react';
 
 function App() {
   const [lock, setLock] = React.useState(true);
-  var contatore = 0;
+  
+  var contatore = lock;
   const drawGraph = () => {
       
       const data = {
@@ -234,13 +235,15 @@ function App() {
   }
   
   useEffect(() => {
-    if(lock && contatore===0){
-      contatore=1;
+    console.log("useEffect lock:", lock);
+    if(lock && contatore){
+      contatore=false;
       drawGraph();
       drawGraph2();
       setLock(false);
     }
-  }, [lock]);
+    console.log("useEffect end");
+  }, []);
 
   return (
     <div className="App">
@@ -260,7 +263,7 @@ function App() {
       </header>
       <h1>TENNIS TAVOLO 2.0</h1>
     <h3 htmlFor="intervallo-temporale">Seleziona il periodo temporale</h3>
-    <select name="intervallo-temporale" id="selettore periodo">
+    <select name="intervallo-temporale" id="selettore periodo" onChange={()=>{setLock(true)}}>
       <option value="">--Seleziona--</option>
       <option value="settimana">Settimana</option>
       <option value="mese">Mese</option>
