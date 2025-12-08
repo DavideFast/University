@@ -255,7 +255,7 @@ function App() {
       </header>
       <h1>TENNIS TAVOLO 2.0</h1>
     <h3 htmlFor="intervallo-temporale">Seleziona il periodo temporale</h3>
-    <select name="intervallo-temporale" id="selettore periodo" onChange={()=>{setLock(true)}}>
+    <select name="intervallo-temporale" id="selettore periodo">
       <option value="">--Seleziona--</option>
       <option value="settimana">Settimana</option>
       <option value="mese">Mese</option>
