@@ -1,12 +1,14 @@
-import React from 'react';  
 import * as d3 from 'd3';
 import styles from "./Grafico.module.css";
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import { useEffect, useRef } from 'react';
+import React from 'react';
 
 function App2(){
 
   const [periodo, setPeriodo] = React.useState(0);
+  const mySvgRef = useRef(null);
 
 // set the dimensions and margins of the graph
 const margin = {top: 80, right: 25, bottom: 30, left: 40},
@@ -14,6 +16,7 @@ const margin = {top: 80, right: 25, bottom: 30, left: 40},
   height = 1200 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
+d3.select("#my_dataviz").selectAll("*").remove(); // Clear previous content
 const svg = d3.select("#my_dataviz")
 .append("svg")
   .attr("width", width + margin.left + margin.right)
@@ -25,8 +28,12 @@ const svg = d3.select("#my_dataviz")
 d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv").then(function(data) {
 
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
-  const myGroups = Array.from(new Set(data.map(d => d.group)))
-  const myVars = Array.from(new Set(data.map(d => d.variable)))
+  const myGroups_old = Array.from(new Set(data.map(d => d.group)))
+  const myVars_old = Array.from(new Set(data.map(d => d.variable)))
+  var myGroups = [];
+  var myVars = [];
+  myVars = myVars_old;
+  myGroups = myGroups_old;
 
   // Build X scales and axis:
   const x = d3.scaleBand()
@@ -106,7 +113,11 @@ d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/he
     .on("mouseleave", mouseleave)
 })
 
-
+  useEffect(() => {
+    // Questo codice verrà eseguito ogni volta che 'periodo' cambia
+    console.log("Il periodo selezionato è:", periodo);
+    // Qui puoi aggiungere la logica per aggiornare il grafico in base al periodo selezionato
+  }, [periodo]);
 
     return (
 
@@ -130,7 +141,7 @@ d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/he
             </Select> 
             <br/>
             <br/>      
-            <svg width={1200} height={1200} id="my_dataviz"></svg>
+            <svg width={1200} height={1200} id="my_dataviz" ref={mySvgRef}></svg>
         </div>
     )
 }
