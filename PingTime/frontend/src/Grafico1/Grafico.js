@@ -6,7 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 
 function App2(){
 
-  const [age, setAge] = React.useState(0);
+  const [periodo, setPeriodo] = React.useState(0);
 
 // set the dimensions and margins of the graph
 const margin = {top: 80, right: 25, bottom: 30, left: 40},
@@ -116,17 +116,17 @@ d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/he
             <h2> ORGANIZZAZIONE/... </h2>
             <br/>
             <br/>
-            <Select
+            <Select sx={{minWidth:"150px"}}
               labelId="demo-simple-select-label"
               id="demo-simple-select"
-              value={age}
+              value={periodo}
               label="Age"
-              onChange={(event)=>setAge(event.target.value)}
+              onChange={(event)=>setPeriodo(event.target.value)}
             >
               <MenuItem value={0}><em>None</em></MenuItem>
-              <MenuItem value={10}>Ten</MenuItem>
-              <MenuItem value={20}>Twenty</MenuItem>
-              <MenuItem value={30}>Thirty</MenuItem>
+              <MenuItem value={10}>Settimana</MenuItem>
+              <MenuItem value={20}>Mese</MenuItem>
+              <MenuItem value={30}>Anno</MenuItem>
             </Select> 
             <br/>
             <br/>      
