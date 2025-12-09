@@ -2,13 +2,12 @@ import * as d3 from 'd3';
 import styles from "./Grafico.module.css";
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { useEffect, useRef } from 'react';
+import { useEffect} from 'react';
 import React from 'react';
 
 function App2(){
 
   const [periodo, setPeriodo] = React.useState(0);
-  const mySvgRef = useRef(null);
 
 // set the dimensions and margins of the graph
 const margin = {top: 80, right: 25, bottom: 30, left: 40},
@@ -141,7 +140,7 @@ d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/he
             </Select> 
             <br/>
             <br/>      
-            <svg width={1200} height={1200} id="my_dataviz" ref={mySvgRef}></svg>
+            <svg width={1200} height={1200} id="my_dataviz" ></svg>
         </div>
     )
 }
