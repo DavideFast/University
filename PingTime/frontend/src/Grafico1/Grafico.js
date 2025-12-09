@@ -42,24 +42,38 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
     return d3.ascending(a.ultima_azione, b.ultima_azione);
   });
 
-  var arrayFasce = new Array(168); //7 giorni x 24 ore
+  var arrayFasce = new Array(7*96); //7 giorni x 24 ore x 4 quarti d'ora
   for(let i=0; i<7; i++){
-    for(let j=0; j<24; j++){
-    arrayFasce[i*24+j] = {};
-    arrayFasce[i*24+j].valore = 0;
+    for(let j=0; j<96; j++){
+    arrayFasce[i*96+j] = {};
+    arrayFasce[i*96+j].valore = 0;
 
     if(j<10)
-      arrayFasce[i*24+j].fascia = "0"+j+":00";
+      if(j%4===0)
+        arrayFasce[i*96+j].fascia = "0"+j+":00";
+      else if(j%4===1)
+        arrayFasce[i*96+j].fascia = "0"+j+":15";
+      else if(j%4===2)
+        arrayFasce[i*96+j].fascia = "0"+j+":30";
+      else
+        arrayFasce[i*96+j].fascia = "0"+j+":45";
     else
-      arrayFasce[i*24+j].fascia = j+":00";
+      if(j%4===0)
+        arrayFasce[i*96+j].fascia = j+":00";
+      else if(j%4===1)
+        arrayFasce[i*96+j].fascia = j+":15";
+      else if(j%4===2)  
+        arrayFasce[i*96+j].fascia = j+":30";
+      else
+      arrayFasce[i*96+j].fascia = j+":45";
 
-    if(i===0) arrayFasce[i*24+j].giorno = "Domenica";
-    if(i===1) arrayFasce[i*24+j].giorno = "Lunedì";
-    if(i===2) arrayFasce[i*24+j].giorno = "Martedì";
-    if(i===3) arrayFasce[i*24+j].giorno = "Mercoledì";
-    if(i===4) arrayFasce[i*24+j].giorno = "Giovedì";
-    if(i===5) arrayFasce[i*24+j].giorno = "Venerdì";
-    if(i===6) arrayFasce[i*24+j].giorno = "Sabato";
+    if(i===0) arrayFasce[i*96+j].giorno = "Domenica";
+    if(i===1) arrayFasce[i*96+j].giorno = "Lunedì";
+    if(i===2) arrayFasce[i*96+j].giorno = "Martedì";
+    if(i===3) arrayFasce[i*96+j].giorno = "Mercoledì";
+    if(i===4) arrayFasce[i*96+j].giorno = "Giovedì";
+    if(i===5) arrayFasce[i*96+j].giorno = "Venerdì";
+    if(i===6) arrayFasce[i*96+j].giorno = "Sabato";
   }
 }
   //Creare array sulla base della fascia 
@@ -91,11 +105,25 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
 
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
   var myGroups = new Array(24);
-  for(let i=0; i<24; i++){
+  for(let i=0; i<96; i++){
     if(i<10)
-      myGroups[i] = "0"+i+":00";
+      if(i%4===0)
+        myGroups[i] = "0"+i+":00";
+      else if(i%4===1)
+        myGroups[i] = "0"+i+":15";
+      else if(i%4===2)
+        myGroups[i] = "0"+i+":30";
+      else
+        myGroups[i] = "0"+i+":45";
     else
-      myGroups[i] = i+":00";
+      if(i%4===0)
+        myGroups[i] = i+":00";
+      else if(i%4===1)
+        myGroups[i] = i+":15";
+      else if(i%4===2)  
+        myGroups[i] = i+":30";
+      else
+      myGroups[i] = i+":45";
   }
   var myVars = [];
   myVars = ["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
@@ -106,7 +134,7 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
     .domain(myGroups)
     .padding(0.05);
   svg.append("g")
-    .style("font-size", 15)
+    .style("font-size", 12)
     .attr("transform", `translate(0, ${height})`)
     .call(d3.axisBottom(x).tickSize(0))
     .select(".domain").remove()
