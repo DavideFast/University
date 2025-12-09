@@ -3,14 +3,16 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import App2 from "./Grafico1/Grafico.js";
+import App3 from "./Grafico2/Grafico.js";
 import reportWebVitals from './reportWebVitals';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <div>
-    <App />
-    <App2 />
+    <App/>
+    <App2/>
+    <App3/>
     </div>
 );
 

@@ -4,20 +4,19 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { useEffect} from 'react';
 import React from 'react';
-import * as dayjs from 'dayjs';
 
-function App2(){
+function App3(){
 
   const [periodo, setPeriodo] = React.useState(0);
 
 // set the dimensions and margins of the graph
-  const margin = {top: 80, right: 25, bottom: 50, left: 120},
-  width = 1600 - margin.left - margin.right,
-  height = 600 - margin.top - margin.bottom;
+  const margin = {top: 80, right: 25, bottom: 30, left: 40},
+  width = 1200 - margin.left - margin.right,
+  height = 1200 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
-d3.select("#my_dataviz").selectAll("*").remove(); // Clear previous content
-const svg = d3.select("#my_dataviz")
+d3.select("#my_datavizz").selectAll("*").remove(); // Clear previous content
+const svg = d3.select("#my_datavizz")
 .append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
@@ -25,80 +24,16 @@ const svg = d3.select("#my_dataviz")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 //Read the data
-d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calendario&format=csv").then(function(data) {
-  //console.log("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Persona&format=csv");
-  //console.log("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv");
-  //console.log(data);
-  var newData = new Array(data.length);
-  //console.log(data[1].alias);
-
-  for (let i = 0; i < data.length; i++) {
-    newData[i] = {};
-    newData[i].alias = data[i].alias;
-    newData[i].ultima_azione = data[i].ultima_azione;
-  }
-
-  newData.sort((a, b) => {
-    return d3.ascending(a.ultima_azione, b.ultima_azione);
-  });
-
-  var arrayFasce = new Array(168); //7 giorni x 24 ore
-  for(let i=0; i<7; i++){
-    for(let j=0; j<24; j++){
-    arrayFasce[i*24+j] = {};
-    arrayFasce[i*24+j].valore = 0;
-
-    if(j<10)
-      arrayFasce[i*24+j].fascia = "0"+j+":00";
-    else
-      arrayFasce[i*24+j].fascia = j+":00";
-
-    if(i===0) arrayFasce[i*24+j].giorno = "Domenica";
-    if(i===1) arrayFasce[i*24+j].giorno = "Lunedì";
-    if(i===2) arrayFasce[i*24+j].giorno = "Martedì";
-    if(i===3) arrayFasce[i*24+j].giorno = "Mercoledì";
-    if(i===4) arrayFasce[i*24+j].giorno = "Giovedì";
-    if(i===5) arrayFasce[i*24+j].giorno = "Venerdì";
-    if(i===6) arrayFasce[i*24+j].giorno = "Sabato";
-  }
-}
-  //Creare array sulla base della fascia 
-  for (let i = 0; i < newData.length; i++) {
-      if(dayjs(newData[i].ultima_azione).day()===0){
-        arrayFasce[0].valore +=1;
-      }
-      if(dayjs(newData[i].ultima_azione).day()===1){
-        arrayFasce[1].valore +=1;
-      }
-      if(dayjs(newData[i].ultima_azione).day()===2){
-        arrayFasce[2].valore +=1;
-      }
-      if(dayjs(newData[i].ultima_azione).day()===3){
-        arrayFasce[3].valore +=1;
-      }
-      if(dayjs(newData[i].ultima_azione).day()===4){
-        arrayFasce[4].valore +=1;
-      }
-      if(dayjs(newData[i].ultima_azione).day()===5){
-        arrayFasce[5].valore +=1;
-      }
-      if(dayjs(newData[i].ultima_azione).day()===6){
-        arrayFasce[6].valore +=1;
-      }
-    } 
-  
-  console.log(arrayFasce);
+d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv").then(function(data) {
 
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
-  var myGroups = new Array(24);
-  for(let i=0; i<24; i++){
-    if(i<10)
-      myGroups[i] = "0"+i+":00";
-    else
-      myGroups[i] = i+":00";
-  }
+  const myGroups_old = Array.from(new Set(data.map(d => d.group)))
+  const myVars_old = Array.from(new Set(data.map(d => d.variable)))
+  var myGroups = [];
   var myVars = [];
-  myVars = ["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
+  myVars = myVars_old;
+  myGroups = myGroups_old;
+  console.log(myGroups);
 
   // Build X scales and axis:
   const x = d3.scaleBand()
@@ -124,7 +59,7 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
   // Build color scale
   const myColor = d3.scaleSequential()
     .interpolator(d3.interpolateInferno)
-    .domain([0,100])
+    .domain([1,100])
 
   // create a tooltip
   const tooltip = d3.select("#my_dataviz")
@@ -161,15 +96,15 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
 
   // add the squares
   svg.selectAll()
-    .data(arrayFasce, function(d) {console.log("Prova");return d.giorno+':'+d.valore;})
+    .data(data, function(d) {return d.group+':'+d.variable;})
     .join("rect")
-      .attr("x", function(d) { return x(d.fascia) })
-      .attr("y", function(d) { return y(d.giorno) })
+      .attr("x", function(d) { return x(d.group) })
+      .attr("y", function(d) { return y(d.variable) })
       .attr("rx", 4)
       .attr("ry", 4)
       .attr("width", x.bandwidth() )
       .attr("height", y.bandwidth() )
-      .style("fill", function(d) { return myColor(d.valore)} )
+      .style("fill", function(d) { return myColor(d.value)} )
       .style("stroke-width", 4)
       .style("stroke", "none")
       .style("opacity", 0.8)
@@ -207,9 +142,9 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
             </Select> 
             <br/>
             <br/>      
-            <svg width={1600} height={600} id="my_dataviz" ></svg>
+            <svg width={1600} height={1200} id="my_datavizz" ></svg>
         </div>
     )
 }
 
-export default App2;
+export default App3;

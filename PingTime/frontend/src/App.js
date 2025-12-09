@@ -3,9 +3,12 @@ import './App.css';
 import * as d3 from 'd3';
 import { useEffect } from 'react';
 import React from 'react';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 
 function App() {
+  const [periodo, setPeriodo] = React.useState(0);
 
   const drawGraph = () => {
       
@@ -255,12 +258,18 @@ function App() {
       </header>
       <h1>TENNIS TAVOLO 2.0</h1>
     <h3 htmlFor="intervallo-temporale">Seleziona il periodo temporale</h3>
-    <select name="intervallo-temporale" id="selettore periodo">
-      <option value="">--Seleziona--</option>
-      <option value="settimana">Settimana</option>
-      <option value="mese">Mese</option>
-      <option value="anno">Anno</option>
-    </select>
+    <Select sx={{minWidth:"150px"}}
+      labelId="demo-simple-select-label"
+      id="demo-simple-select"
+      value={periodo}
+      label="Age"
+      onChange={(event)=>setPeriodo(event.target.value)}
+    >
+        <MenuItem value={0}><em>None</em></MenuItem>
+        <MenuItem value={10}>Settimana</MenuItem>
+        <MenuItem value={20}>Mese</MenuItem>
+        <MenuItem value={30}>Anno</MenuItem>
+    </Select>
     <br />
     <br />
     <br />
