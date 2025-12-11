@@ -9,53 +9,20 @@ import  Slider from '@mui/material/Slider';
 
 
 function calcola(valore){
-  if(valore<5)
-    return 0;
-  if(valore<10)
-    return 0.05;
-  if(valore<15)
-    return 0.1;
-  if(valore<20)
-    return 0.15;
-  if(valore<25)
-    return 0.2;
-  if(valore<30)
-    return 0.25;
-  if(valore<35)
-    return 0.30;
-  if(valore<40)
-    return 0.35;
-  if(valore<45)
-    return 0.40;
+  console.log("Valore slider: " + valore);
   if(valore<50)
-    return 0.45;
-  if(valore<55)
-    return 0.50;
-  if(valore<60)
-    return 0.55;
-  if(valore<65)
-    return 0.60;
-  if(valore<70)
-    return 0.65;
+    return 0.25;
   if(valore<75)
-    return 0.70;
-  if(valore<80)
-    return 0.75;
-  if(valore<85)
-    return 0.80;
-  if(valore<90)
-    return 0.85;
-  if(valore<95)
-    return 0.90;
-  if(valore<100)
-    return 0.95;
+    return 0.50;
+  if(valore<=100)
+    return 1;
   return 1;
 }
 
 function d3_create_graphic( spostamento){
 // set the dimensions and margins of the graph
   const margin = {top: 80, right: 25, bottom: 50, left: 120},
-  width = 1600 - margin.left - margin.right,
+  width = 1800 - margin.left - margin.right,
   height = 600 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
@@ -172,16 +139,23 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
   myVars = ["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
 
   // Build X scales and axis:
-    console.log(28- (28-22*spostamento));
-    console.log(2+(22*spostamento));
-
+    var xAxis = d3.axisBottom();
+    //console.log(Date.now() + 28*60*60*1000- (28-22*spostamento)*60*60*1000);
+    //console.log(Date.now());
     var x = d3.scaleTime()
-    .domain([Date.now() + 28*60*60*1000- (28-22*spostamento)*60*60*1000, Date.now() + 2 * 60 * 60 * 1000+(22*spostamento)*60*60*1000])
-    .range([ 0, width ]);
+    .domain([new Date(2000,0,1), new Date(2000,0,2)]);
+    //.domain([Date.now() + 28*60*60*1000- (28-22*spostamento)*60*60*1000, Date.now() + 2 * 60 * 60 * 1000+(22*spostamento)*60*60*1000])
+    x.range([ 0, width ]);
+    xAxis.scale(x);
+    xAxis.ticks(d3.timeMinute.every(60*spostamento));
+    //xAxis.ticks(50);
+    //xAxis.tickValues(x.ticks().filter(function(d,i){ return !(i%4)}));
+    xAxis.tickFormat(d3.timeFormat("%H:%M"));
+
   svg.append("g")
     .style("font-size", 12)
     .attr("transform", `translate(0, ${height})`)
-    .call(d3.axisBottom(x).tickSize(0))
+    .call(xAxis/*.tickSize(0)*/)
     .select(".domain").remove()
 
   // Build Y scales and axis:
@@ -255,8 +229,8 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
 function App2(){
 
   const [periodo, setPeriodo] = React.useState(0);
-  const [spostamento, setSpostamento] = React.useState(0);
-  const [spostamentoSlider, setSpostamentoSlider] = React.useState(0);
+  const [spostamento, setSpostamento] = React.useState(1);
+  const [spostamentoSlider, setSpostamentoSlider] = React.useState(100);
   const [spostamentoCopia, setSpostamentoCopia] = React.useState(0);
   const [valore, setValore] = React.useState(0);
   const [lock, setLock] = React.useState(false);
@@ -293,7 +267,7 @@ function App2(){
             </Select> 
             <br/>
             <br/>      
-            <svg width={1600} height={600} id="my_dataviz" ></svg>
+            <svg width={1800} height={600} id="my_dataviz" ></svg>
             <br/>
             <br/>
             <br/>
