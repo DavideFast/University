@@ -10,6 +10,10 @@ import  Slider from '@mui/material/Slider';
 
 function calcola(valore){
   console.log("Valore slider: " + valore);
+  if(valore<8)
+    return 1/12;
+  if(valore<16)
+    return 1/6;
   if(valore<50)
     return 0.25;
   if(valore<75)
