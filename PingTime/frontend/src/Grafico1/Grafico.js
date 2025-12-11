@@ -259,6 +259,8 @@ function App2(){
   const [spostamentoSlider, setSpostamentoSlider] = React.useState(0);
   const [spostamentoCopia, setSpostamentoCopia] = React.useState(0);
   const [valore, setValore] = React.useState(0);
+  const [lock, setLock] = React.useState(false);
+  const [previousX, setPreviousX] = React.useState(0);
 
 
 
@@ -312,11 +314,12 @@ function App2(){
             <br/>
             <br/>
             
-            <div className={styles.barra} onMouseOver={(event)=>{setSpostamentoCopia(event.clientX-160)}}>
+            <div className={styles.barra} onMouseOver={(event)=>{if(lock)setSpostamentoCopia(spostamentoCopia + event.clientX-previousX)}}>
               <div className={styles.maniglie}  
-                onMouseDown={()=>{setValore(10)}}
-                onMouseUp={()=>{setValore(5)}}
-                onMouseLeave={()=>{setValore(5)}}
+                onMouseDown={(event)=>{setValore(10);setLock(true); setPreviousX(event.clientX);}}
+                onMouseUp={(event)=>{setValore(5);setLock(false);}}
+                onMouseLeave={(event)=>{setValore(5);console.log(event.clientX-previousX);setLock(false);}}
+                onMouseOver={(event)=>{if(lock){setSpostamentoCopia(event.clientX-previousX);setPreviousX(event.clientX)}}}
                 style={{backgroundColor:"green",
                         marginLeft: `${spostamentoCopia}px`,
                         boxShadow: `0 0 0 ${valore}px rgba(76, 175, 80, 0.4)`
