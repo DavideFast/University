@@ -3,3 +3,21 @@
     height:100%;
     text-align: center;
 }
+
+.barra{
+    width:960px;
+    height:4px;
+    background: #d3d3d3;
+    margin: auto;
+    margin-top: -310px;
+}   
+
+.maniglie{
+    width:16px;
+    height:16px;
+    background: #4CAF50;
+    border-radius: 50%;
+    position: relative;
+    top: -10px;
+    left: 0px;
+}

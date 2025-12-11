@@ -5,11 +5,54 @@ import MenuItem from '@mui/material/MenuItem';
 import { useEffect} from 'react';
 import React from 'react';
 import * as dayjs from 'dayjs';
+import  Slider from '@mui/material/Slider';
 
-function App2(){
 
-  const [periodo, setPeriodo] = React.useState(0);
+function calcola(valore){
+  if(valore<5)
+    return 0;
+  if(valore<10)
+    return 0.05;
+  if(valore<15)
+    return 0.1;
+  if(valore<20)
+    return 0.15;
+  if(valore<25)
+    return 0.2;
+  if(valore<30)
+    return 0.25;
+  if(valore<35)
+    return 0.30;
+  if(valore<40)
+    return 0.35;
+  if(valore<45)
+    return 0.40;
+  if(valore<50)
+    return 0.45;
+  if(valore<55)
+    return 0.50;
+  if(valore<60)
+    return 0.55;
+  if(valore<65)
+    return 0.60;
+  if(valore<70)
+    return 0.65;
+  if(valore<75)
+    return 0.70;
+  if(valore<80)
+    return 0.75;
+  if(valore<85)
+    return 0.80;
+  if(valore<90)
+    return 0.85;
+  if(valore<95)
+    return 0.90;
+  if(valore<100)
+    return 0.95;
+  return 1;
+}
 
+function d3_create_graphic( spostamento){
 // set the dimensions and margins of the graph
   const margin = {top: 80, right: 25, bottom: 50, left: 120},
   width = 1600 - margin.left - margin.right,
@@ -101,7 +144,7 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
       }
     } 
   
-  console.log(arrayFasce);
+  //console.log(arrayFasce);
 
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
   var myGroups = new Array(24);
@@ -129,10 +172,12 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
   myVars = ["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
 
   // Build X scales and axis:
-  const x = d3.scaleBand()
-    .range([ 0, width ])
-    .domain(myGroups)
-    .padding(0.05);
+    console.log(28- (28-22*spostamento));
+    console.log(2+(22*spostamento));
+
+    var x = d3.scaleTime()
+    .domain([Date.now() + 28*60*60*1000- (28-22*spostamento)*60*60*1000, Date.now() + 2 * 60 * 60 * 1000+(22*spostamento)*60*60*1000])
+    .range([ 0, width ]);
   svg.append("g")
     .style("font-size", 12)
     .attr("transform", `translate(0, ${height})`)
@@ -189,13 +234,13 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
 
   // add the squares
   svg.selectAll()
-    .data(arrayFasce, function(d) {console.log("Prova");return d.giorno+':'+d.valore;})
+    .data(arrayFasce, function(d) {return d.giorno+':'+d.valore;})
     .join("rect")
       .attr("x", function(d) { return x(d.fascia) })
       .attr("y", function(d) { return y(d.giorno) })
       .attr("rx", 4)
       .attr("ry", 4)
-      .attr("width", x.bandwidth() )
+      //.attr("width", x.bandwidth() )
       .attr("height", y.bandwidth() )
       .style("fill", function(d) { return myColor(d.valore)} )
       .style("stroke-width", 4)
@@ -205,12 +250,21 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave)
 })
+}
+
+function App2(){
+
+  const [periodo, setPeriodo] = React.useState(0);
+  const [spostamento, setSpostamento] = React.useState(0);
+  const [spostamentoSlider, setSpostamentoSlider] = React.useState(0);
+
+
 
   useEffect(() => {
-    // Questo codice verrà eseguito ogni volta che 'periodo' cambia
-    console.log("Il periodo selezionato è:", periodo);
-    // Qui puoi aggiungere la logica per aggiornare il grafico in base al periodo selezionato
-  }, [periodo]);
+    d3_create_graphic(spostamento);
+    console.log("Aggiornamento grafico con spostamento: " + spostamento);
+    console.log("Valore slider: " + spostamentoSlider);
+  }, [periodo,spostamento]);
 
     return (
 
@@ -236,6 +290,33 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
             <br/>
             <br/>      
             <svg width={1600} height={600} id="my_dataviz" ></svg>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            
+            <div className={styles.barra}>
+              <div className={styles.maniglie} onClick={(event)=>{setSpostamento(event.clientX-160)}} sx={{marginLeft: spostamento}} >
+
+              </div>
+              <Slider aria-label="Volume" value={spostamentoSlider} onMouseUp={()=>setSpostamento(calcola(spostamentoSlider))} onChange={(event)=>{setSpostamentoSlider(event.target.value)}} />
+            </div>
+            
         </div>
     )
 }
