@@ -257,6 +257,7 @@ function App2(){
   const [periodo, setPeriodo] = React.useState(0);
   const [spostamento, setSpostamento] = React.useState(0);
   const [spostamentoSlider, setSpostamentoSlider] = React.useState(0);
+  const [spostamentoCopia, setSpostamentoCopia] = React.useState(0);
 
 
 
@@ -310,10 +311,12 @@ function App2(){
             <br/>
             <br/>
             
-            <div className={styles.barra}>
-              <div className={styles.maniglie} onClick={(event)=>{setSpostamento(event.clientX-160)}} sx={{marginLeft: spostamento}} >
+            <div className={styles.barra} onMouseOver={(event)=>{setSpostamentoCopia(event.clientX-160)}}>
+              <div className={styles.maniglie}  style={{backgroundColor:"black",marginLeft: `${spostamentoCopia}px`}} >
 
               </div>
+              <br/>
+              <br/>
               <Slider aria-label="Volume" value={spostamentoSlider} onMouseUp={()=>setSpostamento(calcola(spostamentoSlider))} onChange={(event)=>{setSpostamentoSlider(event.target.value)}} />
             </div>
             
