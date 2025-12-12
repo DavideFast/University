@@ -7,9 +7,10 @@
 .barra{
     width:960px;
     height:20px;
-    background: #d3d3d3;
+    background: #c8ff0042;
     margin: auto;
     margin-top: -310px;
+    border-radius:1rem;
     cursor: grab;
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -40,7 +41,7 @@
     background: #4CAF50;
     border-radius: 50%;
     position: relative;
-    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0.8);
+    box-shadow: 0 0 0 100px rgba(76, 175, 80, 0.8);
     top: 1px;
     left: 0px;
 }
