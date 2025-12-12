@@ -8,6 +8,9 @@ import * as dayjs from 'dayjs';
 import  Slider from '@mui/material/Slider';
 
 
+
+
+
 function calcola(valore){
   console.log("Valore slider: " + valore);
   if(valore<8)
@@ -23,7 +26,7 @@ function calcola(valore){
   return 1;
 }
 
-function d3_create_graphic( spostamento){
+function d3_create_graphic( spostamento, finestraTemporale, data){
 // set the dimensions and margins of the graph
   const margin = {top: 80, right: 25, bottom: 50, left: 120},
   width = 1800 - margin.left - margin.right,
@@ -39,7 +42,6 @@ const svg = d3.select("#my_dataviz")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 //Read the data
-d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calendario&format=csv").then(function(data) {
   //console.log("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Persona&format=csv");
   //console.log("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv");
   //console.log(data);
@@ -146,8 +148,8 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
     var xAxis = d3.axisBottom();
     //console.log(Date.now() + 28*60*60*1000- (28-22*spostamento)*60*60*1000);
     //console.log(Date.now());
-    var x = d3.scaleTime()
-    .domain([new Date(2000,0,1), new Date(2000,0,2)]);
+    var x = d3.scaleTime();
+    x.domain([(new Date(2000,0,1)).setHours(finestraTemporale-4), (new Date(2000,0,1)).setHours(finestraTemporale)]);
     //.domain([Date.now() + 28*60*60*1000- (28-22*spostamento)*60*60*1000, Date.now() + 2 * 60 * 60 * 1000+(22*spostamento)*60*60*1000])
     x.range([ 0, width ]);
     xAxis.scale(x);
@@ -227,7 +229,11 @@ d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calend
     .on("mouseover", mouseover)
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave)
-})
+
+}
+
+function setFinestraTemporale(valore){
+  return valore * 0.2 + 4;
 }
 
 function App2(){
@@ -239,14 +245,49 @@ function App2(){
   const [valore, setValore] = React.useState(0);
   const [lock, setLock] = React.useState(false);
   const [previousX, setPreviousX] = React.useState(0);
+  const [finestraTemporale, setFinestraTemporale] = React.useState(4); //4 ore
+  const [dati_acquisiti, setDatiAcquisiti] = React.useState([]);
+
 
 
 
   useEffect(() => {
-    d3_create_graphic(spostamento);
-    console.log("Aggiornamento grafico con spostamento: " + spostamento);
-    console.log("Valore slider: " + spostamentoSlider);
-  }, [periodo,spostamento]);
+
+      const mouseDrag = (e) => {
+      console.log("SONO IN MOUSE DRAG");
+      if(lock){
+        console.log("ATTIVO: "+lock);
+        if(spostamentoCopia + e.clientX - previousX <= 960  && spostamentoCopia + e.clientX - previousX >= 0)
+          setSpostamentoCopia(spostamentoCopia + e.clientX - previousX);
+        console.log("Spostamento copia: " + spostamentoCopia);
+      }
+      }
+
+      const mouseUp = (e) => {
+      setLock(false);
+      console.log("SONO IN MOUSE UP");
+      }
+
+  document.addEventListener('mousemove', mouseDrag);
+  return function cleanup() {
+      document.removeEventListener('mousemove', mouseDrag);
+    };
+
+    
+    //document.addEventListener('mouseup', mouseDrag);
+
+
+    if(dati_acquisiti.length!==null){
+      d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calendario&format=csv").then(function(data) {
+        setDatiAcquisiti(data);
+        d3_create_graphic(spostamento,finestraTemporale,data);
+      });
+    }
+    else{
+      d3_create_graphic(spostamento,finestraTemporale,dati_acquisiti);
+    }
+    console.log("SONO IN USE EFFECT");
+  }, [periodo,spostamento,lock]);
 
     return (
 
@@ -292,12 +333,12 @@ function App2(){
             <br/>
             <br/>
             
-            <div className={styles.barra} onMouseOver={(event)=>{if(lock)setSpostamentoCopia(spostamentoCopia + event.clientX-previousX)}}>
+            <div className={styles.barra} >
               <div className={styles.maniglie}  
-                onMouseDown={(event)=>{setValore(10);setLock(true); setPreviousX(event.clientX);}}
-                onMouseUp={(event)=>{setValore(5);setLock(false);}}
-                onMouseLeave={(event)=>{setValore(5);console.log(event.clientX-previousX);setLock(false);}}
-                onMouseOver={(event)=>{if(lock){setSpostamentoCopia(event.clientX-previousX);setPreviousX(event.clientX)}}}
+                onMouseDown={(event)=>{setPreviousX(event.clientX);setLock(true)}}
+                onClick={()=>{setLock(false)}}
+                onMouseUp={(event)=>{console.log("HAHAHAHAHAH");setLock(false)}}
+
                 style={{backgroundColor:"green",
                         marginLeft: `${spostamentoCopia}px`,
                         boxShadow: `0 0 0 ${valore}px rgba(76, 175, 80, 0.4)`
