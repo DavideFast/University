@@ -400,7 +400,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
 
 function setFinestra(valore) {
   //20 ore diviso 100;
-  return (valore / 9.43) * 0.2 + 0;
+  return (valore / 9.60) * 0.24 + 0;
 }
 
 function calcola(valore) {
@@ -455,7 +455,7 @@ function App2() {
             calcola(spostamentoSlider) * 960 +
             e.clientX -
             previousX <=
-            947 &&
+            960 &&
           spostamentoCopia + e.clientX - previousX >= 0
         )
           setSpostamentoCopia(spostamentoCopia + e.clientX - previousX);
