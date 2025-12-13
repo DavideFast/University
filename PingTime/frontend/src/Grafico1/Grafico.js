@@ -424,7 +424,7 @@ function App2() {
   const checkTimelineAndFix = () => {
     var numero = spostamentoCopia;
     while (numero + calcola(spostamentoSlider) * 960 > 960) {
-      numero--;
+      numero = numero - 1;
     }
     setSpostamentoCopia(numero);
   };
