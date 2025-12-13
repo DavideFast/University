@@ -7,6 +7,7 @@ import React from "react";
 import Slider from "@mui/material/Slider";
 
 function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, db_data, db_fascia) {
+
   // set the dimensions and margins of the graph
   const margin = { top: 80, right: 25, bottom: 50, left: 120 },
     width = 1800 - margin.left - margin.right,
@@ -215,6 +216,8 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
     "Lunedì",
   ];
 
+  console.log("---------"+finestraTemporale);
+
   // Build X scales and axis:
   var xAxis = d3.axisBottom();
   var x = d3.scaleTime();
@@ -396,7 +399,8 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
 }
 
 function setFinestra(valore) {
-  return (valore / 9.43) * 0.2 + 4;
+  //20 ore diviso 100;
+  return (valore / 9.43) * 0.2 + 0;
 }
 
 function calcola(valore) {
@@ -416,7 +420,6 @@ function calcolaAmpiezzaTemporale(valore) {
   if (valore < 50) return 6;
   if (valore < 75) return 12;
   if (valore <= 100) return 24;
-  return 1;
 }
 
 function App2() {
@@ -427,7 +430,7 @@ function App2() {
   const [valore, setValore] = React.useState(0);
   const [lock, setLock] = React.useState(false);
   const [previousX, setPreviousX] = React.useState(0);
-  const [finestraTemporale, setFinestraTemporale] = React.useState(4); //4 ore
+  const [finestraTemporale, setFinestraTemporale] = React.useState(0); //4 ore
   const [ampiezzaFinestraTemporale, setAmpiezzaFinestraTemporale] = React.useState(24); //4 ore
   const [dati_acquisiti, setDatiAcquisiti] = React.useState([]);
   const [fascia, setFascia] = React.useState([]);
