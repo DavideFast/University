@@ -422,10 +422,9 @@ function App2() {
   const [dati_acquisiti, setDatiAcquisiti] = React.useState([]);
   const [fascia, setFascia] = React.useState([]);
 
-  const checkTimelineAndFix = (value) => {
+  const checkTimelineAndFix = () => {
     var numero = spostamentoCopia;
     while (numero + calcola(spostamentoSlider) * 960 > 960) {
-      console.log("ENTRO: " + spostamentoCopia);
       numero--;
     }
     setSpostamentoCopia(numero);
@@ -561,7 +560,7 @@ function App2() {
           aria-label="Volume"
           value={spostamentoSlider}
           onMouseUp={() => {
-            checkTimelineAndFix(true);
+            checkTimelineAndFix();
             setSpostamento(calcola(spostamentoSlider));
           }}
           onChange={(event) => {
