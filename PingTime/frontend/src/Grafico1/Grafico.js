@@ -17,7 +17,7 @@ function calcola(valore) {
   return 1;
 }
 
-function d3_create_graphic(spostamento, finestraTemporale, data) {
+function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
   // set the dimensions and margins of the graph
   const margin = { top: 80, right: 25, bottom: 50, left: 120 },
     width = 1800 - margin.left - margin.right,
@@ -33,114 +33,164 @@ function d3_create_graphic(spostamento, finestraTemporale, data) {
     .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-  //Read the data
-  //console.log("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Persona&format=csv");
-  //console.log("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv");
-  //console.log(data);
-  var newData = new Array(data.length);
-  //console.log(data[1].alias);
+  db_fascia.sort((a, b) => {
+    return a.id - b.id;
+  });
+  const dimensione_array_fascia = Number(db_fascia[db_fascia.length - 1].id);
+  var newFascia = new Array(dimensione_array_fascia);
+  for (let i = 0; i < db_fascia.length; i++) {
+    newFascia[db_fascia[i].id] = db_fascia[i] ? db_fascia[i] : null;
+  }
 
-  for (let i = 0; i < data.length; i++) {
+  console.log(db_fascia);
+  console.log(newFascia);
+  //Read the data
+  var newData = new Array(db_data.length);
+  console.log(db_data);
+  for (let i = 0; i < db_data.length; i++) {
     newData[i] = {};
-    newData[i].alias = data[i].alias;
-    newData[i].ultima_azione = data[i].ultima_azione;
+    newData[i].inizio = new Date(
+      "january 1, 2000 " + newFascia[db_data[i].fascia_oraria].ora_inizio
+    );
+    newData[i].fine = new Date(
+      "January 1, 2000 " + newFascia[db_data[i].fascia_oraria].ora_fine
+    );
+    newData[i].giorno = newFascia[db_data[i].fascia_oraria].giorno;
+    if (newData[i].giorno == "Lunedì") newData[i].giorno_numerico = 1;
+    if (newData[i].giorno == "Martedì") newData[i].giorno_numerico = 2;
+    if (newData[i].giorno == "Mercoledì") newData[i].giorno_numerico = 3;
+    if (newData[i].giorno == "Giovedì") newData[i].giorno_numerico = 4;
+    if (newData[i].giorno == "Venerdì") newData[i].giorno_numerico = 5;
+    if (newData[i].giorno == "Sabato") newData[i].giorno_numerico = 6;
+    if (newData[i].giorno == "Domenica") newData[i].giorno_numerico = 0;
   }
 
   newData.sort((a, b) => {
-    return d3.ascending(a.ultima_azione, b.ultima_azione);
+    return d3.ascending(a.ora_inizio, b.ora_fine);
   });
 
-  var arrayFasce = new Array(7 * 96); //7 giorni x 24 ore x 4 quarti d'ora
+  console.log(newData);
+
+  var arrayFasce = new Array(7 * 284); //7 giorni x 24 ore x 12 quarti d'ora
   for (let i = 0; i < 7; i++) {
-    for (let j = 0; j < 96; j++) {
-      arrayFasce[i * 96 + j] = {};
-      arrayFasce[i * 96 + j].valore = 0;
+    for (let j = 0; j < 284; j++) {
+      arrayFasce[i * 284 + j] = {};
+      arrayFasce[i * 284 + j].valore = 0;
 
-      if (j < 10)
-        if (j % 4 === 0) arrayFasce[i * 96 + j].fascia = "0" + j + ":00";
-        else if (j % 4 === 1) arrayFasce[i * 96 + j].fascia = "0" + j + ":15";
-        else if (j % 4 === 2) arrayFasce[i * 96 + j].fascia = "0" + j + ":30";
-        else arrayFasce[i * 96 + j].fascia = "0" + j + ":45";
-      else if (j % 4 === 0) arrayFasce[i * 96 + j].fascia = j + ":00";
-      else if (j % 4 === 1) arrayFasce[i * 96 + j].fascia = j + ":15";
-      else if (j % 4 === 2) arrayFasce[i * 96 + j].fascia = j + ":30";
-      else arrayFasce[i * 96 + j].fascia = j + ":45";
+      if (j == 284)
+        arrayFasce[i * 284 + j].fascia = new Date("January 1, 2000 " + "00:00");
+      else if (j < 37) {
+        if (j % 12 === 0)
+          arrayFasce[i * 284 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":00"
+          );
+        else if (j % 12 === 1)
+          arrayFasce[i * 284 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":05"
+          );
+        else if (j % 12 === 2)
+          arrayFasce[i * 284 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":10"
+          );
+      } else if (j % 12 === 3)
+        arrayFasce[i * 284 + j].fascia = new Date(
+          "January 1, 2000 " + Math.ceil(j / 12) + ":15"
+        );
+      else if (j % 12 === 4)
+        arrayFasce[i * 284 + j].fascia = new Date(
+          "January 1, 2000 " + Math.ceil(j / 12) + ":20"
+        );
+      else if (j % 12 === 5)
+        arrayFasce[i * 284 + j].fascia = new Date(
+          "January 1, 2000 " + Math.ceil(j / 12) + ":25"
+        );
+      else if (j % 12 === 6)
+        arrayFasce[i * 284 + j].fascia = new Date(
+          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":30"
+        );
+      else if (j % 12 === 7)
+        arrayFasce[i * 284 + j].fascia = new Date(
+          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":35"
+        );
+      else if (j % 12 === 8)
+        arrayFasce[i * 284 + j].fascia = new Date(
+          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":40"
+        );
+      else if (j % 12 === 9)
+        arrayFasce[i * 284 + j].fascia = new Date(
+          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":45"
+        );
+      else if (j % 12 === 10)
+        arrayFasce[i * 284 + j].fascia = new Date(
+          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":50"
+        );
+      else
+        arrayFasce[i * 284 + j].fascia = new Date(
+          "January 1, 2000 " + Math.ceil(j / 12) + ":55"
+        );
 
-      if (i === 0) arrayFasce[i * 96 + j].giorno = "Domenica";
-      if (i === 1) arrayFasce[i * 96 + j].giorno = "Lunedì";
-      if (i === 2) arrayFasce[i * 96 + j].giorno = "Martedì";
-      if (i === 3) arrayFasce[i * 96 + j].giorno = "Mercoledì";
-      if (i === 4) arrayFasce[i * 96 + j].giorno = "Giovedì";
-      if (i === 5) arrayFasce[i * 96 + j].giorno = "Venerdì";
-      if (i === 6) arrayFasce[i * 96 + j].giorno = "Sabato";
+      if (i === 0) arrayFasce[i * 284 + j].giorno = "Domenica";
+      if (i === 1) arrayFasce[i * 284 + j].giorno = "Lunedì";
+      if (i === 2) arrayFasce[i * 284 + j].giorno = "Martedì";
+      if (i === 3) arrayFasce[i * 284 + j].giorno = "Mercoledì";
+      if (i === 4) arrayFasce[i * 284 + j].giorno = "Giovedì";
+      if (i === 5) arrayFasce[i * 284 + j].giorno = "Venerdì";
+      if (i === 6) arrayFasce[i * 284 + j].giorno = "Sabato";
+
+      /*if (i === 0) arrayFasce[i * 284 + j].giorno_numerico = 0;
+      if (i === 1) arrayFasce[i * 284 + j].giorno_numerico = 1;
+      if (i === 2) arrayFasce[i * 284 + j].giorno_numerico = 2;
+      if (i === 3) arrayFasce[i * 284 + j].giorno_numerico = 3;
+      if (i === 4) arrayFasce[i * 284 + j].giorno_numerico = 4;
+      if (i === 5) arrayFasce[i * 284 + j].giorno_numerico = 5;
+      if (i === 6) arrayFasce[i * 284 + j].giorno_numerico = 6;*/
     }
+    console.log(arrayFasce);
   }
-  //Creare array sulla base della fascia
+  //Contare numero presenze per fascia oraria
   for (let i = 0; i < newData.length; i++) {
-    if (dayjs(newData[i].ultima_azione).day() === 0) {
-      arrayFasce[0].valore += 1;
-    }
-    if (dayjs(newData[i].ultima_azione).day() === 1) {
-      arrayFasce[1].valore += 1;
-    }
-    if (dayjs(newData[i].ultima_azione).day() === 2) {
-      arrayFasce[2].valore += 1;
-    }
-    if (dayjs(newData[i].ultima_azione).day() === 3) {
-      arrayFasce[3].valore += 1;
-    }
-    if (dayjs(newData[i].ultima_azione).day() === 4) {
-      arrayFasce[4].valore += 1;
-    }
-    if (dayjs(newData[i].ultima_azione).day() === 5) {
-      arrayFasce[5].valore += 1;
-    }
-    if (dayjs(newData[i].ultima_azione).day() === 6) {
-      arrayFasce[6].valore += 1;
-    }
+    const inizio = newData[i].inizio;
+    const fine = newData[i].fine;
+    const giorno = newData[i].giorno_numerico;
+    const index_inizio =
+      giorno * 284 + (inizio.getHours() * 12 + inizio.getMinutes() / 5);
+    const index_fine =
+      giorno * 284 + (fine.getHours() * 12 + fine.getMinutes() / 5);
+    console.log(newData[i].giorno_numerico);
+    console.log(inizio.getHours());
+    console.log(inizio.getMinutes());
+    console.log(index_inizio + " - " + index_fine);
+    for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
   }
 
-  //console.log(arrayFasce);
+  console.log(arrayFasce);
 
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
-  var myGroups = new Array(24);
-  for (let i = 0; i < 96; i++) {
-    if (i < 10)
-      if (i % 4 === 0) myGroups[i] = "0" + i + ":00";
-      else if (i % 4 === 1) myGroups[i] = "0" + i + ":15";
-      else if (i % 4 === 2) myGroups[i] = "0" + i + ":30";
-      else myGroups[i] = "0" + i + ":45";
-    else if (i % 4 === 0) myGroups[i] = i + ":00";
-    else if (i % 4 === 1) myGroups[i] = i + ":15";
-    else if (i % 4 === 2) myGroups[i] = i + ":30";
-    else myGroups[i] = i + ":45";
-  }
+
   var myVars = [];
   myVars = [
     "Domenica",
-    "Lunedì",
-    "Martedì",
-    "Mercoledì",
-    "Giovedì",
-    "Venerdì",
     "Sabato",
+    "Venerdì",
+    "Giovedì",
+    "Mercoledì",
+    "Martedì",
+    "Lunedì",
   ];
 
   // Build X scales and axis:
   var xAxis = d3.axisBottom();
-  //console.log(Date.now() + 28*60*60*1000- (28-22*spostamento)*60*60*1000);
-  //console.log(Date.now());
   var x = d3.scaleTime();
   x.domain([
     new Date(2000, 0, 1).setHours(finestraTemporale - 4),
     new Date(2000, 0, 1).setHours(finestraTemporale),
   ]);
-  //.domain([Date.now() + 28*60*60*1000- (28-22*spostamento)*60*60*1000, Date.now() + 2 * 60 * 60 * 1000+(22*spostamento)*60*60*1000])
   x.range([0, width]);
+
+  console.log(new Date(2000, 0, 1));
+
   xAxis.scale(x);
   xAxis.ticks(d3.timeMinute.every(60 * spostamento));
-  //xAxis.ticks(50);
-  //xAxis.tickValues(x.ticks().filter(function(d,i){ return !(i%4)}));
   xAxis.tickFormat(d3.timeFormat("%H:%M"));
 
   svg
@@ -163,7 +213,7 @@ function d3_create_graphic(spostamento, finestraTemporale, data) {
   // Build color scale
   const myColor = d3
     .scaleSequential()
-    .interpolator(d3.interpolateInferno)
+    .interpolator(d3.interpolateRgb("white", "orange"))
     .domain([0, 100]);
 
   // create a tooltip
@@ -194,23 +244,51 @@ function d3_create_graphic(spostamento, finestraTemporale, data) {
     d3.select(this).style("stroke", "none").style("opacity", 0.8);
   };
 
+  console.log(xAxis.domain);
+
   // add the squares
+
   svg
     .selectAll()
     .data(arrayFasce, function (d) {
-      console.log("HELLOOOOOO");
+      //console.log(d.giorno + ":" + d.valore);
       return d.giorno + ":" + d.valore;
     })
     .join("rect")
     .attr("x", function (d) {
+      //console.log(d);
       return x(d.fascia);
     })
     .attr("y", function (d) {
       return y(d.giorno);
     })
+    .attr(
+      "width",
+      x(new Date(2000, 0, 1, 0, 5)) - x(new Date(2000, 0, 1, 0, 0))
+    )
+    .attr("height", y.bandwidth())
+    .style("fill", function (d) {
+      return myColor(d.valore);
+    });
+
+  /*svg
+    .selectAll()
+    .data(arrayFasce, function (d) {
+      console.log(d.giorno + ":" + d.valore);
+      return d.giorno + ":" + d.valore;
+    })
+    .join("rect")
+    .attr("x", function (d) {
+      console.log("x: " + x(d.fascia));
+      return x(d.fascia);
+    })
+    .attr("y", function (d) {
+      console.log("y: " + d.giorno);
+      return y(d.giorno);
+    })
     .attr("rx", 4)
     .attr("ry", 4)
-    //.attr("width", x.bandwidth() )
+    //.attr("width", xAxis.bandwidth())
     .attr("height", y.bandwidth())
     .style("fill", function (d) {
       return myColor(d.valore);
@@ -220,7 +298,7 @@ function d3_create_graphic(spostamento, finestraTemporale, data) {
     .style("opacity", 0.8)
     .on("mouseover", mouseover)
     .on("mousemove", mousemove)
-    .on("mouseleave", mouseleave);
+    .on("mouseleave", mouseleave);*/
 }
 
 function setFinestra(valore) {
@@ -237,6 +315,7 @@ function App2() {
   const [previousX, setPreviousX] = React.useState(0);
   const [finestraTemporale, setFinestraTemporale] = React.useState(4); //4 ore
   const [dati_acquisiti, setDatiAcquisiti] = React.useState([]);
+  const [fascia, setFascia] = React.useState([]);
 
   useEffect(() => {
     setFinestraTemporale(setFinestra(spostamentoCopia));
@@ -265,14 +344,20 @@ function App2() {
 
     if (dati_acquisiti.length !== null) {
       d3.csv(
-        "https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calendario&format=csv"
-      ).then(function (data) {
-        setDatiAcquisiti(data);
-        d3_create_graphic(spostamento, finestraTemporale, data);
+        "https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Fascia_Oraria&format=csv"
+      ).then(function (f) {
+        d3.csv(
+          "https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calendario&format=csv"
+        ).then(function (data) {
+          setDatiAcquisiti(data);
+          setFascia(f);
+          d3_create_graphic(spostamento, finestraTemporale, data, f);
+        });
       });
     } else {
-      d3_create_graphic(spostamento, finestraTemporale, dati_acquisiti);
+      d3_create_graphic(spostamento, finestraTemporale, dati_acquisiti, fascia);
     }
+
     return function cleanup() {
       document.removeEventListener("mousemove", mouseDrag);
     };
