@@ -220,39 +220,76 @@ function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
   const tooltip = d3
     .select("#my_dataviz")
     .append("div")
+
     .attr("fill", "black")
     .style("opacity", 1)
     .attr("class", "tooltip")
     .style("background-color", "black")
     .style("border", "solid")
-    .style("border-width", "2px")
+    .style("border-width", "5px")
     .style("border-radius", "5px")
     .style("padding", "5px");
 
-  const tooltip_v2 = svg
+  const tooltip_v2 = d3
+    .select("#my_dataviz")
     .append("text")
     .attr("class", "tooltip")
+    .style("position", "absolute")
     .attr("fill", "black")
+    .style("z-index", "14000000")
+    .style("visibility", "hidden")
+    .style("position", "absolute")
     .style("pointer-events", "none");
 
+  const tooltip_v3 = d3
+    .select("#my_dataviz")
+    .append("div")
+    .style("position", "absolute")
+    .style("visibility", "hidden")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .style("border-width", "1px")
+    .style("border-radius", "5px")
+    .style("padding", "10px")
+    .html(
+      <>
+        <p>I'm a tooltip written in HTML</p>
+        <img src="https://github.com/holtzy/D3-graph-gallery/blob/master/img/section/ArcSmal.png?raw=true"></img>
+        <br>Fancy</br>
+        <span style="font-size: 40px;">Isn't it?</span>
+      </>
+    );
   // Three function that change the tooltip when user hover / move / leave a cell
   const mouseover = function (event, d) {
+    const [mx, my] = d3.pointer(event);
     console.log(d);
     tooltip_v2
-      .text("Valore: " + d.valore)
-      .style("left", event.clientX + "px")
-      .style("top", event.clientY + "px");
+      .text("Valore: " + d.valore + " presenze")
+      .style("font-size", 1.5 + "rem")
+      .style("color", "red")
+      .style("visibility", "visible")
+      .attr("x", mx + 160 + "px")
+      .attr("y", my + 80 + "px");
     tooltip.style("opacity", 0);
-    d3.select(this).style("stroke", "black").style("opacity", 1);
+    d3.select(this)
+      .style("stroke", d.colore)
+      .style("stroke-opacity", "0.75")
+      .style("stroke-width", "4px")
+      .style("opacity", 1);
     d3.select(this).style("background-color", "black");
   };
   const mousemove = function (event, d) {
+    const [mx, my] = d3.pointer(event);
     console.log(event);
     console.log(d);
-    tooltip
-      .html("The exact value of<br>this cell is: " + d.value)
-      .style("left", event.clientX + "px")
-      .style("top", event.clientY + "px");
+    tooltip_v2
+      .text("Valore: " + d.valore + " presenze")
+      .style("font-size", 1.5 + "rem")
+      .style("color", "red")
+      .style("visibility", "visible")
+      .attr("x", mx + 160 + "px")
+      .attr("y", my + 80 + "px");
+    tooltip_v3.style("visibility", "visible");
   };
   const mouseleave = function (event, d) {
     tooltip_v2.text("");
@@ -284,6 +321,7 @@ function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
     )
     .attr("height", y.bandwidth())
     .style("fill", function (d) {
+      d.colore = myColor(d.valore + 30);
       return myColor(d.valore);
     })
     .on("mouseover", mouseover)
