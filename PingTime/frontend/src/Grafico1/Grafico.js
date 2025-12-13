@@ -213,35 +213,51 @@ function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
   // Build color scale
   const myColor = d3
     .scaleSequential()
-    .interpolator(d3.interpolateRgb("white", "orange"))
+    .interpolator(d3.interpolateRgb("#f4f5f6", "orange"))
     .domain([0, 100]);
 
   // create a tooltip
   const tooltip = d3
     .select("#my_dataviz")
     .append("div")
-    .style("opacity", 0)
+    .attr("fill", "black")
+    .style("opacity", 1)
     .attr("class", "tooltip")
-    .style("background-color", "white")
+    .style("background-color", "black")
     .style("border", "solid")
     .style("border-width", "2px")
     .style("border-radius", "5px")
     .style("padding", "5px");
 
+  const tooltip_v2 = svg
+    .append("text")
+    .attr("class", "tooltip")
+    .attr("fill", "black")
+    .style("pointer-events", "none");
+
   // Three function that change the tooltip when user hover / move / leave a cell
   const mouseover = function (event, d) {
-    tooltip.style("opacity", 1);
+    console.log(d);
+    tooltip_v2
+      .text("Valore: " + d.valore)
+      .style("left", event.clientX + "px")
+      .style("top", event.clientY + "px");
+    tooltip.style("opacity", 0);
     d3.select(this).style("stroke", "black").style("opacity", 1);
+    d3.select(this).style("background-color", "black");
   };
   const mousemove = function (event, d) {
+    console.log(event);
+    console.log(d);
     tooltip
       .html("The exact value of<br>this cell is: " + d.value)
-      .style("left", event.x / 2 + "px")
-      .style("top", event.y / 2 + "px");
+      .style("left", event.clientX + "px")
+      .style("top", event.clientY + "px");
   };
   const mouseleave = function (event, d) {
+    tooltip_v2.text("");
     tooltip.style("opacity", 0);
-    d3.select(this).style("stroke", "none").style("opacity", 0.8);
+    d3.select(this).style("stroke", "none").style("opacity", 1);
   };
 
   console.log(xAxis.domain);
@@ -269,7 +285,10 @@ function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
     .attr("height", y.bandwidth())
     .style("fill", function (d) {
       return myColor(d.valore);
-    });
+    })
+    .on("mouseover", mouseover)
+    .on("mousemove", mousemove)
+    .on("mouseleave", mouseleave);
 
   /*svg
     .selectAll()
