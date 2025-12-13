@@ -71,71 +71,119 @@ function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
 
   console.log(newData);
 
-  var arrayFasce = new Array(7 * 284); //7 giorni x 24 ore x 12 quarti d'ora
+  var arrayFasce = new Array(7 * 24 * 12); //7 giorni x 24 ore x 12 quarti d'ora
   for (let i = 0; i < 7; i++) {
-    for (let j = 0; j < 284; j++) {
-      arrayFasce[i * 284 + j] = {};
-      arrayFasce[i * 284 + j].valore = 0;
+    for (let j = 0; j < 288; j++) {
+      arrayFasce[i * 288 + j] = {};
+      arrayFasce[i * 288 + j].valore = 0;
 
-      if (j == 284)
-        arrayFasce[i * 284 + j].fascia = new Date("January 1, 2000 " + "00:00");
-      else if (j < 37) {
+      if (j < 120) {
         if (j % 12 === 0)
-          arrayFasce[i * 284 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":00"
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":00"
           );
-        else if (j % 12 === 1)
-          arrayFasce[i * 284 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":05"
+        else if (j % 12 === 1) {
+          console.log(i * 288 + j + " ---- " + Math.ceil(j / 12));
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":05"
           );
-        else if (j % 12 === 2)
-          arrayFasce[i * 284 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":10"
+        } else if (j % 12 === 2)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":10"
           );
-      } else if (j % 12 === 3)
-        arrayFasce[i * 284 + j].fascia = new Date(
-          "January 1, 2000 " + Math.ceil(j / 12) + ":15"
+        else if (j % 12 === 3)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":15"
+          );
+        else if (j % 12 === 4)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":20"
+          );
+        else if (j % 12 === 5)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":25"
+          );
+        else if (j % 12 === 6)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":30"
+          );
+        else if (j % 12 === 7)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":35"
+          );
+        else if (j % 12 === 8)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":40"
+          );
+        else if (j % 12 === 9)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":45"
+          );
+        else if (j % 12 === 10)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":50"
+          );
+        else if (j % 12 === 11)
+          arrayFasce[i * 288 + j].fascia = new Date(
+            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":55"
+          );
+      }
+      if (j % 12 === 0)
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":00"
+        );
+      else if (j % 12 === 1)
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":05"
+        );
+      else if (j % 12 === 2)
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":10"
+        );
+      else if (j % 12 === 3)
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":15"
         );
       else if (j % 12 === 4)
-        arrayFasce[i * 284 + j].fascia = new Date(
-          "January 1, 2000 " + Math.ceil(j / 12) + ":20"
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":20"
         );
       else if (j % 12 === 5)
-        arrayFasce[i * 284 + j].fascia = new Date(
-          "January 1, 2000 " + Math.ceil(j / 12) + ":25"
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":25"
         );
       else if (j % 12 === 6)
-        arrayFasce[i * 284 + j].fascia = new Date(
-          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":30"
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":30"
         );
       else if (j % 12 === 7)
-        arrayFasce[i * 284 + j].fascia = new Date(
-          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":35"
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":35"
         );
       else if (j % 12 === 8)
-        arrayFasce[i * 284 + j].fascia = new Date(
-          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":40"
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":40"
         );
       else if (j % 12 === 9)
-        arrayFasce[i * 284 + j].fascia = new Date(
-          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":45"
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":45"
         );
       else if (j % 12 === 10)
-        arrayFasce[i * 284 + j].fascia = new Date(
-          "January 1, 2000 " + "0" + Math.ceil(j / 12) + ":50"
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":50"
         );
-      else
-        arrayFasce[i * 284 + j].fascia = new Date(
-          "January 1, 2000 " + Math.ceil(j / 12) + ":55"
+      else if (j % 12 === 11)
+        arrayFasce[i * 288 + j].fascia = new Date(
+          "January 1, 2000 " + Math.floor(j / 12) + ":55"
         );
 
-      if (i === 0) arrayFasce[i * 284 + j].giorno = "Domenica";
-      if (i === 1) arrayFasce[i * 284 + j].giorno = "Lunedì";
-      if (i === 2) arrayFasce[i * 284 + j].giorno = "Martedì";
-      if (i === 3) arrayFasce[i * 284 + j].giorno = "Mercoledì";
-      if (i === 4) arrayFasce[i * 284 + j].giorno = "Giovedì";
-      if (i === 5) arrayFasce[i * 284 + j].giorno = "Venerdì";
-      if (i === 6) arrayFasce[i * 284 + j].giorno = "Sabato";
+      if (i === 0) arrayFasce[i * 288 + j].giorno = "Domenica";
+      if (i === 1) arrayFasce[i * 288 + j].giorno = "Lunedì";
+      if (i === 2) arrayFasce[i * 288 + j].giorno = "Martedì";
+      if (i === 3) arrayFasce[i * 288 + j].giorno = "Mercoledì";
+      if (i === 4) arrayFasce[i * 288 + j].giorno = "Giovedì";
+      if (i === 5) arrayFasce[i * 288 + j].giorno = "Venerdì";
+      if (i === 6) arrayFasce[i * 288 + j].giorno = "Sabato";
 
       /*if (i === 0) arrayFasce[i * 284 + j].giorno_numerico = 0;
       if (i === 1) arrayFasce[i * 284 + j].giorno_numerico = 1;
@@ -374,6 +422,13 @@ function App2() {
   const [dati_acquisiti, setDatiAcquisiti] = React.useState([]);
   const [fascia, setFascia] = React.useState([]);
 
+  const checkTimelineAndFix = (value) => {
+    while (spostamentoCopia + calcola(spostamentoSlider) * 960 > 960) {
+      console.log("ENTRO: " + spostamentoCopia);
+      setSpostamentoCopia(spostamentoCopia - 1);
+    }
+  };
+
   useEffect(() => {
     setFinestraTemporale(setFinestra(spostamentoCopia));
 
@@ -382,7 +437,11 @@ function App2() {
       if (lock) {
         console.log("ATTIVO: " + lock);
         if (
-          spostamentoCopia + e.clientX - previousX <= 943 &&
+          spostamentoCopia +
+            calcola(spostamentoSlider) * 960 +
+            e.clientX -
+            previousX <=
+            947 &&
           spostamentoCopia + e.clientX - previousX >= 0
         )
           setSpostamentoCopia(spostamentoCopia + e.clientX - previousX);
@@ -490,6 +549,7 @@ function App2() {
           style={{
             backgroundColor: "green",
             marginLeft: `${spostamentoCopia}px`,
+            width: `${calcola(spostamentoSlider) * 100}%`,
             boxShadow: `0 0 0 ${valore}px rgba(76, 175, 80, 0.4)`,
           }}
         />
@@ -498,7 +558,10 @@ function App2() {
         <Slider
           aria-label="Volume"
           value={spostamentoSlider}
-          onMouseUp={() => setSpostamento(calcola(spostamentoSlider))}
+          onMouseUp={() => {
+            checkTimelineAndFix(true);
+            setSpostamento(calcola(spostamentoSlider));
+          }}
           onChange={(event) => {
             setSpostamentoSlider(event.target.value);
           }}
