@@ -423,10 +423,12 @@ function App2() {
   const [fascia, setFascia] = React.useState([]);
 
   const checkTimelineAndFix = (value) => {
-    while (spostamentoCopia + calcola(spostamentoSlider) * 960 > 960) {
+    var numero = spostamentoCopia;
+    while (numero + calcola(spostamentoSlider) * 960 > 960) {
       console.log("ENTRO: " + spostamentoCopia);
-      setSpostamentoCopia(spostamentoCopia - 1);
+      numero--;
     }
+    setSpostamentoCopia(numero);
   };
 
   useEffect(() => {
