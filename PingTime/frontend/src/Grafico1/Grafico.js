@@ -219,8 +219,8 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
   var xAxis = d3.axisBottom();
   var x = d3.scaleTime();
   x.domain([
-    new Date(2000, 0, 1).setHours(finestraTemporale - ampiezzaFinestraTemporale),
     new Date(2000, 0, 1).setHours(finestraTemporale),
+    new Date(2000, 0, 1).setHours(finestraTemporale + ampiezzaFinestraTemporale),
   ]);
   x.range([0, width]);
 
@@ -409,6 +409,16 @@ function calcola(valore) {
   return 1;
 }
 
+function calcolaAmpiezzaTemporale(valore) {
+  console.log("Valore slider: " + valore);
+  if (valore < 8) return 2;
+  if (valore < 16) return 4;
+  if (valore < 50) return 6;
+  if (valore < 75) return 12;
+  if (valore <= 100) return 24;
+  return 1;
+}
+
 function App2() {
   const [periodo, setPeriodo] = React.useState(0);
   const [spostamento, setSpostamento] = React.useState(1);
@@ -562,9 +572,11 @@ function App2() {
           onMouseUp={() => {
             checkTimelineAndFix();
             setSpostamento(calcola(spostamentoSlider));
+            setAmpiezzaFinestraTemporale(calcolaAmpiezzaTemporale(spostamentoSlider));
           }}
           onChange={(event) => {
             setSpostamentoSlider(event.target.value);
+            
           }}
         />
       </div>
