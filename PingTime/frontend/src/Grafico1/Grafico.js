@@ -299,6 +299,13 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
         <span style="font-size: 40px;">Isn't it?</span>
       </>
     );
+
+
+    /*var zoom = d3.zoom()
+      .scaleExtent([.5, 20])  // This control how much you can unzoom (x0.5) and zoom (x20)
+      .extent([[0, 0], [width, height]])
+      .on("zoom", updateChart);*/
+
   // Three function that change the tooltip when user hover / move / leave a cell
   const mouseover = function (event, d) {
     const [mx, my] = d3.pointer(event);
@@ -364,10 +371,28 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
       d.colore = myColor(d.valore + 30);
       return myColor(d.valore);
     })
+    //.call(zoom)
     .on("mouseover", mouseover)
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave);
 
+ /*function updateChart() {
+
+    // recover the new scale
+    var newX = d3.event.transform.rescaleX(xAxis);
+
+    // update axes with these new boundaries
+    xAxis.call(d3.axisBottom(newX))
+
+
+    // update circle position
+    svg
+      .selectAll("rect")
+      .attr("x", function(d) {return newX(d.inizio)})
+  }*/
+
+
+    
   /*svg
     .selectAll()
     .data(arrayFasce, function (d) {
