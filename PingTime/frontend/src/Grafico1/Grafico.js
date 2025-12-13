@@ -4,18 +4,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { useEffect } from "react";
 import React from "react";
-import * as dayjs from "dayjs";
 import Slider from "@mui/material/Slider";
-
-function calcola(valore) {
-  console.log("Valore slider: " + valore);
-  if (valore < 8) return 1 / 12;
-  if (valore < 16) return 1 / 6;
-  if (valore < 50) return 0.25;
-  if (valore < 75) return 0.5;
-  if (valore <= 100) return 1;
-  return 1;
-}
 
 function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
   // set the dimensions and margins of the graph
@@ -408,6 +397,16 @@ function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
 
 function setFinestra(valore) {
   return (valore / 9.43) * 0.2 + 4;
+}
+
+function calcola(valore) {
+  console.log("Valore slider: " + valore);
+  if (valore < 8) return 1 / 12;
+  if (valore < 16) return 1 / 6;
+  if (valore < 50) return 0.25;
+  if (valore < 75) return 0.5;
+  if (valore <= 100) return 1;
+  return 1;
 }
 
 function App2() {
