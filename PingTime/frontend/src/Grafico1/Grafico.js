@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import React from "react";
 import Slider from "@mui/material/Slider";
 
-function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
+function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, db_data, db_fascia) {
   // set the dimensions and margins of the graph
   const margin = { top: 80, right: 25, bottom: 50, left: 120 },
     width = 1800 - margin.left - margin.right,
@@ -219,7 +219,7 @@ function d3_create_graphic(spostamento, finestraTemporale, db_data, db_fascia) {
   var xAxis = d3.axisBottom();
   var x = d3.scaleTime();
   x.domain([
-    new Date(2000, 0, 1).setHours(finestraTemporale - 4),
+    new Date(2000, 0, 1).setHours(finestraTemporale - ampiezzaFinestraTemporale),
     new Date(2000, 0, 1).setHours(finestraTemporale),
   ]);
   x.range([0, width]);
@@ -418,6 +418,7 @@ function App2() {
   const [lock, setLock] = React.useState(false);
   const [previousX, setPreviousX] = React.useState(0);
   const [finestraTemporale, setFinestraTemporale] = React.useState(4); //4 ore
+  const [ampiezzaFinestraTemporale, setAmpiezzaFinestraTemporale] = React.useState(24); //4 ore
   const [dati_acquisiti, setDatiAcquisiti] = React.useState([]);
   const [fascia, setFascia] = React.useState([]);
 
@@ -467,11 +468,11 @@ function App2() {
         ).then(function (data) {
           setDatiAcquisiti(data);
           setFascia(f);
-          d3_create_graphic(spostamento, finestraTemporale, data, f);
+          d3_create_graphic(spostamento, finestraTemporale,ampiezzaFinestraTemporale, data, f);
         });
       });
     } else {
-      d3_create_graphic(spostamento, finestraTemporale, dati_acquisiti, fascia);
+      d3_create_graphic(spostamento, finestraTemporale,ampiezzaFinestraTemporale, dati_acquisiti, fascia);
     }
 
     return function cleanup() {

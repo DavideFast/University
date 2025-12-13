@@ -39,7 +39,7 @@
 
     height:16px;
     background: #4CAF50;
-    border-radius: 50%;
+    border-radius: 1rem;
     position: relative;
     box-shadow: 0 0 0 100px rgba(76, 175, 80, 0.8);
     top: 1px;
