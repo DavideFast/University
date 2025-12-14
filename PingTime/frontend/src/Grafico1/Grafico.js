@@ -5,7 +5,8 @@ import MenuItem from "@mui/material/MenuItem";
 import { useEffect } from "react";
 import React from "react";
 import Slider from "@mui/material/Slider";
-import {data_formatting} from "./Logica";
+import {data_formatting} from "./Data_Formatting";
+import { setFinestra, calcolaAmpiezzaTemporale, calcola } from "./SliderObject_utility";
 
 function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, db_data, db_fascia) {
 
@@ -38,8 +39,6 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
     "Martedì",
     "Lunedì",
   ];
-
-  console.log("---------"+finestraTemporale);
 
   // Build X scales and axis:
   var xAxis = d3.axisBottom();
@@ -215,62 +214,9 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
       .selectAll("rect")
       .attr("x", function(d) {return newX(d.inizio)})
   }*/
-
-
-    
-  /*svg
-    .selectAll()
-    .data(arrayFasce, function (d) {
-      console.log(d.giorno + ":" + d.valore);
-      return d.giorno + ":" + d.valore;
-    })
-    .join("rect")
-    .attr("x", function (d) {
-      console.log("x: " + x(d.fascia));
-      return x(d.fascia);
-    })
-    .attr("y", function (d) {
-      console.log("y: " + d.giorno);
-      return y(d.giorno);
-    })
-    .attr("rx", 4)
-    .attr("ry", 4)
-    //.attr("width", xAxis.bandwidth())
-    .attr("height", y.bandwidth())
-    .style("fill", function (d) {
-      return myColor(d.valore);
-    })
-    .style("stroke-width", 4)
-    .style("stroke", "none")
-    .style("opacity", 0.8)
-    .on("mouseover", mouseover)
-    .on("mousemove", mousemove)
-    .on("mouseleave", mouseleave);*/
 }
 
-function setFinestra(valore) {
-  //20 ore diviso 100;
-  return (valore / 9.60) * 0.24 + 0;
-}
 
-function calcola(valore) {
-  console.log("Valore slider: " + valore);
-  if (valore < 8) return 1 / 12;
-  if (valore < 16) return 1 / 6;
-  if (valore < 50) return 0.25;
-  if (valore < 75) return 0.5;
-  if (valore <= 100) return 1;
-  return 1;
-}
-
-function calcolaAmpiezzaTemporale(valore) {
-  console.log("Valore slider: " + valore);
-  if (valore < 8) return 2;
-  if (valore < 16) return 4;
-  if (valore < 50) return 6;
-  if (valore < 75) return 12;
-  if (valore <= 100) return 24;
-}
 
 function App2() {
   const [periodo, setPeriodo] = React.useState(0);
