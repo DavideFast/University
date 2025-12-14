@@ -5,6 +5,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { useEffect } from "react";
 import React from "react";
 import Slider from "@mui/material/Slider";
+import {data_formatting} from "./Logica";
 
 function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, db_data, db_fascia) {
 
@@ -23,185 +24,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
     .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-  db_fascia.sort((a, b) => {
-    return a.id - b.id;
-  });
-  const dimensione_array_fascia = Number(db_fascia[db_fascia.length - 1].id);
-  var newFascia = new Array(dimensione_array_fascia);
-  for (let i = 0; i < db_fascia.length; i++) {
-    newFascia[db_fascia[i].id] = db_fascia[i] ? db_fascia[i] : null;
-  }
-
-  console.log(db_fascia);
-  console.log(newFascia);
-  //Read the data
-  var newData = new Array(db_data.length);
-  console.log(db_data);
-  for (let i = 0; i < db_data.length; i++) {
-    newData[i] = {};
-    newData[i].inizio = new Date(
-      "january 1, 2000 " + newFascia[db_data[i].fascia_oraria].ora_inizio
-    );
-    newData[i].fine = new Date(
-      "January 1, 2000 " + newFascia[db_data[i].fascia_oraria].ora_fine
-    );
-    newData[i].giorno = newFascia[db_data[i].fascia_oraria].giorno;
-    if (newData[i].giorno == "Lunedì") newData[i].giorno_numerico = 1;
-    if (newData[i].giorno == "Martedì") newData[i].giorno_numerico = 2;
-    if (newData[i].giorno == "Mercoledì") newData[i].giorno_numerico = 3;
-    if (newData[i].giorno == "Giovedì") newData[i].giorno_numerico = 4;
-    if (newData[i].giorno == "Venerdì") newData[i].giorno_numerico = 5;
-    if (newData[i].giorno == "Sabato") newData[i].giorno_numerico = 6;
-    if (newData[i].giorno == "Domenica") newData[i].giorno_numerico = 0;
-  }
-
-  newData.sort((a, b) => {
-    return d3.ascending(a.ora_inizio, b.ora_fine);
-  });
-
-  console.log(newData);
-
-  var arrayFasce = new Array(7 * 24 * 12); //7 giorni x 24 ore x 12 quarti d'ora
-  for (let i = 0; i < 7; i++) {
-    for (let j = 0; j < 288; j++) {
-      arrayFasce[i * 288 + j] = {};
-      arrayFasce[i * 288 + j].valore = 0;
-
-      if (j < 120) {
-        if (j % 12 === 0)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":00"
-          );
-        else if (j % 12 === 1) {
-          console.log(i * 288 + j + " ---- " + Math.ceil(j / 12));
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":05"
-          );
-        } else if (j % 12 === 2)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":10"
-          );
-        else if (j % 12 === 3)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":15"
-          );
-        else if (j % 12 === 4)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":20"
-          );
-        else if (j % 12 === 5)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":25"
-          );
-        else if (j % 12 === 6)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":30"
-          );
-        else if (j % 12 === 7)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":35"
-          );
-        else if (j % 12 === 8)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":40"
-          );
-        else if (j % 12 === 9)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":45"
-          );
-        else if (j % 12 === 10)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":50"
-          );
-        else if (j % 12 === 11)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":55"
-          );
-      }
-      if (j % 12 === 0)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":00"
-        );
-      else if (j % 12 === 1)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":05"
-        );
-      else if (j % 12 === 2)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":10"
-        );
-      else if (j % 12 === 3)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":15"
-        );
-      else if (j % 12 === 4)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":20"
-        );
-      else if (j % 12 === 5)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":25"
-        );
-      else if (j % 12 === 6)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":30"
-        );
-      else if (j % 12 === 7)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":35"
-        );
-      else if (j % 12 === 8)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":40"
-        );
-      else if (j % 12 === 9)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":45"
-        );
-      else if (j % 12 === 10)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":50"
-        );
-      else if (j % 12 === 11)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":55"
-        );
-
-      if (i === 0) arrayFasce[i * 288 + j].giorno = "Domenica";
-      if (i === 1) arrayFasce[i * 288 + j].giorno = "Lunedì";
-      if (i === 2) arrayFasce[i * 288 + j].giorno = "Martedì";
-      if (i === 3) arrayFasce[i * 288 + j].giorno = "Mercoledì";
-      if (i === 4) arrayFasce[i * 288 + j].giorno = "Giovedì";
-      if (i === 5) arrayFasce[i * 288 + j].giorno = "Venerdì";
-      if (i === 6) arrayFasce[i * 288 + j].giorno = "Sabato";
-
-      /*if (i === 0) arrayFasce[i * 284 + j].giorno_numerico = 0;
-      if (i === 1) arrayFasce[i * 284 + j].giorno_numerico = 1;
-      if (i === 2) arrayFasce[i * 284 + j].giorno_numerico = 2;
-      if (i === 3) arrayFasce[i * 284 + j].giorno_numerico = 3;
-      if (i === 4) arrayFasce[i * 284 + j].giorno_numerico = 4;
-      if (i === 5) arrayFasce[i * 284 + j].giorno_numerico = 5;
-      if (i === 6) arrayFasce[i * 284 + j].giorno_numerico = 6;*/
-    }
-    console.log(arrayFasce);
-  }
-  //Contare numero presenze per fascia oraria
-  for (let i = 0; i < newData.length; i++) {
-    const inizio = newData[i].inizio;
-    const fine = newData[i].fine;
-    const giorno = newData[i].giorno_numerico;
-    const index_inizio =
-      giorno * 284 + (inizio.getHours() * 12 + inizio.getMinutes() / 5);
-    const index_fine =
-      giorno * 284 + (fine.getHours() * 12 + fine.getMinutes() / 5);
-    console.log(newData[i].giorno_numerico);
-    console.log(inizio.getHours());
-    console.log(inizio.getMinutes());
-    console.log(index_inizio + " - " + index_fine);
-    for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
-  }
-
-  console.log(arrayFasce);
+  var arrayFasce = data_formatting(db_fascia,db_data);
 
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
 
@@ -236,6 +59,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
   svg
     .append("g")
     .style("font-size", 12)
+    .attr("id","clip")
     .attr("transform", `translate(0, ${height})`)
     .call(xAxis /*.tickSize(0)*/)
     .select(".domain")
@@ -279,7 +103,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
     .style("z-index", "14000000")
     .style("visibility", "hidden")
     .style("position", "absolute")
-    .style("pointer-events", "none");
+    .style("pointer-events", "all");
 
   const tooltip_v3 = d3
     .select("#my_dataviz")
@@ -367,6 +191,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
       x(new Date(2000, 0, 1, 0, 5)) - x(new Date(2000, 0, 1, 0, 0))
     )
     .attr("height", y.bandwidth())
+    .attr("clip-path", "url(#clip)")
     .style("fill", function (d) {
       d.colore = myColor(d.valore + 30);
       return myColor(d.valore);
@@ -386,7 +211,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
 
 
     // update circle position
-    svg
+    d3
       .selectAll("rect")
       .attr("x", function(d) {return newX(d.inizio)})
   }*/
