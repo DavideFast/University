@@ -19,12 +19,22 @@ function d3_create_graphic(
   db_data,
   db_fascia
 ) {
-  // set the dimensions and margins of the graph
+  //######################################################################################
+  //##                                                                                  ##
+  //##                  IMPOSTA LE DIMENSIONI E I MARGINI DELLA HEATMAP                 ##
+  //##                                                                                  ##
+  //######################################################################################
+
   const margin = { top: 80, right: 25, bottom: 50, left: 120 },
     width = 1800 - margin.left - margin.right,
     height = 600 - margin.top - margin.bottom;
 
-  // append the svg object to the body of the page
+  //######################################################################################
+  //##                                                                                  ##
+  //##                        APPENDERE L'SVG AL BODY DELLA PAGINA                      ##
+  //##                                                                                  ##
+  //######################################################################################
+
   d3.select("#my_dataviz").selectAll("*").remove(); // Clear previous content
   const svg = d3
     .select("#my_dataviz")
@@ -34,9 +44,13 @@ function d3_create_graphic(
     .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-  var arrayFasce = data_formatting(db_fascia, db_data);
+  //######################################################################################
+  //##                                                                                  ##
+  //##                       ETICHETTE DELLE RIGHE E DELLE COLONNE                      ##
+  //##                                                                                  ##
+  //######################################################################################
 
-  // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
+  var arrayFasce = data_formatting(db_fascia, db_data);
 
   var myVars = [];
   myVars = [
@@ -49,7 +63,12 @@ function d3_create_graphic(
     "Lunedì",
   ];
 
-  // Build X scales and axis:
+  //######################################################################################
+  //##                                                                                  ##
+  //##                       CREAZIONE DELLA SCALA E DELL'ASSE X                        ##
+  //##                                                                                  ##
+  //######################################################################################
+
   var x = d3
     .scaleTime()
     .domain([
@@ -75,7 +94,11 @@ function d3_create_graphic(
     .select(".domain")
     .remove();
 
-  // Build Y scales and axis:
+  //######################################################################################
+  //##                                                                                  ##
+  //##                       CREAZIONE DELLA SCALA E DELL'ASSE Y                        ##
+  //##                                                                                  ##
+  //######################################################################################
 
   const y = d3.scaleBand().range([height, 0]).domain(myVars).padding(0.05);
 
@@ -86,7 +109,12 @@ function d3_create_graphic(
     .select(".domain")
     .remove();
 
-  // Add a clipPath: everything out of this area won't be drawn.
+  //######################################################################################
+  //##                                                                                  ##
+  //##                              CREAZIONE DELLA CLIP-PATH                           ##
+  //##                                                                                  ##
+  //######################################################################################
+
   var clip = svg
     .append("defs")
     .append("SVG:clipPath")
@@ -97,16 +125,31 @@ function d3_create_graphic(
     .attr("x", 0)
     .attr("y", 0);
 
-  // Create the scatter variable: where both the circles and the brush take place
+  //######################################################################################
+  //##                                                                                  ##
+  //##                          CREAZIONE DELLA VARIABILE SCATTER                       ##
+  //##                                                                                  ##
+  //######################################################################################
+
   var scatter = svg.append("g").attr("clip-path", "url(#clip)");
 
-  // Build color scale
+  //######################################################################################
+  //##                                                                                  ##
+  //##                          CREAZIONE DELLA SCALA DEI COLORI                        ##
+  //##                                                                                  ##
+  //######################################################################################
+
   const myColor = d3
     .scaleSequential()
     .interpolator(d3.interpolateRgb("#f4f5f6", "orange"))
     .domain([0, 100]);
 
-  // create a tooltip
+  //######################################################################################
+  //##                                                                                  ##
+  //##                               CREAZIONE DELLE TOOLTIPS                           ##
+  //##                                                                                  ##
+  //######################################################################################
+
   const tooltip = d3
     .select("#my_dataviz")
     .append("div")
@@ -159,7 +202,17 @@ function d3_create_graphic(
     ])
     .on("zoom", updateChart);*/
 
-  // Three function that change the tooltip when user hover / move / leave a cell
+  const handleZoom = (e) => svg.attr("transform", e.transform);
+
+  const zoom = d3.zoom().on("zoom", handleZoom);
+  d3.select("svg").call(zoom);
+
+  //######################################################################################
+  //##                                                                                  ##
+  //##                   FUNZIONI CHE GESTISCONO GLI INPUT DEL MOUSE                    ##
+  //##                                                                                  ##
+  //######################################################################################
+
   const mouseover = function (event, d) {
     const [mx, my] = d3.pointer(event);
     console.log(d);
@@ -197,9 +250,11 @@ function d3_create_graphic(
     d3.select(this).style("stroke", "none").style("opacity", 1);
   };
 
-  console.log(xAxis.domain);
-
-  // add the squares
+  //######################################################################################
+  //##                                                                                  ##
+  //##                          CREAZIONE DEI RETTANGOLI DEI DATI                       ##
+  //##                                                                                  ##
+  //######################################################################################
 
   scatter
     .selectAll()
