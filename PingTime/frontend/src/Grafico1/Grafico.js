@@ -5,11 +5,20 @@ import MenuItem from "@mui/material/MenuItem";
 import { useEffect } from "react";
 import React from "react";
 import Slider from "@mui/material/Slider";
-import {data_formatting} from "./Data_Formatting";
-import { setFinestra, calcolaAmpiezzaTemporale, calcola } from "./SliderObject_utility";
+import { data_formatting } from "./Data_Formatting";
+import {
+  setFinestra,
+  calcolaAmpiezzaTemporale,
+  calcola,
+} from "./SliderObject_utility";
 
-function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, db_data, db_fascia) {
-
+function d3_create_graphic(
+  spostamento,
+  finestraTemporale,
+  ampiezzaFinestraTemporale,
+  db_data,
+  db_fascia
+) {
   // set the dimensions and margins of the graph
   const margin = { top: 80, right: 25, bottom: 50, left: 120 },
     width = 1800 - margin.left - margin.right,
@@ -25,7 +34,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
     .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-  var arrayFasce = data_formatting(db_fascia,db_data);
+  var arrayFasce = data_formatting(db_fascia, db_data);
 
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
 
@@ -41,37 +50,55 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
   ];
 
   // Build X scales and axis:
-  var xAxis = d3.axisBottom();
-  var x = d3.scaleTime();
-  x.domain([
-    new Date(2000, 0, 1).setHours(finestraTemporale),
-    new Date(2000, 0, 1).setHours(finestraTemporale + ampiezzaFinestraTemporale),
-  ]);
-  x.range([0, width]);
+  var x = d3
+    .scaleTime()
+    .domain([
+      new Date(2000, 0, 1).setHours(finestraTemporale),
+      new Date(2000, 0, 1).setHours(
+        finestraTemporale + ampiezzaFinestraTemporale
+      ),
+    ])
+    .range([0, width]);
 
-  console.log(new Date(2000, 0, 1));
+  var x_settings = d3
+    .axisBottom()
+    .scale(x)
+    .ticks(d3.timeMinute.every(60 * spostamento))
+    .tickFormat(d3.timeFormat("%H:%M"));
 
-  xAxis.scale(x);
-  xAxis.ticks(d3.timeMinute.every(60 * spostamento));
-  xAxis.tickFormat(d3.timeFormat("%H:%M"));
-
-  svg
+  var xAxis = svg
     .append("g")
     .style("font-size", 12)
-    .attr("id","clip")
+    .attr("id", "clip")
     .attr("transform", `translate(0, ${height})`)
-    .call(xAxis /*.tickSize(0)*/)
+    .call(x_settings /*.tickSize(0)*/)
     .select(".domain")
     .remove();
 
   // Build Y scales and axis:
+
   const y = d3.scaleBand().range([height, 0]).domain(myVars).padding(0.05);
-  svg
+
+  const yAxis = svg
     .append("g")
     .style("font-size", 15)
     .call(d3.axisLeft(y).tickSize(0))
     .select(".domain")
     .remove();
+
+  // Add a clipPath: everything out of this area won't be drawn.
+  var clip = svg
+    .append("defs")
+    .append("SVG:clipPath")
+    .attr("id", "clip")
+    .append("SVG:rect")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("x", 0)
+    .attr("y", 0);
+
+  // Create the scatter variable: where both the circles and the brush take place
+  var scatter = svg.append("g").attr("clip-path", "url(#clip)");
 
   // Build color scale
   const myColor = d3
@@ -123,11 +150,14 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
       </>
     );
 
-
-    /*var zoom = d3.zoom()
-      .scaleExtent([.5, 20])  // This control how much you can unzoom (x0.5) and zoom (x20)
-      .extent([[0, 0], [width, height]])
-      .on("zoom", updateChart);*/
+  /*var zoom = d3
+    .zoom()
+    .scaleExtent([0.5, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
+    .extent([
+      [0, 0],
+      [width, height],
+    ])
+    .on("zoom", updateChart);*/
 
   // Three function that change the tooltip when user hover / move / leave a cell
   const mouseover = function (event, d) {
@@ -171,7 +201,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
 
   // add the squares
 
-  svg
+  scatter
     .selectAll()
     .data(arrayFasce, function (d) {
       //console.log(d.giorno + ":" + d.valore);
@@ -200,23 +230,19 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave);
 
- /*function updateChart() {
-
+  /*function updateChart() {
     // recover the new scale
     var newX = d3.event.transform.rescaleX(xAxis);
 
     // update axes with these new boundaries
-    xAxis.call(d3.axisBottom(newX))
-
+    xAxis.call(d3.axisBottom(newX));
 
     // update circle position
-    d3
-      .selectAll("rect")
-      .attr("x", function(d) {return newX(d.inizio)})
+    d3.selectAll("rect").attr("x", function (d) {
+      return newX(d.inizio);
+    });
   }*/
 }
-
-
 
 function App2() {
   const [periodo, setPeriodo] = React.useState(0);
@@ -227,7 +253,8 @@ function App2() {
   const [lock, setLock] = React.useState(false);
   const [previousX, setPreviousX] = React.useState(0);
   const [finestraTemporale, setFinestraTemporale] = React.useState(0); //4 ore
-  const [ampiezzaFinestraTemporale, setAmpiezzaFinestraTemporale] = React.useState(24); //4 ore
+  const [ampiezzaFinestraTemporale, setAmpiezzaFinestraTemporale] =
+    React.useState(24); //4 ore
   const [dati_acquisiti, setDatiAcquisiti] = React.useState([]);
   const [fascia, setFascia] = React.useState([]);
 
@@ -277,11 +304,23 @@ function App2() {
         ).then(function (data) {
           setDatiAcquisiti(data);
           setFascia(f);
-          d3_create_graphic(spostamento, finestraTemporale,ampiezzaFinestraTemporale, data, f);
+          d3_create_graphic(
+            spostamento,
+            finestraTemporale,
+            ampiezzaFinestraTemporale,
+            data,
+            f
+          );
         });
       });
     } else {
-      d3_create_graphic(spostamento, finestraTemporale,ampiezzaFinestraTemporale, dati_acquisiti, fascia);
+      d3_create_graphic(
+        spostamento,
+        finestraTemporale,
+        ampiezzaFinestraTemporale,
+        dati_acquisiti,
+        fascia
+      );
     }
 
     return function cleanup() {
@@ -371,11 +410,12 @@ function App2() {
           onMouseUp={() => {
             checkTimelineAndFix();
             setSpostamento(calcola(spostamentoSlider));
-            setAmpiezzaFinestraTemporale(calcolaAmpiezzaTemporale(spostamentoSlider));
+            setAmpiezzaFinestraTemporale(
+              calcolaAmpiezzaTemporale(spostamentoSlider)
+            );
           }}
           onChange={(event) => {
             setSpostamentoSlider(event.target.value);
-            
           }}
         />
       </div>
