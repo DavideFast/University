@@ -39,6 +39,7 @@ function d3_create_graphic(
   const svg = d3
     .select("#my_dataviz")
     .append("svg")
+
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -285,6 +286,7 @@ function d3_create_graphic(
 
     const yAxis = svg
     .append("g")
+    
     .style("font-size", 15)
     .attr("class", "yAxis")
     .attr("transform", `rotate(90)`)
@@ -296,21 +298,24 @@ function d3_create_graphic(
 
 
   const zoomX = d3.zoom()
-  .scaleExtent([1, 20]) // limita lo zoom tra 1x e 10x
-      .translateExtent([[0, 0], [width - margin.right, height]])
+  .scaleExtent([2.5, 20]) // limita lo zoom tra 1x e 10x
+      //.translateExtent([[0, 0], [width - margin.right, height]])
       .on("zoom", (event) => {
         const newX = event.transform.rescaleX(x);
         svg.select('.xAxis')
+                .transition()
+    .duration(750)
           .call(d3.axisBottom(newX));
       });
   xAxis.call(zoomX);
 
   const zoomY = d3.zoom()
   .scaleExtent([0.01, 1]) // limita lo zoom tra 1x e 10x
-      .translateExtent([[0, 0], [width - margin.right, height]])
+      //.translateExtent([[0, 0], [width - margin.right, height]])
       .on("zoom", (event) => {
         const newY = event.transform.rescaleY(y);
-        svg.select('.yAxis')
+        svg.select('.yAxis').transition()
+    .duration(750)
           .call(d3.axisBottom(newY));
       });
   yAxis.call(zoomY);
