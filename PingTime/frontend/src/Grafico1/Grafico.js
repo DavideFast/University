@@ -101,10 +101,11 @@ function d3_create_graphic(
       getIntervalloSettimanale(new Date()).inizio.setHours(0),
       getIntervalloSettimanale(new Date()).fine.setHours(24)
     ])
+
     .range([0, height]);
 
   const y_settings = d3
-    .axisBottom(y)
+    .axisLeft(y)
     .ticks(d3.timeDay.every(1))
     //.tickFormat(d3.timeFormat("%H:%M"));
 
@@ -290,10 +291,9 @@ function d3_create_graphic(
 
     const yAxis = svg
     .append("g")
-    
+    .attr("transform", `translate(0,0)`)
     .style("font-size", 15)
     .attr("class", "yAxis")
-    .attr("transform", `rotate(90)`)
     .call(y_settings)
 
 
@@ -302,6 +302,7 @@ function d3_create_graphic(
 
 
   const zoomX = d3.zoom()
+  //.translateExtent([])
   .scaleExtent([2.5, 20]) // limita lo zoom tra 1x e 10x
       //.translateExtent([[0, 0], [width - margin.right, height]])
       .on("zoom", (event) => {
@@ -320,7 +321,7 @@ function d3_create_graphic(
         const newY = event.transform.rescaleY(y);
         svg.select('.yAxis').transition()
     .duration(750)
-          .call(d3.axisBottom(newY));
+          .call(d3.axisLeft(newY));
       });
   yAxis.call(zoomY);
     /*const zoom = d3.zoom()
