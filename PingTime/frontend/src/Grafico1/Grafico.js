@@ -11,6 +11,7 @@ import {
   calcolaAmpiezzaTemporale,
   calcola,
 } from "./SliderObject_utility";
+import { getIntervalloSettimanale } from "./Utility";
 
 function d3_create_graphic(
   spostamento,
@@ -83,6 +84,9 @@ function d3_create_graphic(
     .ticks(d3.timeMinute.every(30))
     .tickFormat(d3.timeFormat("%H:%M"));
 
+    console.log(getIntervalloSettimanale(new Date(2025,11,14)));
+    console.log(getIntervalloSettimanale(new Date(2025,11,15)));
+    console.log(getIntervalloSettimanale(new Date(2025,11,16)));
   
 
   //######################################################################################
@@ -94,8 +98,8 @@ function d3_create_graphic(
   var y = d3
     .scaleTime()
     .domain([
-      new Date(2000, 0, 1),
-      new Date(2000, 0, 7)
+      getIntervalloSettimanale(new Date()).inizio.setHours(0),
+      getIntervalloSettimanale(new Date()).fine.setHours(24)
     ])
     .range([0, height]);
 
@@ -256,9 +260,9 @@ function d3_create_graphic(
       return y(d.giorno);
     })
     .attr(
-      "width",
-      x(new Date(2000, 0, 1, 0, 5)) - x(new Date(2000, 0, 1, 0, 0))
-    )
+      "width", function(d){
+      return (x(d.fine) - x(d.inizio))
+      })
     //.attr("height", y.bandwidth())
     .attr("clip-path", "url(#clip)")
     .style("fill", function (d) {
