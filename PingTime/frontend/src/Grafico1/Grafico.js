@@ -72,27 +72,17 @@ function d3_create_graphic(
   var x = d3
     .scaleTime()
     .domain([
-      new Date(2000, 0, 1).setHours(finestraTemporale),
-      new Date(2000, 0, 1).setHours(
-        finestraTemporale + ampiezzaFinestraTemporale
-      ),
+      new Date(2000, 0, 1).setHours(0),
+      new Date(2000, 0, 1).setHours(24)
     ])
     .range([0, width]);
 
   var x_settings = d3
-    .axisBottom()
-    .scale(x)
-    .ticks(d3.timeMinute.every(60 * spostamento))
+    .axisBottom(x)
+    .ticks(d3.timeMinute.every(30))
     .tickFormat(d3.timeFormat("%H:%M"));
 
-  var xAxis = svg
-    .append("g")
-    .style("font-size", 12)
-    .attr("id", "clip")
-    .attr("transform", `translate(0, ${height})`)
-    .call(x_settings /*.tickSize(0)*/)
-    .select(".domain")
-    .remove();
+  
 
   //######################################################################################
   //##                                                                                  ##
@@ -100,14 +90,20 @@ function d3_create_graphic(
   //##                                                                                  ##
   //######################################################################################
 
-  const y = d3.scaleBand().range([height, 0]).domain(myVars).padding(0.05);
+  var y = d3
+    .scaleTime()
+    .domain([
+      new Date(2000, 0, 1),
+      new Date(2000, 0, 7)
+    ])
+    .range([0, height]);
 
-  const yAxis = svg
-    .append("g")
-    .style("font-size", 15)
-    .call(d3.axisLeft(y).tickSize(0))
-    .select(".domain")
-    .remove();
+  const y_settings = d3
+    .axisBottom(y)
+    .ticks(d3.timeDay.every(1))
+    //.tickFormat(d3.timeFormat("%H:%M"));
+
+  
 
   //######################################################################################
   //##                                                                                  ##
@@ -131,7 +127,7 @@ function d3_create_graphic(
   //##                                                                                  ##
   //######################################################################################
 
-  var scatter = svg.append("g").attr("clip-path", "url(#clip)");
+  var scatter = svg.append("g");
 
   //######################################################################################
   //##                                                                                  ##
@@ -193,19 +189,7 @@ function d3_create_graphic(
       </>
     );
 
-  /*var zoom = d3
-    .zoom()
-    .scaleExtent([0.5, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
-    .extent([
-      [0, 0],
-      [width, height],
-    ])
-    .on("zoom", updateChart);*/
-
-  const handleZoom = (e) => svg.attr("transform", e.transform);
-
-  const zoom = d3.zoom().on("zoom", handleZoom);
-  d3.select("svg").call(zoom);
+  
 
   //######################################################################################
   //##                                                                                  ##
@@ -274,7 +258,7 @@ function d3_create_graphic(
       "width",
       x(new Date(2000, 0, 1, 0, 5)) - x(new Date(2000, 0, 1, 0, 0))
     )
-    .attr("height", y.bandwidth())
+    //.attr("height", y.bandwidth())
     .attr("clip-path", "url(#clip)")
     .style("fill", function (d) {
       d.colore = myColor(d.valore + 30);
@@ -284,6 +268,62 @@ function d3_create_graphic(
     .on("mouseover", mouseover)
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave);
+
+
+  //######################################################################################
+  //##                                                                                  ##
+  //##                                AGGIUNTA DEGLI ASSI                               ##
+  //##                                                                                  ##
+  //######################################################################################
+
+    var xAxis = svg
+    .append("g")
+    .style("font-size", 12)
+    .attr("class", "xAxis")
+    .attr("transform", `translate(0, ${height})`)
+    .call(x_settings)
+
+    const yAxis = svg
+    .append("g")
+    .style("font-size", 15)
+    .attr("class", "yAxis")
+    .attr("transform", `rotate(90)`)
+    .call(y_settings)
+
+
+
+
+
+
+  const zoomX = d3.zoom()
+  .scaleExtent([1, 20]) // limita lo zoom tra 1x e 10x
+      .translateExtent([[0, 0], [width - margin.right, height]])
+      .on("zoom", (event) => {
+        const newX = event.transform.rescaleX(x);
+        svg.select('.xAxis')
+          .call(d3.axisBottom(newX));
+      });
+  xAxis.call(zoomX);
+
+  const zoomY = d3.zoom()
+  .scaleExtent([0.01, 1]) // limita lo zoom tra 1x e 10x
+      .translateExtent([[0, 0], [width - margin.right, height]])
+      .on("zoom", (event) => {
+        const newY = event.transform.rescaleY(y);
+        svg.select('.yAxis')
+          .call(d3.axisBottom(newY));
+      });
+  yAxis.call(zoomY);
+    /*const zoom = d3.zoom()
+      .scaleExtent([1, 10]) // limita lo zoom tra 1x e 10x
+      .translateExtent([[margin.left, 0], [width - margin.right, height]])
+      .on('zoom', (event) => {
+        const newX = event.transform.rescaleX(x_settings);
+        svg.select('.xAxis')
+          .call(d3.axisBottom(newX));
+      });
+
+    xAxis.call(zoom);*/
 
   /*function updateChart() {
     // recover the new scale
