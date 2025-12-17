@@ -326,7 +326,17 @@ function d3_create_graphic(
   .scaleExtent([1, 20]) // limita lo zoom tra 1x e 10x
       //.translateExtent([[0, 0], [width - margin.right, height]])
       .on("zoom", (event) => {
-        const newX = event.transform.rescaleX(x);
+        console.log(event.transform);
+        var newX;
+        if(event.transform.k<0)
+        var newX = d3
+          .scaleBand([0,width]).domain(arrayX_filtered3.slice(finestra,domainCardinality));
+        else if (event.transform.k>0)
+          var newX = d3
+          .scaleBand([0,width]).domain(arrayX_filtered2.slice(finestra,domainCardinality));
+        //const newX = event.transform.rescaleX(x);
+        else
+          newX = x;
         svg.select('.xAxis')
                 .transition()
     .duration(750)
