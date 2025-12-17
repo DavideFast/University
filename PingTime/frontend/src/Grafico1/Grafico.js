@@ -11,7 +11,7 @@ import {
   calcolaAmpiezzaTemporale,
   calcola,
 } from "./SliderObject_utility";
-import { getIntervalloSettimanale } from "./Utility";
+import { arrayX, getIntervalloSettimanale } from "./Utility";
 
 function d3_create_graphic(
   spostamento,
@@ -71,18 +71,32 @@ function d3_create_graphic(
   //##                                                                                  ##
   //######################################################################################
 
-  var x = d3
+  /*var x = d3
     .scaleTime()
     .domain([
       new Date(2000, 0, 1).setHours(0),
       new Date(2000, 0, 1).setHours(24)
     ])
-    .range([0, width]);
+    .range([0, width]);*/
+
+    var finestra=0
+    var domainCardinality=24;
+
+    const arrayX_filtered = arrayX.filter(item => item.endsWith('00'));
+    const arrayX_filtered2 = arrayX.filter(item => item.endsWith('00') || item.endsWith('30'));
+    const arrayX_filtered3 = arrayX.filter(item => item.endsWith('00') || item.endsWith('15') || item.endsWith('30') || item.endsWith('45'));
+    const arrayX_filtered4 = arrayX.filter(item => item.endsWith('0'));
+
+    var x = d3
+    .scaleBand([0,width]).domain(arrayX_filtered4.slice(finestra,domainCardinality));
+
+    console.log(x.bandwidth());
 
   var x_settings = d3
     .axisBottom(x)
-    .ticks(d3.timeMinute.every(30))
-    .tickFormat(d3.timeFormat("%H:%M"));
+    //.ticks(10)
+    //.ticks(d3.timeMinute.every(30))
+    //.tickFormat(d3.timeFormat("%H:%M"));
 
     console.log(getIntervalloSettimanale(new Date(2025,11,14)));
     console.log(getIntervalloSettimanale(new Date(2025,11,15)));
@@ -95,14 +109,19 @@ function d3_create_graphic(
   //##                                                                                  ##
   //######################################################################################
 
-  var y = d3
+  /*var y = d3
     .scaleTime()
     .domain([
       getIntervalloSettimanale(new Date()).inizio.setHours(0),
       getIntervalloSettimanale(new Date()).fine.setHours(24)
     ])
-
-    .range([0, height]);
+    .range([0, height]);*/
+    var y = d3
+    .scaleTime()
+    .domain([
+      getIntervalloSettimanale(new Date()).inizio.setHours(0),
+      getIntervalloSettimanale(new Date()).fine.setHours(24)
+    ]).range([0, height]);
 
   const y_settings = d3
     .axisLeft(y)
@@ -285,6 +304,7 @@ function d3_create_graphic(
     var xAxis = svg
     .append("g")
     .style("font-size", 12)
+
     .attr("class", "xAxis")
     .attr("transform", `translate(0, ${height})`)
     .call(x_settings)
@@ -303,7 +323,7 @@ function d3_create_graphic(
 
   const zoomX = d3.zoom()
   //.translateExtent([])
-  .scaleExtent([2.5, 20]) // limita lo zoom tra 1x e 10x
+  .scaleExtent([1, 20]) // limita lo zoom tra 1x e 10x
       //.translateExtent([[0, 0], [width - margin.right, height]])
       .on("zoom", (event) => {
         const newX = event.transform.rescaleX(x);
