@@ -91,6 +91,7 @@ function d3_create_graphic(
     var x = d3
     .scaleBand([0,width]).domain(arrayX_filtered1.slice(inizioFinestra,fineFinestra));
 
+
     console.log(x.bandwidth());
 
   var x_settings = d3
@@ -123,6 +124,8 @@ function d3_create_graphic(
       getIntervalloSettimanale(new Date()).inizio.setHours(0),
       getIntervalloSettimanale(new Date()).fine.setHours(24)
     ]).range([0, height]);
+
+    console.log(y.domain);
 
   const y_settings = d3
     .axisLeft(y)
@@ -391,6 +394,7 @@ function d3_create_graphic(
       //.translateExtent([[0, 0], [width - margin.right, height]])
       .on("zoom", (event) => {
         const newY = event.transform.rescaleY(y);
+        console.log(newY.domain());
         svg.select('.yAxis').transition()
     .duration(750)
           .call(d3.axisLeft(newY));

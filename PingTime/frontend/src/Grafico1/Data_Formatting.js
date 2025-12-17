@@ -36,10 +36,14 @@ function joinFasceOrariePresenze(presenze, fasce) {
   newData.sort((a, b) => {
     return d3.ascending(a.ora_inizio, b.ora_fine);
   });
+  console.log(newData);
   return newData;
 }
 
 function creaArrayPresenze(newData) {
+
+
+
   var arrayFasce = new Array(7 * 24 * 12); //7 giorni x 24 ore x 12 quarti d'ora
   for (let i = 0; i < 7; i++) {
     for (let j = 0; j < 288; j++) {
@@ -48,102 +52,54 @@ function creaArrayPresenze(newData) {
 
       if (j < 120) {
         if (j % 12 === 0)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":00"
-          );
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":00";
         else if (j % 12 === 1) {
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":05"
-          );
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":05";
         } else if (j % 12 === 2)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":10"
-          );
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":10";
         else if (j % 12 === 3)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":15"
-          );
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":15";
         else if (j % 12 === 4)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":20"
-          );
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":20";
         else if (j % 12 === 5)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":25"
-          );
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":25";
         else if (j % 12 === 6)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":30"
-          );
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":30";
         else if (j % 12 === 7)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":35"
-          );
+          arrayFasce[i * 288 + j].fascia =  "0" + Math.floor(j / 12) + ":35";
         else if (j % 12 === 8)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":40"
-          );
+          arrayFasce[i * 288 + j].fascia =  "0" + Math.floor(j / 12) + ":40";
         else if (j % 12 === 9)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":45"
-          );
+          arrayFasce[i * 288 + j].fascia =  "0" + Math.floor(j / 12) + ":45";
         else if (j % 12 === 10)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":50"
-          );
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":50";
         else if (j % 12 === 11)
-          arrayFasce[i * 288 + j].fascia = new Date(
-            "January 1, 2000 " + "0" + Math.floor(j / 12) + ":55"
-          );
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":55";
       }
       if (j % 12 === 0)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":00"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":00";
       else if (j % 12 === 1)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":05"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":05";
       else if (j % 12 === 2)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":10"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":10";
       else if (j % 12 === 3)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":15"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":15";
       else if (j % 12 === 4)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":20"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":20";
       else if (j % 12 === 5)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":25"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":25";
       else if (j % 12 === 6)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":30"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":30";
       else if (j % 12 === 7)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":35"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":35";
       else if (j % 12 === 8)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":40"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":40";
       else if (j % 12 === 9)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":45"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":45";
       else if (j % 12 === 10)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":50"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":50";
       else if (j % 12 === 11)
-        arrayFasce[i * 288 + j].fascia = new Date(
-          "January 1, 2000 " + Math.floor(j / 12) + ":55"
-        );
+        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":55";
 
       if (i === 0) arrayFasce[i * 288 + j].giorno = "Domenica";
       if (i === 1) arrayFasce[i * 288 + j].giorno = "Lunedì";
