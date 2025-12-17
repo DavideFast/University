@@ -89,7 +89,7 @@ function d3_create_graphic(
     const arrayX_filtered5 = arrayX;
 
     var x = d3
-    .scaleBand([0,width]).domain(arrayX_filtered4.slice(inizioFinestra,fineFinestra));
+    .scaleBand([0,width]).domain(arrayX_filtered1.slice(inizioFinestra,fineFinestra));
 
     console.log(x.bandwidth());
 
@@ -317,7 +317,7 @@ function d3_create_graphic(
     .attr("class", "yAxis")
     .call(y_settings)
 
-    var zoomPrecedente=1;
+    var zoomPrecedente=-1;
     var vista=1;
 
 
@@ -330,54 +330,55 @@ function d3_create_graphic(
       .on("zoom", (event) => {
         console.log(event.transform);
         var newX;
-        if(event.transform.k<zoomPrecedente){
+        if((event.transform.k-zoomPrecedente)/event.transform.k>0.10 && zoomPrecedente!==-1){
           if(vista===1){
         var newX = d3
           .scaleBand([0,width]).domain(arrayX_filtered2.slice(inizioFinestra,fineFinestra));
-          vista = vista + 1;
+          vista = 2;
           }else if(vista===2){
             var newX = d3
             .scaleBand([0,width]).domain(arrayX_filtered3.slice(inizioFinestra,fineFinestra));
-            vista = vista + 1;
+            vista = 3;
           }else if(vista===3){
             var newX = d3
             .scaleBand([0,width]).domain(arrayX_filtered4.slice(inizioFinestra,fineFinestra));
-            vista = vista + 1;
+            vista = 4;
           }else if(vista===4){
             var newX = d3
             .scaleBand([0,width]).domain(arrayX_filtered5.slice(inizioFinestra,fineFinestra));
-            vista = vista + 1;
-          }
-          else{
+            vista = 5;
+          }else{
             var newX = d3
             .scaleBand([0,width]).domain(arrayX_filtered5.slice(inizioFinestra,fineFinestra));
-            
-        }}else if (event.transform.k>zoomPrecedente){
-          if(vista===1)
+            vista = 5;
+          }
+        }else if (event.transform.k<zoomPrecedente){
+          if(vista===1){
           var newX = d3
           .scaleBand([0,width]).domain(arrayX_filtered1.slice(inizioFinestra,fineFinestra));
-          else if(vista===2){
+          vista=1;
+          }else if(vista===2){
             var newX = d3
             .scaleBand([0,width]).domain(arrayX_filtered1.slice(inizioFinestra,fineFinestra));
-            vista = vista - 1;
+            vista = 1;
           }else if(vista===3){
             var newX = d3
             .scaleBand([0,width]).domain(arrayX_filtered2.slice(inizioFinestra,fineFinestra));
-            vista = vista - 1;
+            vista = 2;
           }else if(vista===4){
             var newX = d3
             .scaleBand([0,width]).domain(arrayX_filtered3.slice(inizioFinestra,fineFinestra));
-            vista = vista - 1;
-          }
-          else if(vista===5){
+            vista = 3;
+          }else if(vista===5){
             var newX = d3
             .scaleBand([0,width]).domain(arrayX_filtered4.slice(inizioFinestra,fineFinestra));
-            vista = vista - 1;
+            vista = 4;
           }
             //const newX = event.transform.rescaleX(x);
         }else
           newX = x;
         zoomPrecedente=event.transform.k;
+        console.log(vista);
         svg.select('.xAxis')
                 .transition()
     .duration(750)
