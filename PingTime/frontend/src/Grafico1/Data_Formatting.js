@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import { getGiornoDaSettimana } from "./Utility";
 
 function creaArrayFascia(fasce) {
   fasce.sort((a, b) => {
@@ -17,12 +18,9 @@ function joinFasceOrariePresenze(presenze, fasce) {
 
   for (let i = 0; i < presenze.length; i++) {
     newData[i] = {};
-    newData[i].inizio = new Date(
-      "january 1, 2000 " + fasce[presenze[i].fascia_oraria].ora_inizio
-    );
-    newData[i].fine = new Date(
-      "January 1, 2000 " + fasce[presenze[i].fascia_oraria].ora_fine
-    );
+    
+    newData[i].inizio = fasce[presenze[i].fascia_oraria].ora_inizio;
+    newData[i].fine = fasce[presenze[i].fascia_oraria].ora_fine;
     newData[i].giorno = fasce[presenze[i].fascia_oraria].giorno;
     if (newData[i].giorno === "Domenica") newData[i].giorno_numerico = 0;
     if (newData[i].giorno === "Lunedì") newData[i].giorno_numerico = 1;
@@ -31,6 +29,7 @@ function joinFasceOrariePresenze(presenze, fasce) {
     if (newData[i].giorno === "Giovedì") newData[i].giorno_numerico = 4;
     if (newData[i].giorno === "Venerdì") newData[i].giorno_numerico = 5;
     if (newData[i].giorno === "Sabato") newData[i].giorno_numerico = 6;
+    newData[i].day = getGiornoDaSettimana(presenze[i].settimana,newData[i].giorno_numerico)
   }
 
   newData.sort((a, b) => {
@@ -115,11 +114,11 @@ function creaArrayPresenze(newData) {
     const inizio = newData[i].inizio;
     const fine = newData[i].fine;
     const giorno = newData[i].giorno_numerico;
-    const index_inizio =
+    /*const index_inizio =
       giorno * 284 + (inizio.getHours() * 12 + inizio.getMinutes() / 5);
     const index_fine =
       giorno * 284 + (fine.getHours() * 12 + fine.getMinutes() / 5);
-    for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
+    for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;*/
   }
 
   return arrayFasce;

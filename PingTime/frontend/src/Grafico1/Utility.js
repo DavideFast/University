@@ -31,8 +31,11 @@ export function getIntervalloSettimanale(date) {
     }
 }
 
-export function getGiornoDaSettimana(numeroSettimana, numeroGiorno){
-    
+export function getGiornoDaSettimana(numeroSettimana, numeroGiono){
+    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+    const firstMonday = d3.utcMonday.ceil(startOfYear);
+    const weekStart = d3.utcWeek.offset(firstMonday, numeroSettimana - 1);
+    return d3.utcDay.offset(weekStart, numeroGiono - 1);
 }
 
 export const arrayX = ["00:00","00:05","00:10","00:15","00:20","00:25","00:30","00:35","00:40","00:45","00:50","00:55",
