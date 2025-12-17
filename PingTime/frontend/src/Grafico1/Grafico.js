@@ -79,16 +79,17 @@ function d3_create_graphic(
     ])
     .range([0, width]);*/
 
-    var finestra=0
-    var domainCardinality=24;
+    var inizioFinestra=0
+    var fineFinestra=24;
 
-    const arrayX_filtered = arrayX.filter(item => item.endsWith('00'));
+    const arrayX_filtered1 = arrayX.filter(item => item.endsWith('00'));
     const arrayX_filtered2 = arrayX.filter(item => item.endsWith('00') || item.endsWith('30'));
     const arrayX_filtered3 = arrayX.filter(item => item.endsWith('00') || item.endsWith('15') || item.endsWith('30') || item.endsWith('45'));
     const arrayX_filtered4 = arrayX.filter(item => item.endsWith('0'));
+    const arrayX_filtered5 = arrayX;
 
     var x = d3
-    .scaleBand([0,width]).domain(arrayX_filtered4.slice(finestra,domainCardinality));
+    .scaleBand([0,width]).domain(arrayX_filtered4.slice(inizioFinestra,fineFinestra));
 
     console.log(x.bandwidth());
 
@@ -316,27 +317,67 @@ function d3_create_graphic(
     .attr("class", "yAxis")
     .call(y_settings)
 
-
+    var zoomPrecedente=1;
+    var vista=1;
 
 
 
 
   const zoomX = d3.zoom()
   //.translateExtent([])
-  .scaleExtent([1, 20]) // limita lo zoom tra 1x e 10x
+  .scaleExtent([-Infinity, Infinity]) // limita lo zoom tra 1x e 10x
       //.translateExtent([[0, 0], [width - margin.right, height]])
       .on("zoom", (event) => {
         console.log(event.transform);
         var newX;
-        if(event.transform.k<0)
+        if(event.transform.k<zoomPrecedente){
+          if(vista===1){
         var newX = d3
-          .scaleBand([0,width]).domain(arrayX_filtered3.slice(finestra,domainCardinality));
-        else if (event.transform.k>0)
+          .scaleBand([0,width]).domain(arrayX_filtered2.slice(inizioFinestra,fineFinestra));
+          vista = vista + 1;
+          }else if(vista===2){
+            var newX = d3
+            .scaleBand([0,width]).domain(arrayX_filtered3.slice(inizioFinestra,fineFinestra));
+            vista = vista + 1;
+          }else if(vista===3){
+            var newX = d3
+            .scaleBand([0,width]).domain(arrayX_filtered4.slice(inizioFinestra,fineFinestra));
+            vista = vista + 1;
+          }else if(vista===4){
+            var newX = d3
+            .scaleBand([0,width]).domain(arrayX_filtered5.slice(inizioFinestra,fineFinestra));
+            vista = vista + 1;
+          }
+          else{
+            var newX = d3
+            .scaleBand([0,width]).domain(arrayX_filtered5.slice(inizioFinestra,fineFinestra));
+            
+        }}else if (event.transform.k>zoomPrecedente){
+          if(vista===1)
           var newX = d3
-          .scaleBand([0,width]).domain(arrayX_filtered2.slice(finestra,domainCardinality));
-        //const newX = event.transform.rescaleX(x);
-        else
+          .scaleBand([0,width]).domain(arrayX_filtered1.slice(inizioFinestra,fineFinestra));
+          else if(vista===2){
+            var newX = d3
+            .scaleBand([0,width]).domain(arrayX_filtered1.slice(inizioFinestra,fineFinestra));
+            vista = vista - 1;
+          }else if(vista===3){
+            var newX = d3
+            .scaleBand([0,width]).domain(arrayX_filtered2.slice(inizioFinestra,fineFinestra));
+            vista = vista - 1;
+          }else if(vista===4){
+            var newX = d3
+            .scaleBand([0,width]).domain(arrayX_filtered3.slice(inizioFinestra,fineFinestra));
+            vista = vista - 1;
+          }
+          else if(vista===5){
+            var newX = d3
+            .scaleBand([0,width]).domain(arrayX_filtered4.slice(inizioFinestra,fineFinestra));
+            vista = vista - 1;
+          }
+            //const newX = event.transform.rescaleX(x);
+        }else
           newX = x;
+        zoomPrecedente=event.transform.k;
         svg.select('.xAxis')
                 .transition()
     .duration(750)
