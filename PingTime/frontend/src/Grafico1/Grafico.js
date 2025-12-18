@@ -75,8 +75,8 @@ function d3_create_graphic(
   //##                       CREAZIONE DELLA SCALA E DELL'ASSE X                        ##
   //##                                                                                  ##
   //######################################################################################
-  var inizioFinestra = 200;
-  var fineFinestra = 240;
+  var inizioFinestra = 0;
+  var fineFinestra = 24;
 
   const arrayX_filtered1 = arrayX.filter((item) => item.endsWith("00"));
   const arrayX_filtered2 = arrayX.filter(
@@ -94,7 +94,7 @@ function d3_create_graphic(
 
   var x = d3
     .scaleBand([0, width])
-    .domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
+    .domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
 
   var x_settings = d3.axisBottom(x);
 
@@ -261,11 +261,8 @@ function d3_create_graphic(
     .attr("y", function (d) {
       return y(d.giorno);
     })
-    /*.attr("width", function (d) {
-      return x(d.fine) - x(d.inizio);
-    })*/
     .attr("width", function (d) {
-      return x("19:25") - x("19:20");
+      return x(x.domain()[1]) - x(x.domain()[0]);
     })
 
     .attr("height", function (d) {
@@ -376,6 +373,8 @@ function d3_create_graphic(
       } else newX = x;
       zoomPrecedente = event.transform.k;
 
+      arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0],y.domain()[y.domain().length-1]]);
+      console.log(arrayFasce);
       x = newX;
       scatter.selectAll(".dato").remove();
       scatter
@@ -388,11 +387,10 @@ function d3_create_graphic(
           return x(d.fascia);
         })
         .attr("y", function (d) {
-          console.log(count);
           return y(d.giorno);
         })
         .attr("width", function (d) {
-          return x("19:25") - x("19:20");
+          return x(x.domain()[1]) - x(x.domain()[0]);
         })
 
         .attr("height", function (d) {
@@ -412,7 +410,6 @@ function d3_create_graphic(
         .on("mouseover", mouseover)
         .on("mousemove", mousemove)
         .on("mouseleave", mouseleave);
-      console.log(newX.domain());
 
       svg.select(".xAxis").transition().duration(750).call(d3.axisBottom(newX));
     });
@@ -423,6 +420,11 @@ function d3_create_graphic(
     .scaleExtent([0.025, 1]) // limita lo zoom tra 1x e 10x
     .on("zoom", (event) => {
       y = event.transform.rescaleY(y);
+
+      console.log("-------"+y.domain())
+      console.log([y.domain()[0],y.domain()[y.domain().length-1]]);
+      arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0],y.domain()[y.domain().length-1]]);
+      console.log(arrayFasce);
 
       scatter.selectAll(".dato").remove();
       scatter
@@ -435,11 +437,11 @@ function d3_create_graphic(
           return x(d.fascia);
         })
         .attr("y", function (d) {
-          console.log(count);
           return y(d.giorno);
         })
         .attr("width", function (d) {
-          return x("19:25") - x("19:20");
+          console.log(x(x.domain()[1])-x(x.domain()[0]));
+          return x(x.domain()[1]) - x(x.domain()[0]);
         })
 
         .attr("height", function (d) {
@@ -459,7 +461,6 @@ function d3_create_graphic(
         .on("mouseover", mouseover)
         .on("mousemove", mousemove)
         .on("mouseleave", mouseleave);
-      console.log(y.domain());
       svg.select(".yAxis").transition().duration(750).call(d3.axisLeft(y));
     });
   yAxis.call(zoomY);

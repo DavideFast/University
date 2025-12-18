@@ -1,45 +1,48 @@
 import * as d3 from "d3";
 import { getGiornoDaSettimana } from "./Utility";
 
-function creaArrayFascia(fasce) {
-  fasce.sort((a, b) => {
+function creaArrayFascia(db_fasce) {
+  db_fasce.sort((a, b) => {
     return a.id - b.id;
   });
-  const dimensione_array_fascia = Number(fasce[fasce.length - 1].id);
-  var newFascia = new Array(dimensione_array_fascia);
-  for (let i = 0; i < fasce.length; i++) {
-    newFascia[fasce[i].id] = fasce[i] ? fasce[i] : null;
+  const dimensione_array_fascia = Number(db_fasce[db_fasce.length - 1].id);
+  var arrayFascia = new Array(dimensione_array_fascia);
+  for (let i = 0; i < db_fasce.length; i++) {
+    arrayFascia[db_fasce[i].id] = db_fasce[i] ? db_fasce[i] : null;
   }
-  return newFascia;
+  return arrayFascia;
 }
 
-function joinFasceOrariePresenze(presenze, fasce) {
-  var newData = new Array(presenze.length);
+function joinFasceOrariePresenze(db_calendario, db_fasce) {
+  //Creo un'array di dimensione pari al numero delle fasce
+  var join = new Array(db_calendario.length);
 
-  for (let i = 0; i < presenze.length; i++) {
-    newData[i] = {};
-
-    newData[i].inizio = fasce[presenze[i].fascia_oraria].ora_inizio;
-    newData[i].fine = fasce[presenze[i].fascia_oraria].ora_fine;
-    newData[i].giorno = fasce[presenze[i].fascia_oraria].giorno;
-    if (newData[i].giorno === "Domenica") newData[i].giorno_numerico = 0;
-    if (newData[i].giorno === "Lunedì") newData[i].giorno_numerico = 1;
-    if (newData[i].giorno === "Martedì") newData[i].giorno_numerico = 2;
-    if (newData[i].giorno === "Mercoledì") newData[i].giorno_numerico = 3;
-    if (newData[i].giorno === "Giovedì") newData[i].giorno_numerico = 4;
-    if (newData[i].giorno === "Venerdì") newData[i].giorno_numerico = 5;
-    if (newData[i].giorno === "Sabato") newData[i].giorno_numerico = 6;
-    newData[i].day = getGiornoDaSettimana(
-      presenze[i].settimana,
-      newData[i].giorno_numerico
+  //Copio le informazioni della fascia i-esima nell'array in posizione i-esima
+  for (let i = 0; i < db_calendario.length; i++) {
+    join[i] = {};
+    join[i].inizio = db_fasce[db_calendario[i].fascia_oraria].ora_inizio;
+    join[i].fine = db_fasce[db_calendario[i].fascia_oraria].ora_fine;
+    join[i].giorno = db_fasce[db_calendario[i].fascia_oraria].giorno;
+    if (join[i].giorno === "Domenica") join[i].giorno_numerico = 0;
+    if (join[i].giorno === "Lunedì") join[i].giorno_numerico = 1;
+    if (join[i].giorno === "Martedì") join[i].giorno_numerico = 2;
+    if (join[i].giorno === "Mercoledì") join[i].giorno_numerico = 3;
+    if (join[i].giorno === "Giovedì") join[i].giorno_numerico = 4;
+    if (join[i].giorno === "Venerdì") join[i].giorno_numerico = 5;
+    if (join[i].giorno === "Sabato") join[i].giorno_numerico = 6;
+    join[i].day = getGiornoDaSettimana(
+      db_calendario[i].settimana,
+      join[i].giorno_numerico
     );
   }
-
-  newData.sort((a, b) => {
-    return d3.ascending(a.ora_inizio, b.ora_fine);
+  
+  //Ordino in ordine cronologico
+  join.sort((a, b) => {
+    return d3.ascending(a.day, b.day);
   });
-  console.log(newData);
-  return newData;
+
+  console.log(join);
+  return join;
 }
 
 function creaArrayPresenze(newData, dominio) {
@@ -118,14 +121,11 @@ function creaArrayPresenze(newData, dominio) {
         arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 5);
     }
 
-    console.log(arrayFasce);
   }
   //Contare numero presenze per fascia oraria
-  console.log("-------------");
   newData = newData.filter(
     (item) => item.day >= dominio[0] && item.day < dominio[1]
   );
-  console.log(newData);
 
   for (let i = 0; i < newData.length; i++) {
     const inizio = newData[i].inizio;
@@ -137,15 +137,14 @@ function creaArrayPresenze(newData, dominio) {
       giorno * 284 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
     for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
   }
-  console.log(arrayFasce);
 
   return arrayFasce;
 }
 
-export function data_formatting(fasce, presenze, dominio) {
-  console.log("--------: " + dominio);
+export function data_formatting(db_fasce, db_calendario, codominio) {
+  console.log(codominio);
   return creaArrayPresenze(
-    joinFasceOrariePresenze(presenze, creaArrayFascia(fasce)),
-    dominio
+    joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)),
+    codominio
   );
 }
