@@ -18,7 +18,7 @@ function joinFasceOrariePresenze(presenze, fasce) {
 
   for (let i = 0; i < presenze.length; i++) {
     newData[i] = {};
-    
+
     newData[i].inizio = fasce[presenze[i].fascia_oraria].ora_inizio;
     newData[i].fine = fasce[presenze[i].fascia_oraria].ora_fine;
     newData[i].giorno = fasce[presenze[i].fascia_oraria].giorno;
@@ -29,7 +29,10 @@ function joinFasceOrariePresenze(presenze, fasce) {
     if (newData[i].giorno === "Giovedì") newData[i].giorno_numerico = 4;
     if (newData[i].giorno === "Venerdì") newData[i].giorno_numerico = 5;
     if (newData[i].giorno === "Sabato") newData[i].giorno_numerico = 6;
-    newData[i].day = getGiornoDaSettimana(presenze[i].settimana,newData[i].giorno_numerico)
+    newData[i].day = getGiornoDaSettimana(
+      presenze[i].settimana,
+      newData[i].giorno_numerico
+    );
   }
 
   newData.sort((a, b) => {
@@ -39,12 +42,11 @@ function joinFasceOrariePresenze(presenze, fasce) {
   return newData;
 }
 
-function creaArrayPresenze(newData) {
+function creaArrayPresenze(newData, dominio) {
+  const giorni = Math.floor((dominio[1] - dominio[0]) / (1000 * 60 * 60 * 24));
 
-
-
-  var arrayFasce = new Array(7 * 24 * 12); //7 giorni x 24 ore x 12 quarti d'ora
-  for (let i = 0; i < 7; i++) {
+  var arrayFasce = new Array(giorni * 24 * 12); //7 giorni x 24 ore x 12 quarti d'ora
+  for (let i = 0; i < giorni; i++) {
     for (let j = 0; j < 288; j++) {
       arrayFasce[i * 288 + j] = {};
       arrayFasce[i * 288 + j].valore = 0;
@@ -65,67 +67,85 @@ function creaArrayPresenze(newData) {
         else if (j % 12 === 6)
           arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":30";
         else if (j % 12 === 7)
-          arrayFasce[i * 288 + j].fascia =  "0" + Math.floor(j / 12) + ":35";
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":35";
         else if (j % 12 === 8)
-          arrayFasce[i * 288 + j].fascia =  "0" + Math.floor(j / 12) + ":40";
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":40";
         else if (j % 12 === 9)
-          arrayFasce[i * 288 + j].fascia =  "0" + Math.floor(j / 12) + ":45";
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":45";
         else if (j % 12 === 10)
           arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":50";
         else if (j % 12 === 11)
           arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":55";
+      } else {
+        if (j % 12 === 0)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":00";
+        else if (j % 12 === 1)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":05";
+        else if (j % 12 === 2)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":10";
+        else if (j % 12 === 3)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":15";
+        else if (j % 12 === 4)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":20";
+        else if (j % 12 === 5)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":25";
+        else if (j % 12 === 6)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":30";
+        else if (j % 12 === 7)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":35";
+        else if (j % 12 === 8)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":40";
+        else if (j % 12 === 9)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":45";
+        else if (j % 12 === 10)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":50";
+        else if (j % 12 === 11)
+          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":55";
       }
-      if (j % 12 === 0)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":00";
-      else if (j % 12 === 1)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":05";
-      else if (j % 12 === 2)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":10";
-      else if (j % 12 === 3)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":15";
-      else if (j % 12 === 4)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":20";
-      else if (j % 12 === 5)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":25";
-      else if (j % 12 === 6)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":30";
-      else if (j % 12 === 7)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":35";
-      else if (j % 12 === 8)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":40";
-      else if (j % 12 === 9)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":45";
-      else if (j % 12 === 10)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":50";
-      else if (j % 12 === 11)
-        arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":55";
-
-      if (i === 0) arrayFasce[i * 288 + j].giorno = "Domenica";
-      if (i === 1) arrayFasce[i * 288 + j].giorno = "Lunedì";
-      if (i === 2) arrayFasce[i * 288 + j].giorno = "Martedì";
-      if (i === 3) arrayFasce[i * 288 + j].giorno = "Mercoledì";
-      if (i === 4) arrayFasce[i * 288 + j].giorno = "Giovedì";
-      if (i === 5) arrayFasce[i * 288 + j].giorno = "Venerdì";
-      if (i === 6) arrayFasce[i * 288 + j].giorno = "Sabato";
+      if (i === 0)
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 6);
+      if (i === 1)
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 0);
+      if (i === 2)
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 1);
+      if (i === 3)
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 2);
+      if (i === 4)
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 3);
+      if (i === 5)
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 4);
+      if (i === 6)
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 5);
     }
+
+    console.log(arrayFasce);
   }
   //Contare numero presenze per fascia oraria
+  console.log("-------------");
+  newData = newData.filter(
+    (item) => item.day >= dominio[0] && item.day < dominio[1]
+  );
+  console.log(newData);
+
   for (let i = 0; i < newData.length; i++) {
     const inizio = newData[i].inizio;
     const fine = newData[i].fine;
     const giorno = newData[i].giorno_numerico;
-    /*const index_inizio =
-      giorno * 284 + (inizio.getHours() * 12 + inizio.getMinutes() / 5);
+    const index_inizio =
+      giorno * 284 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
     const index_fine =
-      giorno * 284 + (fine.getHours() * 12 + fine.getMinutes() / 5);
-    for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;*/
+      giorno * 284 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
+    for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
   }
+  console.log(arrayFasce);
 
   return arrayFasce;
 }
 
-export function data_formatting(fasce, presenze) {
+export function data_formatting(fasce, presenze, dominio) {
+  console.log("--------: " + dominio);
   return creaArrayPresenze(
-    joinFasceOrariePresenze(presenze, creaArrayFascia(fasce))
+    joinFasceOrariePresenze(presenze, creaArrayFascia(fasce)),
+    dominio
   );
 }
