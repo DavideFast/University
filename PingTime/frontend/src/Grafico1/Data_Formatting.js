@@ -19,6 +19,7 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
 
   //Copio le informazioni della fascia i-esima nell'array in posizione i-esima
   for (let i = 0; i < db_calendario.length; i++) {
+
     join[i] = {};
     join[i].inizio = db_fasce[db_calendario[i].fascia_oraria].ora_inizio;
     join[i].fine = db_fasce[db_calendario[i].fascia_oraria].ora_fine;
@@ -108,19 +109,19 @@ function creaArrayPerGrafico(join, codominio) {
           arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":55";
       }
       if (i === 0)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 6);
-      if (i === 1)
         arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 0);
-      if (i === 2)
+      if (i === 1)
         arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 1);
-      if (i === 3)
+      if (i === 2)
         arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 2);
-      if (i === 4)
+      if (i === 3)
         arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 3);
-      if (i === 5)
+      if (i === 4)
         arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 4);
-      if (i === 6)
+      if (i === 5)
         arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 5);
+      if (i === 6)
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 6);
     }
 
   }
@@ -129,18 +130,29 @@ function creaArrayPerGrafico(join, codominio) {
     (item) => item.day >= codominio[0] && item.day < codominio[1]
   );
 
-  arrayFasce.sort((a,b)=>{return d3.ascending(a.giorno,b.giorno)})
+  // assegna un id incrementale (0,1,2,...) per ogni giorno distinto in join
+  const dayIdMap = new Map();
+  let nextDayId = 0;
+  for (let i = 0; i < join.length; i++) {
+    const dayKey = +d3.utcDay.floor(join[i].day);
+    if (!dayIdMap.has(dayKey)) dayIdMap.set(dayKey, nextDayId++);
+    join[i].giorno_id = dayIdMap.get(dayKey);
+  }
+  console.log(join);
 
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {
     const inizio = join[i].inizio;
     const fine = join[i].fine;
-    const giorno = join[i].giorno_numerico;
+    var lock=true;
+    const giorno = join[i].giorno_id;
     const index_inizio =
       giorno * 284 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
     const index_fine =
       giorno * 284 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
+    
     for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
+    lock=true;
   }
 
   console.log(arrayFasce);
