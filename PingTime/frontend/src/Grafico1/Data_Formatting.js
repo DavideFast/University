@@ -41,14 +41,16 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
     return d3.ascending(a.day, b.day);
   });
 
-  console.log(join);
   return join;
 }
 
-function creaArrayPresenze(newData, dominio) {
-  const giorni = Math.floor((dominio[1] - dominio[0]) / (1000 * 60 * 60 * 24));
+function creaArrayPerGrafico(join, codominio) {
+  //Calcola quanti giorni sono presenti sull'asse y visibile
+  const giorni = Math.floor((codominio[1] - codominio[0]) / (1000 * 60 * 60 * 24));
 
-  var arrayFasce = new Array(giorni * 24 * 12); //7 giorni x 24 ore x 12 quarti d'ora
+
+  //Crea un array di dimensione pari al numero di tick del dominio per il numero di tick del codominio del grafico
+  var arrayFasce = new Array(giorni * 24 * 12); 
   for (let i = 0; i < giorni; i++) {
     for (let j = 0; j < 288; j++) {
       arrayFasce[i * 288 + j] = {};
@@ -106,31 +108,34 @@ function creaArrayPresenze(newData, dominio) {
           arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":55";
       }
       if (i === 0)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 6);
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 6);
       if (i === 1)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 0);
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 0);
       if (i === 2)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 1);
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 1);
       if (i === 3)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 2);
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 2);
       if (i === 4)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 3);
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 3);
       if (i === 5)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 4);
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 4);
       if (i === 6)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(dominio[0], 5);
+        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 5);
     }
 
   }
-  //Contare numero presenze per fascia oraria
-  newData = newData.filter(
-    (item) => item.day >= dominio[0] && item.day < dominio[1]
+  //Eliminare tutti i dati che hanno codominio fuori dal range
+  join = join.filter(
+    (item) => item.day >= codominio[0] && item.day < codominio[1]
   );
 
-  for (let i = 0; i < newData.length; i++) {
-    const inizio = newData[i].inizio;
-    const fine = newData[i].fine;
-    const giorno = newData[i].giorno_numerico;
+  arrayFasce.sort((a,b)=>{return d3.ascending(a.giorno,b.giorno)})
+
+  //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
+  for (let i = 0; i < join.length; i++) {
+    const inizio = join[i].inizio;
+    const fine = join[i].fine;
+    const giorno = join[i].giorno_numerico;
     const index_inizio =
       giorno * 284 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
     const index_fine =
@@ -138,12 +143,13 @@ function creaArrayPresenze(newData, dominio) {
     for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
   }
 
+  console.log(arrayFasce);
   return arrayFasce;
 }
 
 export function data_formatting(db_fasce, db_calendario, codominio) {
   console.log(codominio);
-  return creaArrayPresenze(
+  return creaArrayPerGrafico(
     joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)),
     codominio
   );
