@@ -138,7 +138,6 @@ function creaArrayPerGrafico(join, codominio) {
     if (!dayIdMap.has(dayKey)) dayIdMap.set(dayKey, nextDayId++);
     join[i].giorno_id = dayIdMap.get(dayKey);
   }
-  console.log(join);
 
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {
@@ -155,7 +154,6 @@ function creaArrayPerGrafico(join, codominio) {
     lock=true;
   }
 
-  console.log(arrayFasce);
   return arrayFasce;
 }
 
