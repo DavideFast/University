@@ -19,7 +19,6 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
 
   //Copio le informazioni della fascia i-esima nell'array in posizione i-esima
   for (let i = 0; i < db_calendario.length; i++) {
-
     join[i] = {};
     join[i].inizio = db_fasce[db_calendario[i].fascia_oraria].ora_inizio;
     join[i].fine = db_fasce[db_calendario[i].fascia_oraria].ora_fine;
@@ -31,12 +30,9 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
     if (join[i].giorno === "Giovedì") join[i].giorno_numerico = 4;
     if (join[i].giorno === "Venerdì") join[i].giorno_numerico = 5;
     if (join[i].giorno === "Sabato") join[i].giorno_numerico = 6;
-    join[i].day = getGiornoDaSettimana(
-      db_calendario[i].settimana,
-      join[i].giorno_numerico
-    );
+    join[i].day = getGiornoDaSettimana(db_calendario[i].settimana, join[i].giorno_numerico);
   }
-  
+
   //Ordino in ordine cronologico
   join.sort((a, b) => {
     return d3.ascending(a.day, b.day);
@@ -49,86 +45,52 @@ function creaArrayPerGrafico(join, codominio) {
   //Calcola quanti giorni sono presenti sull'asse y visibile
   const giorni = Math.floor((codominio[1] - codominio[0]) / (1000 * 60 * 60 * 24));
 
-
   //Crea un array di dimensione pari al numero di tick del dominio per il numero di tick del codominio del grafico
-  var arrayFasce = new Array(giorni * 24 * 12); 
+  var arrayFasce = new Array(giorni * 24 * 12);
   for (let i = 0; i < giorni; i++) {
     for (let j = 0; j < 288; j++) {
       arrayFasce[i * 288 + j] = {};
       arrayFasce[i * 288 + j].valore = 0;
 
       if (j < 120) {
-        if (j % 12 === 0)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":00";
+        if (j % 12 === 0) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":00";
         else if (j % 12 === 1) {
           arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":05";
-        } else if (j % 12 === 2)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":10";
-        else if (j % 12 === 3)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":15";
-        else if (j % 12 === 4)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":20";
-        else if (j % 12 === 5)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":25";
-        else if (j % 12 === 6)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":30";
-        else if (j % 12 === 7)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":35";
-        else if (j % 12 === 8)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":40";
-        else if (j % 12 === 9)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":45";
-        else if (j % 12 === 10)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":50";
-        else if (j % 12 === 11)
-          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":55";
+        } else if (j % 12 === 2) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":10";
+        else if (j % 12 === 3) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":15";
+        else if (j % 12 === 4) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":20";
+        else if (j % 12 === 5) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":25";
+        else if (j % 12 === 6) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":30";
+        else if (j % 12 === 7) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":35";
+        else if (j % 12 === 8) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":40";
+        else if (j % 12 === 9) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":45";
+        else if (j % 12 === 10) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":50";
+        else if (j % 12 === 11) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":55";
       } else {
-        if (j % 12 === 0)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":00";
-        else if (j % 12 === 1)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":05";
-        else if (j % 12 === 2)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":10";
-        else if (j % 12 === 3)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":15";
-        else if (j % 12 === 4)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":20";
-        else if (j % 12 === 5)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":25";
-        else if (j % 12 === 6)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":30";
-        else if (j % 12 === 7)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":35";
-        else if (j % 12 === 8)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":40";
-        else if (j % 12 === 9)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":45";
-        else if (j % 12 === 10)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":50";
-        else if (j % 12 === 11)
-          arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":55";
+        if (j % 12 === 0) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":00";
+        else if (j % 12 === 1) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":05";
+        else if (j % 12 === 2) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":10";
+        else if (j % 12 === 3) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":15";
+        else if (j % 12 === 4) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":20";
+        else if (j % 12 === 5) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":25";
+        else if (j % 12 === 6) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":30";
+        else if (j % 12 === 7) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":35";
+        else if (j % 12 === 8) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":40";
+        else if (j % 12 === 9) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":45";
+        else if (j % 12 === 10) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":50";
+        else if (j % 12 === 11) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":55";
       }
-      if (i === 0)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 0);
-      if (i === 1)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 1);
-      if (i === 2)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 2);
-      if (i === 3)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 3);
-      if (i === 4)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 4);
-      if (i === 5)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 5);
-      if (i === 6)
-        arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 6);
+      if (i === 0) arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 0);
+      if (i === 1) arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 1);
+      if (i === 2) arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 2);
+      if (i === 3) arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 3);
+      if (i === 4) arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 4);
+      if (i === 5) arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 5);
+      if (i === 6) arrayFasce[i * 288 + j].giorno = d3.utcDay.offset(codominio[0], 6);
     }
-
   }
   //Eliminare tutti i dati che hanno codominio fuori dal range
-  join = join.filter(
-    (item) => item.day >= codominio[0] && item.day < codominio[1]
-  );
+  join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
 
   // assegna un id incrementale (0,1,2,...) per ogni giorno distinto in join
   const dayIdMap = new Map();
@@ -143,15 +105,13 @@ function creaArrayPerGrafico(join, codominio) {
   for (let i = 0; i < join.length; i++) {
     const inizio = join[i].inizio;
     const fine = join[i].fine;
-    var lock=true;
+    var lock = true;
     const giorno = join[i].giorno_id;
-    const index_inizio =
-      giorno * 284 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
-    const index_fine =
-      giorno * 284 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
-    
+    const index_inizio = giorno * 284 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
+    const index_fine = giorno * 284 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
+
     for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
-    lock=true;
+    lock = true;
   }
 
   return arrayFasce;
@@ -159,8 +119,5 @@ function creaArrayPerGrafico(join, codominio) {
 
 export function data_formatting(db_fasce, db_calendario, codominio) {
   console.log(codominio);
-  return creaArrayPerGrafico(
-    joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)),
-    codominio
-  );
+  return creaArrayPerGrafico(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio);
 }

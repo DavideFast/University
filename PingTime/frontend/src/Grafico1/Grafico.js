@@ -6,20 +6,10 @@ import { useEffect } from "react";
 import React from "react";
 import Slider from "@mui/material/Slider";
 import { data_formatting } from "./Data_Formatting";
-import {
-  setFinestra,
-  calcolaAmpiezzaTemporale,
-  calcola,
-} from "./SliderObject_utility";
-import { arrayX, getIntervalloSettimanale } from "./Utility";
+import { setFinestra, calcolaAmpiezzaTemporale, calcola } from "./SliderObject_utility";
+import { arrayX, getIntervalloSettimanale, getScorrimentoX, getZoomX, getZoomY } from "./Utility";
 
-function d3_create_graphic(
-  spostamento,
-  finestraTemporale,
-  ampiezzaFinestraTemporale,
-  db_data,
-  db_fascia
-) {
+function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, db_data, db_fascia) {
   //######################################################################################
   //##                                                                                  ##
   //##                  IMPOSTA LE DIMENSIONI E I MARGINI DELLA HEATMAP                 ##
@@ -52,49 +42,26 @@ function d3_create_graphic(
   //##                                                                                  ##
   //######################################################################################
 
-  var dominio = [
-    new Date(getIntervalloSettimanale(new Date()).inizio.setHours(0)),
-    new Date(getIntervalloSettimanale(new Date()).fine.setHours(24)),
-  ];
+  var dominio = [new Date(getIntervalloSettimanale(new Date()).inizio.setHours(0)), new Date(getIntervalloSettimanale(new Date()).fine.setHours(24))];
 
   var arrayFasce = data_formatting(db_fascia, db_data, dominio);
-
-  var myVars = [];
-  myVars = [
-    "Domenica",
-    "Sabato",
-    "Venerdì",
-    "Giovedì",
-    "Mercoledì",
-    "Martedì",
-    "Lunedì",
-  ];
 
   //######################################################################################
   //##                                                                                  ##
   //##                       CREAZIONE DELLA SCALA E DELL'ASSE X                        ##
   //##                                                                                  ##
   //######################################################################################
+
   var inizioFinestra = 0;
   var fineFinestra = 24;
 
   const arrayX_filtered1 = arrayX.filter((item) => item.endsWith("00"));
-  const arrayX_filtered2 = arrayX.filter(
-    (item) => item.endsWith("00") || item.endsWith("30")
-  );
-  const arrayX_filtered3 = arrayX.filter(
-    (item) =>
-      item.endsWith("00") ||
-      item.endsWith("15") ||
-      item.endsWith("30") ||
-      item.endsWith("45")
-  );
+  const arrayX_filtered2 = arrayX.filter((item) => item.endsWith("00") || item.endsWith("30"));
+  const arrayX_filtered3 = arrayX.filter((item) => item.endsWith("00") || item.endsWith("15") || item.endsWith("30") || item.endsWith("45"));
   const arrayX_filtered4 = arrayX.filter((item) => item.endsWith("0"));
   const arrayX_filtered5 = arrayX;
 
-  var x = d3
-    .scaleBand([0, width])
-    .domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
+  var x = d3.scaleBand([0, width]).domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
 
   var x_settings = d3.axisBottom(x);
 
@@ -106,10 +73,7 @@ function d3_create_graphic(
 
   var y = d3
     .scaleTime()
-    .domain([
-      getIntervalloSettimanale(new Date()).inizio.setHours(0),
-      getIntervalloSettimanale(new Date()).fine.setHours(24),
-    ])
+    .domain([getIntervalloSettimanale(new Date()).inizio.setHours(0), getIntervalloSettimanale(new Date()).fine.setHours(24)])
     .range([0, height]);
 
   const y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(1));
@@ -120,15 +84,7 @@ function d3_create_graphic(
   //##                                                                                  ##
   //######################################################################################
 
-  var clip = svg
-    .append("defs")
-    .append("SVG:clipPath")
-    .attr("id", "clip")
-    .append("SVG:rect")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("x", 0)
-    .attr("y", 0);
+  var clip = svg.append("defs").append("SVG:clipPath").attr("id", "clip").append("SVG:rect").attr("width", width).attr("height", height).attr("x", 0).attr("y", 0);
 
   //######################################################################################
   //##                                                                                  ##
@@ -144,10 +100,7 @@ function d3_create_graphic(
   //##                                                                                  ##
   //######################################################################################
 
-  const myColor = d3
-    .scaleSequential()
-    .interpolator(d3.interpolateRgb("#f4f5f6", "orange"))
-    .domain([0, 100]);
+  const myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 100]);
 
   //######################################################################################
   //##                                                                                  ##
@@ -214,11 +167,7 @@ function d3_create_graphic(
       .attr("x", mx + 160 + "px")
       .attr("y", my + 80 + "px");
     tooltip.style("opacity", 0);
-    d3.select(this)
-      .style("stroke", d.colore)
-      .style("stroke-opacity", "0.75")
-      .style("stroke-width", "4px")
-      .style("opacity", 1);
+    d3.select(this).style("stroke", d.colore).style("stroke-opacity", "0.75").style("stroke-width", "4px").style("opacity", 1);
     d3.select(this).style("background-color", "black");
   };
   const mousemove = function (event, d) {
@@ -298,12 +247,7 @@ function d3_create_graphic(
     .attr("transform", `translate(0, ${height})`)
     .call(x_settings);
 
-  const yAxis = svg
-    .append("g")
-    .attr("transform", `translate(0,0)`)
-    .style("font-size", 15)
-    .attr("class", "yAxis")
-    .call(y_settings);
+  const yAxis = svg.append("g").attr("transform", `translate(0,0)`).style("font-size", 15).attr("class", "yAxis").call(y_settings);
 
   var zoomPrecedente = -1;
   var vista = 1;
@@ -313,68 +257,10 @@ function d3_create_graphic(
     .scaleExtent([-Infinity, Infinity]) // limita lo zoom tra 1x e 10x
     .on("zoom", (event) => {
       var newX;
-      if (
-        (event.transform.k - zoomPrecedente) / event.transform.k > 0.1 &&
-        zoomPrecedente !== -1
-      ) {
-        if (vista === 1) {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered2.slice(inizioFinestra, fineFinestra));
-          vista = 2;
-        } else if (vista === 2) {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered3.slice(inizioFinestra, fineFinestra));
-          vista = 3;
-        } else if (vista === 3) {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
-          vista = 4;
-        } else if (vista === 4) {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
-          vista = 5;
-        } else {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
-          vista = 5;
-        }
-      } else if (event.transform.k < zoomPrecedente) {
-        if (vista === 1) {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
-          vista = 1;
-        } else if (vista === 2) {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
-          vista = 1;
-        } else if (vista === 3) {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered2.slice(inizioFinestra, fineFinestra));
-          vista = 2;
-        } else if (vista === 4) {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered3.slice(inizioFinestra, fineFinestra));
-          vista = 3;
-        } else if (vista === 5) {
-          var newX = d3
-            .scaleBand([0, width])
-            .domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
-          vista = 4;
-        }
-      } else newX = x;
+      newX = getZoomX(event, inizioFinestra, fineFinestra, vista, zoomPrecedente, width, arrayX_filtered1, arrayX_filtered2, arrayX_filtered3, arrayX_filtered4, arrayX_filtered5, x).newX;
+      vista = getZoomX(event, inizioFinestra, fineFinestra, vista, zoomPrecedente, width, arrayX_filtered1, arrayX_filtered2, arrayX_filtered3, arrayX_filtered4, arrayX_filtered5, x).vista;
       zoomPrecedente = event.transform.k;
-
-      arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0],y.domain()[y.domain().length-1]]);
-      console.log(arrayFasce);
+      arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0], y.domain()[y.domain().length - 1]]);
       x = newX;
       scatter.selectAll(".dato").remove();
       scatter
@@ -411,17 +297,27 @@ function d3_create_graphic(
         .on("mousemove", mousemove)
         .on("mouseleave", mouseleave);
 
-      svg.select(".xAxis").transition().duration(750).call(d3.axisBottom(newX));
+      svg.select(".xAxis").call(d3.axisBottom(newX));
     });
-  xAxis.call(zoomX);
-
-  const zoomY = d3
-    .zoom()
-    .scaleExtent([0.025, 1]) // limita lo zoom tra 1x e 10x
-    .on("zoom", (event) => {
-      y = event.transform.rescaleY(y).nice();
-
-      arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0],y.domain()[y.domain().length-1]]);
+  xAxis.call(
+    d3.drag().on("end", function (event) {
+      console.log(event.x);
+      console.log(event.subject.x);
+      inizioFinestra = getScorrimentoX(event, inizioFinestra, fineFinestra, vista).inizio;
+      fineFinestra = getScorrimentoX(event, inizioFinestra, fineFinestra, vista).fine;
+      if (vista === 1) {
+        x = d3.scaleBand([0, width]).domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
+      } else if (vista === 2) {
+        x = d3.scaleBand([0, width]).domain(arrayX_filtered2.slice(inizioFinestra, fineFinestra));
+      } else if (vista === 3) {
+        x = d3.scaleBand([0, width]).domain(arrayX_filtered3.slice(inizioFinestra, fineFinestra));
+      } else if (vista === 4) {
+        x = d3.scaleBand([0, width]).domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
+      } else {
+        x = d3.scaleBand([0, width]).domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
+      }
+      x_settings = d3.axisBottom(x);
+      xAxis.transition().duration(750).call(x_settings);
 
       scatter.selectAll(".dato").remove();
       scatter
@@ -434,7 +330,6 @@ function d3_create_graphic(
           return x(d.fascia);
         })
         .attr("y", function (d) {
-
           return y(d.giorno);
         })
         .attr("width", function (d) {
@@ -448,7 +343,7 @@ function d3_create_graphic(
             const minutes = tick.getMinutes();
             return hours === 0 && minutes === 0;
           });
-          return height / (filteredTicks.length -1);
+          return height / (filteredTicks.length - 1);
         })
         .attr("clip-path", "url(#clip)")
         .style("fill", function (d) {
@@ -458,7 +353,54 @@ function d3_create_graphic(
         .on("mouseover", mouseover)
         .on("mousemove", mousemove)
         .on("mouseleave", mouseleave);
-      svg.select(".yAxis").transition().duration(750).call(d3.axisLeft(y).ticks((7)));
+    })
+  );
+  xAxis.call(zoomX);
+
+  const zoomY = d3
+    .zoom()
+    .scaleExtent([0.025, 1]) // limita lo zoom tra 1x e 10x
+    .on("zoom", (event) => {
+      console.log(event);
+      y = event.transform.rescaleY(y).nice();
+
+      arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0], y.domain()[y.domain().length - 1]]);
+
+      scatter.selectAll(".dato").remove();
+      scatter
+        .selectAll()
+        .data(arrayFasce, function (d) {
+          return d.giorno + ":" + d.valore;
+        })
+        .join("rect")
+        .attr("x", function (d) {
+          return x(d.fascia);
+        })
+        .attr("y", function (d) {
+          return y(d.giorno);
+        })
+        .attr("width", function (d) {
+          return x(x.domain()[1]) - x(x.domain()[0]);
+        })
+
+        .attr("height", function (d) {
+          const ticks = y.ticks();
+          const filteredTicks = ticks.filter((tick) => {
+            const hours = tick.getHours();
+            const minutes = tick.getMinutes();
+            return hours === 0 && minutes === 0;
+          });
+          return height / (filteredTicks.length - 1);
+        })
+        .attr("clip-path", "url(#clip)")
+        .style("fill", function (d) {
+          d.colore = myColor(d.valore + 15);
+          return myColor(d.valore);
+        })
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseleave", mouseleave);
+      svg.select(".yAxis").transition().duration(750).call(d3.axisLeft(y).ticks(7));
     });
   yAxis.call(zoomY);
 }
@@ -472,8 +414,7 @@ function App2() {
   const [lock, setLock] = React.useState(false);
   const [previousX, setPreviousX] = React.useState(0);
   const [finestraTemporale, setFinestraTemporale] = React.useState(0); //4 ore
-  const [ampiezzaFinestraTemporale, setAmpiezzaFinestraTemporale] =
-    React.useState(24); //4 ore
+  const [ampiezzaFinestraTemporale, setAmpiezzaFinestraTemporale] = React.useState(24); //4 ore
   const [dati_acquisiti, setDatiAcquisiti] = React.useState([]);
   const [fascia, setFascia] = React.useState([]);
 
@@ -490,14 +431,7 @@ function App2() {
 
     const mouseDrag = (e) => {
       if (lock) {
-        if (
-          spostamentoCopia +
-            calcola(spostamentoSlider) * 960 +
-            e.clientX -
-            previousX <=
-            960 &&
-          spostamentoCopia + e.clientX - previousX >= 0
-        )
+        if (spostamentoCopia + calcola(spostamentoSlider) * 960 + e.clientX - previousX <= 960 && spostamentoCopia + e.clientX - previousX >= 0)
           setSpostamentoCopia(spostamentoCopia + e.clientX - previousX);
       }
     };
@@ -511,31 +445,15 @@ function App2() {
     //document.addEventListener('mouseup', mouseDrag);
 
     if (dati_acquisiti.length !== null) {
-      d3.csv(
-        "https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Fascia_Oraria&format=csv"
-      ).then(function (f) {
-        d3.csv(
-          "https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calendario&format=csv"
-        ).then(function (data) {
+      d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Fascia_Oraria&format=csv").then(function (f) {
+        d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calendario&format=csv").then(function (data) {
           setDatiAcquisiti(data);
           setFascia(f);
-          d3_create_graphic(
-            spostamento,
-            finestraTemporale,
-            ampiezzaFinestraTemporale,
-            data,
-            f
-          );
+          d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, data, f);
         });
       });
     } else {
-      d3_create_graphic(
-        spostamento,
-        finestraTemporale,
-        ampiezzaFinestraTemporale,
-        dati_acquisiti,
-        fascia
-      );
+      d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, dati_acquisiti, fascia);
     }
 
     return function cleanup() {
@@ -550,14 +468,7 @@ function App2() {
       <h2> ORGANIZZAZIONE/... </h2>
       <br />
       <br />
-      <Select
-        sx={{ minWidth: "150px" }}
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
-        value={periodo}
-        label="Age"
-        onChange={(event) => setPeriodo(event.target.value)}
-      >
+      <Select sx={{ minWidth: "150px" }} labelId="demo-simple-select-label" id="demo-simple-select" value={periodo} label="Age" onChange={(event) => setPeriodo(event.target.value)}>
         <MenuItem value={0}>
           <em>None</em>
         </MenuItem>
@@ -624,9 +535,7 @@ function App2() {
           onMouseUp={() => {
             checkTimelineAndFix();
             setSpostamento(calcola(spostamentoSlider));
-            setAmpiezzaFinestraTemporale(
-              calcolaAmpiezzaTemporale(spostamentoSlider)
-            );
+            setAmpiezzaFinestraTemporale(calcolaAmpiezzaTemporale(spostamentoSlider));
           }}
           onChange={(event) => {
             setSpostamentoSlider(event.target.value);

@@ -32,6 +32,159 @@ export function getGiornoDaSettimana(numeroSettimana, numeroGiono) {
   return d3.utcDay.offset(weekStart, numeroGiono - 1);
 }
 
+export function getScorrimentoX(event, inizioFinestra, fineFinestra, vista) {
+  //Definisco alcune variabili per comodità
+  const spostamentoAvanti = Math.ceil(event.subject.x - event.x) / 100;
+  const spostamentoIndietro = Math.ceil(event.x - event.subject.x) / 100;
+
+  if (event.x < event.subject.x) {
+    if (vista === 1) {
+      //Solo 24 celle
+      //Non c'è bisogno di spostare la finestra
+    }
+    if (vista === 2) {
+      //Solo 48 celle
+      if (fineFinestra < 48) {
+        if (fineFinestra + spostamentoAvanti < 48) {
+          inizioFinestra = inizioFinestra + spostamentoAvanti;
+          fineFinestra = fineFinestra + spostamentoAvanti;
+        } else if (fineFinestra < 47) {
+          inizioFinestra = inizioFinestra + 1;
+          fineFinestra = fineFinestra + 1;
+        }
+      }
+    }
+
+    if (vista === 3) {
+      //Solo 96 celle
+      if (fineFinestra < 96) {
+        if (fineFinestra + spostamentoAvanti < 96) {
+          inizioFinestra = inizioFinestra + spostamentoAvanti * 2;
+          fineFinestra = fineFinestra + spostamentoAvanti * 2;
+        } else if (fineFinestra < 95) {
+          inizioFinestra = inizioFinestra + 1;
+          fineFinestra = fineFinestra + 1;
+        }
+      }
+    }
+
+    if (vista === 4) {
+      //Solo 144 celle
+      if (fineFinestra < 144) {
+        if (fineFinestra + spostamentoAvanti < 144) {
+          inizioFinestra = inizioFinestra + spostamentoAvanti * 3;
+          fineFinestra = fineFinestra + spostamentoAvanti * 3;
+        } else if (fineFinestra < 143) {
+          inizioFinestra = inizioFinestra + 1;
+          fineFinestra = fineFinestra + 1;
+        }
+      }
+    }
+
+    if (vista === 5) {
+      //Solo 288 celle
+      if (fineFinestra < 288) {
+        if (fineFinestra + spostamentoAvanti < 288) {
+          inizioFinestra = inizioFinestra + spostamentoAvanti * 6;
+          fineFinestra = fineFinestra + spostamentoAvanti * 6;
+        } else if (fineFinestra < 287) {
+          inizioFinestra = inizioFinestra + 1;
+          fineFinestra = fineFinestra + 1;
+        }
+      }
+    }
+  } else {
+    if (vista === 1) {
+      //Non posso spostare la finestra
+    }
+    if (vista === 2)
+      if (inizioFinestra > 0) {
+        if (fineFinestra - spostamentoIndietro > 0) {
+          inizioFinestra = inizioFinestra + spostamentoIndietro;
+          fineFinestra = fineFinestra + spostamentoIndietro;
+        } else if (fineFinestra >= spostamentoIndietro) {
+          inizioFinestra = inizioFinestra + 1;
+          fineFinestra = fineFinestra + 1;
+        }
+      }
+    if (vista === 3)
+      if (inizioFinestra > 0) {
+        if (fineFinestra - spostamentoIndietro > 0) {
+          inizioFinestra = inizioFinestra + spostamentoIndietro * 2;
+          fineFinestra = fineFinestra + spostamentoIndietro * 2;
+        } else if (fineFinestra >= spostamentoIndietro * 2) {
+          inizioFinestra = inizioFinestra + 1;
+          fineFinestra = fineFinestra + 1;
+        }
+      }
+    if (vista === 4)
+      if (inizioFinestra > 0) {
+        if (fineFinestra - spostamentoIndietro > 0) {
+          inizioFinestra = inizioFinestra + spostamentoIndietro * 3;
+          fineFinestra = fineFinestra + spostamentoIndietro * 3;
+        } else if (fineFinestra >= spostamentoIndietro * 3) {
+          inizioFinestra = inizioFinestra + 1;
+          fineFinestra = fineFinestra + 1;
+        }
+      }
+    if (vista === 5)
+      if (inizioFinestra > 0) {
+        if (fineFinestra - spostamentoIndietro > 0) {
+          inizioFinestra = inizioFinestra + spostamentoIndietro * 6;
+          fineFinestra = fineFinestra + spostamentoIndietro * 6;
+        } else if (fineFinestra >= spostamentoIndietro * 6) {
+          inizioFinestra = inizioFinestra + 1;
+          fineFinestra = fineFinestra + 1;
+        }
+      }
+  }
+  return { inizio: inizioFinestra, fine: fineFinestra };
+}
+
+export function getZoomX(event, inizioFinestra, fineFinestra, vista_old, zoomPrecedente, width, arrayX_filtered1, arrayX_filtered2, arrayX_filtered3, arrayX_filtered4, arrayX_filtered5, x) {
+  console.log(x);
+  var newX = x;
+  var vista = vista_old;
+  if ((event.transform.k - zoomPrecedente) / event.transform.k > 0.1 && zoomPrecedente !== -1) {
+    if (vista === 1) {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered2.slice(inizioFinestra, fineFinestra));
+      vista = 2;
+    } else if (vista === 2) {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered3.slice(inizioFinestra, fineFinestra));
+      vista = 3;
+    } else if (vista === 3) {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
+      vista = 4;
+    } else if (vista === 4) {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
+      vista = 5;
+    } else {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
+      vista = 5;
+    }
+  } else if (event.transform.k < zoomPrecedente) {
+    if (vista === 1) {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
+      vista = 1;
+    } else if (vista === 2) {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
+      vista = 1;
+    } else if (vista === 3) {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered2.slice(inizioFinestra, fineFinestra));
+      vista = 2;
+    } else if (vista === 4) {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered3.slice(inizioFinestra, fineFinestra));
+      vista = 3;
+    } else if (vista === 5) {
+      newX = d3.scaleBand([0, width]).domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
+      vista = 4;
+    }
+  }
+  return { vista: vista, newX: newX };
+}
+
+export function zoomY(event, inizioFinestra, fineFinestra, vista) {}
+
 export const arrayX = [
   "00:00",
   "00:05",
