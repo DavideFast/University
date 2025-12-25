@@ -533,7 +533,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
           offset_settimana = offset_settimana - 7;
           offset_mese = offset_mese - 1;
           var primo_giorno_mese_offset = new Date(primo_giorno_mese_rispetto_oggi.getFullYear(), primo_giorno_mese_rispetto_oggi.getMonth() + offset_mese, 1);
-          console.log("J" + primo_giorno_mese_offset);
+          console.log("ALOOORAAA: "+tipologiaY);
           if (tipologiaY === 1) {
             y = d3
               .scaleTime()
@@ -543,7 +543,8 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
               ])
               .range([0, height]);
             y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(1)).tickFormat(d3.timeFormat("%a %d %b %y"));
-          }
+            console.log(y_settings);
+          }else
           if (tipologiaY === 2) {
             y = d3
               .scaleTime()

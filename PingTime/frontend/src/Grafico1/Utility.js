@@ -15,12 +15,14 @@ export function getIntervalloSettimanale(date) {
     const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6);
     intervallo.inizio = inizioIntervallo;
     intervallo.fine = fineIntervallo;
+    console.log(intervallo);
     return intervallo;
   } else {
     const inizioIntervallo = date;
     const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6);
     intervallo.inizio = inizioIntervallo;
     intervallo.fine = fineIntervallo;
+    console.log(intervallo);
     return intervallo;
   }
 }
@@ -54,7 +56,7 @@ export function getIntervalloAnnuale(date) {
 export function getGiornoDaSettimana(numeroSettimana, numeroGiono) {
   const startOfYear = new Date(new Date().getFullYear(), 0, 1);
   const firstMonday = d3.utcMonday.ceil(startOfYear);
-  const weekStart = d3.utcWeek.offset(firstMonday, numeroSettimana - 1);
+  const weekStart = d3.utcWeek.offset(firstMonday, numeroSettimana - 2);
   return d3.utcDay.offset(weekStart, numeroGiono - 1);
 }
 
