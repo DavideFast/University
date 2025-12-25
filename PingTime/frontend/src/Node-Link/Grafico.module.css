@@ -1,5 +1,546 @@
-.container{
-    width:100%;
-    height:100%;
+/* =============================================
+   STILI PER LA VISUALIZZAZIONE NODE-LINK
+   Uniformati allo stile dell'applicazione
+   ============================================= */
+
+/* === CONTAINER PRINCIPALE === */
+.container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f6f7f8;
+    position: relative;
+    margin-top: 200px;
+    border-top: 3px solid rgba(0, 17, 255, 0.1);
+}
+
+/* === TITOLO === */
+.title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: rgb(0, 17, 255);
+    margin: 0 0 30px 0;
     text-align: center;
+    letter-spacing: -0.5px;
+}
+
+/* === BARRA CONTROLLI === */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 25px;
+    background: #ffffff;
+    border-radius: 50px;
+    box-shadow: 10px 10px 2px 1px rgb(0 0 255 / 0.1);
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    max-width: 100%;
+}
+
+.controlGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.controlGroup label {
+    font-weight: 600;
+    color: rgb(0, 17, 255);
+    font-size: 14px;
+}
+
+/* === SELECT === */
+.select {
+    padding: 8px 14px;
+    border: 2px solid rgba(0, 17, 255, 0.4);
+    border-radius: 25px;
+    font-size: 13px;
+    background: white;
+    color: rgba(0, 17, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.select:hover {
+    background: rgba(0, 17, 255, 0.7);
+    color: white;
+}
+
+.select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 17, 255, 0.2);
+}
+
+/* === BOTTONI === */
+.buttonGroup {
+    display: flex;
+    gap: 4px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: 2px solid rgb(0, 17, 255);
+    border-radius: 25px;
+    background: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgb(0, 17, 255);
+}
+
+.btn:hover {
+    background: rgba(0, 17, 255, 0.1);
+}
+
+.btn.active {
+    background: rgb(0, 17, 255);
+    color: white;
+}
+
+.btn.matchmaker {
+    background: linear-gradient(135deg, rgb(0, 17, 255), #4CAF50);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 8px 20px;
+}
+
+.btn.matchmaker:hover {
+    background: linear-gradient(135deg, #0000cc, #3d8b40);
+    transform: scale(1.02);
+}
+
+.btn.matchmaker.active {
+    background: linear-gradient(135deg, #4CAF50, rgb(0, 17, 255));
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.btn.back {
+    background: #666;
+    border-color: #666;
+    color: white;
+}
+
+.btn.back:hover {
+    background: #555;
+}
+
+/* === INFO VISTA === */
+.viewInfo {
+    font-size: 14px;
+    color: rgb(0, 17, 255);
+    margin-bottom: 15px;
+    padding: 10px 20px;
+    background: white;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    box-shadow: 5px 5px 2px 1px rgb(0 0 255 / 0.05);
+}
+
+/* === SVG PRINCIPALE === */
+.svg {
+    width: 800px;
+    height: 600px;
+    background: #ffffff;
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    box-shadow: 10px 10px 2px 1px rgb(0 0 255 / 0.1);
+}
+
+/* === TOOLTIP === */
+.tooltip {
+    position: fixed;
+    padding: 12px 16px;
+    background: rgb(0, 17, 255);
+    color: white;
+    border-radius: 15px;
+    font-size: 12px;
+    line-height: 1.5;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1000;
+    max-width: 240px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* === PANNELLO FILTRO === */
+.filterPanel {
+    position: absolute;
+    right: 20px;
+    top: 120px;
+    width: 280px;
+    background: white;
+    border-radius: 30px;
+    box-shadow: 10px 10px 2px 1px rgb(0 0 255 / 0.1);
+    border: 1px solid #ccc;
+    padding: 20px;
+    z-index: 100;
+}
+
+.filterHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(0, 17, 255, 0.1);
+}
+
+.filterTitle {
+    font-size: 14px;
+    color: rgb(0, 17, 255);
+}
+
+.filterToggle {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.filterBtn {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid rgb(0, 17, 255);
+    border-radius: 20px;
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgb(0, 17, 255);
+}
+
+.filterBtn:hover {
+    background: rgba(0, 17, 255, 0.1);
+}
+
+.filterBtn.active {
+    background: rgb(0, 17, 255);
+    color: white;
+}
+
+.filterContent {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filterContent label {
+    font-size: 13px;
+    color: #333;
+}
+
+/* === SLIDER === */
+.slider {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(0, 17, 255, 0.2);
+    border-radius: 4px;
+    outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: rgb(0, 17, 255);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: rgb(0, 17, 255);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.filterInfo {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+}
+
+/* === BOTTONI TOP N === */
+.topNButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.topNBtn {
+    padding: 8px 14px;
+    border: 2px solid rgb(0, 17, 255);
+    border-radius: 20px;
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgb(0, 17, 255);
+    min-width: 40px;
+}
+
+.topNBtn:hover {
+    background: rgba(0, 17, 255, 0.1);
+}
+
+.topNBtn.active {
+    background: rgb(0, 17, 255);
+    color: white;
+}
+
+/* === PANNELLO MATCHMAKER === */
+.matchmakerPanel {
+    position: absolute;
+    left: 20px;
+    top: 120px;
+    width: 260px;
+    background: white;
+    border-radius: 30px;
+    box-shadow: 10px 10px 2px 1px rgb(0 0 255 / 0.1);
+    border: 1px solid #ccc;
+    padding: 20px;
+    z-index: 100;
+}
+
+.matchmakerHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.matchmakerHeader h4 {
+    margin: 0;
+    font-size: 16px;
+    color: rgb(0, 17, 255);
+}
+
+.matchmakerToggle {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.toggleBtn {
+    flex: 1;
+    padding: 10px 12px;
+    border: 2px solid rgb(0, 17, 255);
+    border-radius: 20px;
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgb(0, 17, 255);
+}
+
+.toggleBtn:hover {
+    background: rgba(0, 17, 255, 0.1);
+}
+
+.toggleBtn.active {
+    background: linear-gradient(135deg, rgb(0, 17, 255), #4CAF50);
+    border-color: transparent;
+    color: white;
+}
+
+.matchmakerInstructions {
+    background: rgba(0, 17, 255, 0.05);
+    border-radius: 15px;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(0, 17, 255, 0.1);
+}
+
+.matchmakerInstructions p {
+    margin: 5px 0;
+    font-size: 12px;
+    color: #444;
+}
+
+.pairsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 0 10px 0;
+}
+
+.matchmakerPanel h5 {
+    margin: 0;
+    font-size: 14px;
+    color: rgb(0, 17, 255);
+}
+
+.selectedPairsList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.selectedPair {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 15px;
+    font-size: 12px;
+    border-left: 4px solid #4CAF50;
+}
+
+.removePair {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 6px;
+    font-weight: bold;
+}
+
+.removePair:hover {
+    color: #c0392b;
+    transform: scale(1.2);
+}
+
+.btnSmall {
+    padding: 6px 12px;
+    font-size: 11px;
+    border: 2px solid rgb(0, 17, 255);
+    border-radius: 15px;
+    background: white;
+    cursor: pointer;
+    color: rgb(0, 17, 255);
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btnSmall:hover {
+    background: rgb(0, 17, 255);
+    color: white;
+}
+
+/* === SEZIONE NODI SENZA COPPIA === */
+.unpairedSection {
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 2px dashed rgba(231, 76, 60, 0.3);
+}
+
+.unpairedSection h5 {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    color: #e74c3c;
+}
+
+.unpairedList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.unpairedNode {
+    padding: 6px 12px;
+    background: rgba(231, 76, 60, 0.1);
+    border: 2px solid #e74c3c;
+    border-radius: 15px;
+    font-size: 11px;
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+/* === LEGENDA === */
+.legend {
+    display: flex;
+    gap: 25px;
+    margin-top: 20px;
+    padding: 12px 25px;
+    background: white;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    box-shadow: 5px 5px 2px 1px rgb(0 0 255 / 0.05);
+    font-size: 13px;
+    color: rgb(0, 17, 255);
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.line {
+    width: 24px;
+    height: 4px;
+    display: inline-block;
+    border-radius: 2px;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+    .svg {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4/3;
+        border-radius: 30px;
+    }
+    
+    .controls {
+        flex-direction: column;
+        gap: 12px;
+        border-radius: 30px;
+        padding: 15px;
+    }
+    
+    .legend {
+        flex-wrap: wrap;
+        justify-content: center;
+        border-radius: 20px;
+    }
+    
+    .filterPanel,
+    .matchmakerPanel {
+        position: relative;
+        left: auto;
+        right: auto;
+        top: auto;
+        width: 100%;
+        max-width: 320px;
+        margin-bottom: 15px;
+    }
 }

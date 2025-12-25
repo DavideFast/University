@@ -25,6 +25,32 @@ export function getIntervalloSettimanale(date) {
   }
 }
 
+export function getIntervalloMensile(date) {
+  var intervallo = {};
+  console.log(date);
+  const mese = date.getMonth();
+  var anno = date.getFullYear();
+  var contatore = 1;
+  if (new Date(anno, mese, contatore).getDay === 6) {
+    intervallo.inizio = new Date(anno, mese, 1);
+  } else {
+    intervallo.inizio = d3.timeMonday.floor(new Date(anno, mese, contatore));
+  }
+  intervallo.fine = d3.timeMonday.ceil(new Date(anno, mese + 1, 0));
+  console.log(intervallo);
+  return intervallo;
+}
+
+export function getIntervalloAnnuale(date) {
+  var intervallo = {};
+  console.log(date.getFullYear());
+  var anno = date.getFullYear();
+  intervallo.inizio = new Date(anno, 0, 1);
+  intervallo.fine = new Date(anno, 11, 31);
+  console.log(intervallo);
+  return intervallo;
+}
+
 export function getGiornoDaSettimana(numeroSettimana, numeroGiono) {
   const startOfYear = new Date(new Date().getFullYear(), 0, 1);
   const firstMonday = d3.utcMonday.ceil(startOfYear);
@@ -32,12 +58,12 @@ export function getGiornoDaSettimana(numeroSettimana, numeroGiono) {
   return d3.utcDay.offset(weekStart, numeroGiono - 1);
 }
 
-export function getScorrimentoX(event, inizioFinestra, fineFinestra, vista) {
+export function getScorrimentoX(event, posPrecedente, inizioFinestra, fineFinestra, vista) {
   //Definisco alcune variabili per comodità
-  const spostamentoAvanti = Math.ceil(event.subject.x - event.x) / 100;
-  const spostamentoIndietro = Math.ceil(event.x - event.subject.x) / 100;
+  const spostamentoAvanti = 1; //Math.ceil(event.subject.x - event.x) / 100;
+  const spostamentoIndietro = 1; //Math.ceil(event.x - event.subject.x) / 100;
 
-  if (event.x < event.subject.x) {
+  if (event.x < posPrecedente /*event.x < event.subject.x*/) {
     if (vista === 1) {
       //Solo 24 celle
       //Non c'è bisogno di spostare la finestra
@@ -93,48 +119,48 @@ export function getScorrimentoX(event, inizioFinestra, fineFinestra, vista) {
         }
       }
     }
-  } else {
+  } else if (posPrecedente < event.x) {
     if (vista === 1) {
       //Non posso spostare la finestra
     }
     if (vista === 2)
       if (inizioFinestra > 0) {
         if (fineFinestra - spostamentoIndietro > 0) {
-          inizioFinestra = inizioFinestra + spostamentoIndietro;
-          fineFinestra = fineFinestra + spostamentoIndietro;
+          inizioFinestra = inizioFinestra - spostamentoIndietro;
+          fineFinestra = fineFinestra - spostamentoIndietro;
         } else if (fineFinestra >= spostamentoIndietro) {
-          inizioFinestra = inizioFinestra + 1;
-          fineFinestra = fineFinestra + 1;
+          inizioFinestra = inizioFinestra - 1;
+          fineFinestra = fineFinestra - 1;
         }
       }
     if (vista === 3)
       if (inizioFinestra > 0) {
         if (fineFinestra - spostamentoIndietro > 0) {
-          inizioFinestra = inizioFinestra + spostamentoIndietro * 2;
-          fineFinestra = fineFinestra + spostamentoIndietro * 2;
+          inizioFinestra = inizioFinestra - spostamentoIndietro * 2;
+          fineFinestra = fineFinestra - spostamentoIndietro * 2;
         } else if (fineFinestra >= spostamentoIndietro * 2) {
-          inizioFinestra = inizioFinestra + 1;
-          fineFinestra = fineFinestra + 1;
+          inizioFinestra = inizioFinestra - 1;
+          fineFinestra = fineFinestra - 1;
         }
       }
     if (vista === 4)
       if (inizioFinestra > 0) {
         if (fineFinestra - spostamentoIndietro > 0) {
-          inizioFinestra = inizioFinestra + spostamentoIndietro * 3;
-          fineFinestra = fineFinestra + spostamentoIndietro * 3;
+          inizioFinestra = inizioFinestra - spostamentoIndietro * 3;
+          fineFinestra = fineFinestra - spostamentoIndietro * 3;
         } else if (fineFinestra >= spostamentoIndietro * 3) {
-          inizioFinestra = inizioFinestra + 1;
-          fineFinestra = fineFinestra + 1;
+          inizioFinestra = inizioFinestra - 1;
+          fineFinestra = fineFinestra - 1;
         }
       }
     if (vista === 5)
       if (inizioFinestra > 0) {
         if (fineFinestra - spostamentoIndietro > 0) {
-          inizioFinestra = inizioFinestra + spostamentoIndietro * 6;
-          fineFinestra = fineFinestra + spostamentoIndietro * 6;
+          inizioFinestra = inizioFinestra - spostamentoIndietro * 6;
+          fineFinestra = fineFinestra - spostamentoIndietro * 6;
         } else if (fineFinestra >= spostamentoIndietro * 6) {
-          inizioFinestra = inizioFinestra + 1;
-          fineFinestra = fineFinestra + 1;
+          inizioFinestra = inizioFinestra - 1;
+          fineFinestra = fineFinestra - 1;
         }
       }
   }
@@ -142,45 +168,102 @@ export function getScorrimentoX(event, inizioFinestra, fineFinestra, vista) {
 }
 
 export function getZoomX(event, inizioFinestra, fineFinestra, vista_old, zoomPrecedente, width, arrayX_filtered1, arrayX_filtered2, arrayX_filtered3, arrayX_filtered4, arrayX_filtered5, x) {
-  console.log(x);
+  var numero;
+  if (vista_old === 1) numero = 24;
+  if (vista_old === 2) numero = 48;
+  if (vista_old === 3) numero = 96;
+  if (vista_old === 4) numero = 144;
+  if (vista_old === 5) numero = 288;
+  const fasciaValue = event.sourceEvent.target.__data__.fascia;
+  console.log("FasciaValue: " + fasciaValue);
+  var index = 0;
+  console.log(vista_old);
+  if (vista_old === 1) index = arrayX_filtered1.findIndex((item) => item === fasciaValue);
+  if (vista_old === 2) index = arrayX_filtered2.findIndex((item) => item === fasciaValue);
+  if (vista_old === 3) index = arrayX_filtered3.findIndex((item) => item === fasciaValue);
+  if (vista_old === 4) index = arrayX_filtered4.findIndex((item) => item === fasciaValue);
+  if (vista_old === 5) index = arrayX_filtered5.findIndex((item) => item === fasciaValue);
+  console.log("Index: " + index);
+  console.log("Index: " + vista_old);
+  console.log(arrayX_filtered4);
+  console.log(fasciaValue);
   var newX = x;
   var vista = vista_old;
   if ((event.transform.k - zoomPrecedente) / event.transform.k > 0.1 && zoomPrecedente !== -1) {
     if (vista === 1) {
+      if (index * 2 - 12 > 0) inizioFinestra = index * 2 - 12;
+      else inizioFinestra = 0;
+      if (index * 2 + 12 < numero * 2) fineFinestra = index * 2 + 12;
+      else fineFinestra = numero * 2 - 1;
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered2.slice(inizioFinestra, fineFinestra));
       vista = 2;
     } else if (vista === 2) {
+      if (index * 2 - 12 > 0) inizioFinestra = index * 2 - 12;
+      else inizioFinestra = 0;
+      if (index * 2 + 12 < numero * 2) fineFinestra = index * 2 + 12;
+      else fineFinestra = numero * 2 - 1;
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered3.slice(inizioFinestra, fineFinestra));
       vista = 3;
     } else if (vista === 3) {
+      if (Math.floor(index * 1.5) - 12 > 0) inizioFinestra = Math.floor(index * 1.5) - 12;
+      else inizioFinestra = 0;
+      if (index * 1.5 + 12 < Math.floor(numero * 1.5)) fineFinestra = Math.floor(index * 1.5) + 12;
+      else fineFinestra = Math.floor(numero * 1.5) - 1;
+      console.log(numero);
+      console.log(inizioFinestra);
+      console.log(fineFinestra);
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
       vista = 4;
     } else if (vista === 4) {
+      if (index * 2 - 12 > 0) inizioFinestra = index * 2 - 12;
+      else inizioFinestra = 0;
+      if (index + 12 < numero * 2) fineFinestra = index * 2 + 12;
+      else fineFinestra = numero * 2 - 1;
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
       vista = 5;
     } else {
+      console.log("Vista: " + vista);
+      console.log("Inizio: " + inizioFinestra);
+      console.log("Fine: " + fineFinestra);
+      console.log();
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
       vista = 5;
     }
   } else if (event.transform.k < zoomPrecedente) {
     if (vista === 1) {
+      inizioFinestra = 0;
+      fineFinestra = 25;
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
       vista = 1;
     } else if (vista === 2) {
+      inizioFinestra = 0;
+      fineFinestra = 25;
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
       vista = 1;
     } else if (vista === 3) {
+      if (Math.floor(index / 2) - 12 > 0) inizioFinestra = Math.floor(index / 2) - 12;
+      else inizioFinestra = 0;
+      if (Math.floor(index / 2) + 12 < Math.floor(numero / 2)) fineFinestra = Math.floor(index / 2) + 12;
+      else fineFinestra = Math.floor(numero / 2) - 1;
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered2.slice(inizioFinestra, fineFinestra));
       vista = 2;
     } else if (vista === 4) {
+      if (Math.floor(index / 1.5) - 12 > 0) inizioFinestra = Math.floor(index / 1.5) - 12;
+      else inizioFinestra = 0;
+      if (Math.floor(index / 1.5) + 12 < numero) fineFinestra = Math.floor(index / 1.5) + 12;
+      else fineFinestra = Math.floor(numero / 1.5) - 1;
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered3.slice(inizioFinestra, fineFinestra));
       vista = 3;
     } else if (vista === 5) {
+      if (Math.floor(index / 2) - 12 > 0) inizioFinestra = Math.floor(index / 2) - 12;
+      else inizioFinestra = 0;
+      if (Math.floor(index / 2) + 12 < Math.floor(numero / 2)) fineFinestra = Math.floor(index / 2) + 12;
+      else fineFinestra = Math.floor(numero / 2) - 1;
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
       vista = 4;
     }
   }
-  return { vista: vista, newX: newX };
+  return { vista: vista, newX: newX.paddingOuter(0).paddingInner(1), inizioFinestra: inizioFinestra, fineFinestra: fineFinestra };
 }
 
 export function zoomY(event, inizioFinestra, fineFinestra, vista) {}

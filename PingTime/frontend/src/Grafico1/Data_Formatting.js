@@ -41,7 +41,7 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
   return join;
 }
 
-function creaArrayPerGrafico(join, codominio) {
+function creaArrayPerGraficoSettimana(join, codominio) {
   //Calcola quanti giorni sono presenti sull'asse y visibile
   const giorni = Math.floor((codominio[1] - codominio[0]) / (1000 * 60 * 60 * 24));
 
@@ -107,8 +107,8 @@ function creaArrayPerGrafico(join, codominio) {
     const fine = join[i].fine;
     var lock = true;
     const giorno = join[i].giorno_id;
-    const index_inizio = giorno * 284 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
-    const index_fine = giorno * 284 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
+    const index_inizio = giorno * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
+    const index_fine = giorno * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
 
     for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
     lock = true;
@@ -117,7 +117,193 @@ function creaArrayPerGrafico(join, codominio) {
   return arrayFasce;
 }
 
-export function data_formatting(db_fasce, db_calendario, codominio) {
-  console.log(codominio);
-  return creaArrayPerGrafico(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio);
+function getIndexFromWeeks(codominio, dimensione) {
+  var contatore = 0;
+  var settimane = 0;
+  var array = new Array(dimensione);
+  console.log(dimensione);
+  while (codominio[1] - d3.utcDay.offset(codominio[0], contatore) > 0) {
+    contatore = contatore + 1;
+    if (d3.utcDay.offset(codominio[0], contatore - 1).getDay() === 1) {
+      settimane = settimane + 1;
+      array[settimane - 1] = d3.utcDay.offset(codominio[0], contatore - 1);
+    }
+  }
+  console.log(array);
+  return array;
+}
+
+function creaArrayPerGraficoMese(join, codominio, media) {
+  //Calcola quanti giorni sono presenti sull'asse y visibile
+
+  const anno = codominio[0].getFullYear();
+  const mese = codominio[0].getMonth();
+  var contatore = 0;
+  var settimane = 0;
+  while (codominio[1] - d3.utcDay.offset(codominio[0], contatore) > 0) {
+    contatore = contatore + 1;
+    if (d3.utcDay.offset(codominio[0], contatore - 1).getDay() === 1) settimane = settimane + 1;
+  }
+  contatore = 0;
+  var array = getIndexFromWeeks(codominio, settimane);
+  console.log(array);
+
+  //Crea un array di dimensione pari al numero di tick del dominio per il numero di tick del codominio del grafico
+  var arrayFasce = new Array(settimane * 24 * 12);
+  for (let i = 0; i < settimane; i++) {
+    for (let j = 0; j < 288; j++) {
+      arrayFasce[i * 288 + j] = {};
+      arrayFasce[i * 288 + j].valore = 0;
+
+      if (j < 120) {
+        if (j % 12 === 0) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":00";
+        else if (j % 12 === 1) {
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":05";
+        } else if (j % 12 === 2) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":10";
+        else if (j % 12 === 3) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":15";
+        else if (j % 12 === 4) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":20";
+        else if (j % 12 === 5) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":25";
+        else if (j % 12 === 6) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":30";
+        else if (j % 12 === 7) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":35";
+        else if (j % 12 === 8) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":40";
+        else if (j % 12 === 9) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":45";
+        else if (j % 12 === 10) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":50";
+        else if (j % 12 === 11) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":55";
+      } else {
+        if (j % 12 === 0) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":00";
+        else if (j % 12 === 1) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":05";
+        else if (j % 12 === 2) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":10";
+        else if (j % 12 === 3) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":15";
+        else if (j % 12 === 4) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":20";
+        else if (j % 12 === 5) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":25";
+        else if (j % 12 === 6) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":30";
+        else if (j % 12 === 7) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":35";
+        else if (j % 12 === 8) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":40";
+        else if (j % 12 === 9) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":45";
+        else if (j % 12 === 10) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":50";
+        else if (j % 12 === 11) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":55";
+      }
+      arrayFasce[i * 288 + j].settimana = array[i];
+    }
+  }
+  console.log(arrayFasce);
+  //Eliminare tutti i dati che hanno codominio fuori dal range
+  join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
+  console.log(join);
+  //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
+  for (let i = 0; i < join.length; i++) {
+    const inizio = join[i].inizio;
+    const fine = join[i].fine;
+    var lock = true;
+    var giorno_join = join[i].day;
+    var settimana = 0;
+    for (var k = 0; k < array.length; k++) {
+      if (array[k].setHours(0) < giorno_join.setHours(0)) settimana = settimana + 1;
+    }
+    console.log(settimana);
+    console.log(giorno_join);
+    const index_inizio = settimana * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
+    const index_fine = settimana * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
+
+    for (let j = index_inizio; j < index_fine; j++) {
+      //console.log("     " + j);
+      arrayFasce[j].valore += 1;
+    }
+    lock = true;
+  }
+
+  return arrayFasce;
+}
+
+function creaArrayPerGraficoAnno(join, codominio, media) {
+  //Calcola quanti giorni sono presenti sull'asse y visibile
+  const mesi = 12;
+  const anno = codominio[0].getFullYear();
+  console.log("----" + anno);
+  //Crea un array di dimensione pari al numero di tick del dominio per il numero di tick del codominio del grafico
+  var arrayFasce = new Array(mesi * 24 * 12);
+  for (let i = 0; i < mesi; i++) {
+    for (let j = 0; j < 288; j++) {
+      arrayFasce[i * 288 + j] = {};
+      arrayFasce[i * 288 + j].valore = 0;
+
+      if (j < 120) {
+        if (j % 12 === 0) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":00";
+        else if (j % 12 === 1) {
+          arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":05";
+        } else if (j % 12 === 2) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":10";
+        else if (j % 12 === 3) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":15";
+        else if (j % 12 === 4) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":20";
+        else if (j % 12 === 5) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":25";
+        else if (j % 12 === 6) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":30";
+        else if (j % 12 === 7) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":35";
+        else if (j % 12 === 8) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":40";
+        else if (j % 12 === 9) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":45";
+        else if (j % 12 === 10) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":50";
+        else if (j % 12 === 11) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":55";
+      } else {
+        if (j % 12 === 0) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":00";
+        else if (j % 12 === 1) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":05";
+        else if (j % 12 === 2) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":10";
+        else if (j % 12 === 3) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":15";
+        else if (j % 12 === 4) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":20";
+        else if (j % 12 === 5) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":25";
+        else if (j % 12 === 6) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":30";
+        else if (j % 12 === 7) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":35";
+        else if (j % 12 === 8) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":40";
+        else if (j % 12 === 9) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":45";
+        else if (j % 12 === 10) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":50";
+        else if (j % 12 === 11) arrayFasce[i * 288 + j].fascia = Math.floor(j / 12) + ":55";
+      }
+
+      if (i === 0) arrayFasce[i * 288 + j].mese = new Date(anno, 0, 1);
+      if (i === 1) arrayFasce[i * 288 + j].mese = new Date(anno, 1, 1);
+      if (i === 2) arrayFasce[i * 288 + j].mese = new Date(anno, 2, 1);
+      if (i === 3) arrayFasce[i * 288 + j].mese = new Date(anno, 3, 1);
+      if (i === 4) arrayFasce[i * 288 + j].mese = new Date(anno, 4, 1);
+      if (i === 5) arrayFasce[i * 288 + j].mese = new Date(anno, 5, 1);
+      if (i === 6) arrayFasce[i * 288 + j].mese = new Date(anno, 6, 1);
+      if (i === 7) arrayFasce[i * 288 + j].mese = new Date(anno, 7, 1);
+      if (i === 8) arrayFasce[i * 288 + j].mese = new Date(anno, 8, 1);
+      if (i === 9) arrayFasce[i * 288 + j].mese = new Date(anno, 9, 1);
+      if (i === 10) arrayFasce[i * 288 + j].mese = new Date(anno, 10, 1);
+      if (i === 11) arrayFasce[i * 288 + j].mese = new Date(anno, 11, 1);
+    }
+  }
+  console.log(arrayFasce);
+  //Eliminare tutti i dati che hanno codominio fuori dal range
+  join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
+  //console.log(join);
+
+  //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
+  for (let i = 0; i < join.length; i++) {
+    const inizio = join[i].inizio;
+    const fine = join[i].fine;
+    var lock = true;
+    const mese = join[i].day.getMonth();
+    //console.log(mese);
+    const index_inizio = mese * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
+    const index_fine = mese * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
+
+    for (let j = index_inizio; j < index_fine; j++) {
+      arrayFasce[j].valore += 1;
+    }
+    lock = true;
+  }
+
+  //Calcolo la media quando richiesto
+  if (media === 2) {
+    console.log(media);
+    for (let i = 0; i < arrayFasce.length; i++) {
+      arrayFasce[i].valore = arrayFasce[i].valore / 31;
+    }
+  }
+
+  return arrayFasce;
+}
+
+export function data_formatting(db_fasce, db_calendario, codominio, tipologia, media) {
+  if (tipologia === 1) return creaArrayPerGraficoSettimana(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio);
+  if (tipologia === 2) return creaArrayPerGraficoMese(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio);
+  if (tipologia === 3) return creaArrayPerGraficoAnno(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio, media);
 }
