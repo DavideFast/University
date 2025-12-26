@@ -7,8 +7,8 @@ import App3 from "./Grafico2/Grafico.js";
 import reportWebVitals from "./reportWebVitals";
 
 import App4 from "./Barchart/Grafico.js";
+import App5 from "./ForceDistanceSimulatingTheoreticDistance/Grafico.js";
 import GraphVisualization from "./Node-Link/Grafico.js";
-
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -17,6 +17,7 @@ root.render(
     <App2 />
     <App4 />
     <GraphVisualization />
+    <App5 />
   </div>
 );
 

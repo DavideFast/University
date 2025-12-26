@@ -9,7 +9,83 @@ import { data_formatting } from "./Data_Formatting";
 import { setFinestra, calcolaAmpiezzaTemporale, calcola } from "./SliderObject_utility";
 import { arrayX, getIntervalloAnnuale, getIntervalloMensile, getIntervalloSettimanale, getScorrimentoX, getZoomX, getZoomY } from "./Utility";
 
-function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, db_data, db_fascia, tipologiaY, statisticaG) {
+function setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mouseleave, tipologiaY, arrayFasce) {
+  scatter
+    .selectAll()
+    .data(arrayFasce, function (d) {
+      return d.giorno + ":" + d.valore;
+    })
+    .join("rect")
+    .attr("class", "dato")
+    .attr("x", function (d) {
+      if (x(d.fascia) !== undefined && y(d.giorno) !== undefined) {
+      }
+      return x(d.fascia);
+    })
+    .attr("y", function (d) {
+      //console.log(d);
+      if (d.giorno !== undefined) return y(d.giorno);
+      if (d.settimana !== undefined) return y(d.settimana);
+      if (d.mese !== undefined) return y(d.mese);
+    })
+    .attr("width", function (d) {
+      return x(x.domain()[1]) - x(x.domain()[0]) - 2;
+    })
+    .attr("height", function (d) {
+      console.log(d.settimana);
+      var mese = new Date(d.mese).getMonth();
+      var anno = new Date(d.mese).getFullYear();
+
+      var inizioRange = new Date(anno, mese, 1);
+      var fineRange = new Date(anno, mese + 1, 0);
+      console.log(inizioRange);
+      var valore = y(fineRange) - y(inizioRange);
+
+      if (tipologiaY === 1) return height / 7 - 2;
+      if (tipologiaY === 2) return height / 5 - 2;
+      if (tipologiaY === 3) return valore;
+    })
+    .attr("clip-path", "url(#clip)")
+    .style("fill", function (d) {
+      d.colore = myColor(d.valore + 15);
+      return myColor(d.valore);
+    })
+    .on("mouseover", mouseover)
+    .on("mousemove", mousemove)
+    .on("mouseleave", mouseleave);
+}
+
+function updateDataInChart(scatter, x, y, height, myColor, tipologiaY, arrayFasce) {
+  scatter.selectAll(".dato").remove();
+
+  scatter
+    .selectAll("rect")
+    .attr("x", function (d) {
+      return x(d.fascia);
+    })
+    .attr("y", function (d) {
+      if (d.giorno !== undefined) return y(d.giorno);
+      else return y(d.mese);
+    })
+    .attr("width", function (d) {
+      return x(x.domain()[1]) - x(x.domain()[0]) - 2;
+    })
+    .attr("height", function (d) {
+      if (tipologiaY === 1) return height / 7 - 2;
+      if (tipologiaY === 2) return height / 5;
+      if (tipologiaY === 3) return height / 12 - 2;
+    })
+    .attr("clip-path", "url(#clip)")
+    .style("fill", function (d) {
+      d.colore = myColor(d.valore + 15);
+      return myColor(d.valore);
+    });
+  /*.on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseleave", mouseleave);*/
+}
+
+function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   //######################################################################################
   //##                                                                                  ##
   //##                  IMPOSTA LE DIMENSIONI E I MARGINI DELLA HEATMAP                 ##
@@ -86,17 +162,17 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
   } else if (tipologiaY === 2) {
     var y = d3
       .scaleTime()
-      .domain([getIntervalloMensile(new Date()).inizio, getIntervalloMensile(new Date()).fine])
+      .domain([getIntervalloMensile(new Date()).inizio.setHours(0), getIntervalloMensile(new Date()).fine])
       .range([0, height]);
     y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(7)).tickFormat(d3.timeFormat("%B  %V %d"));
   } else {
     var y = d3
       .scaleTime()
-      .domain([getIntervalloAnnuale(new Date()).inizio, getIntervalloAnnuale(new Date()).fine])
+      .domain([getIntervalloAnnuale(new Date()).inizio.setHours(0), getIntervalloAnnuale(new Date()).fine.setHours(24)])
       .range([0, height]);
     y_settings = d3.axisLeft(y).ticks(d3.timeMonth.every(1)).tickFormat(d3.timeFormat("%B %Y"));
   }
-  console.log(y.ticks());
+  console.log(y.domain());
 
   //######################################################################################
   //##                                                                                  ##
@@ -121,7 +197,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
   //######################################################################################
 
   var myColor;
-  if (tipologiaY === 1 || statisticaG === 2) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 10]);
+  if (tipologiaY === 1 || (statisticaG === 2 && tipologiaY === 3)) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 10]);
   else myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 100]);
 
   //######################################################################################
@@ -179,30 +255,36 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
   //##                                                                                  ##
   //######################################################################################
 
+  var dragging = true;
+
   const mouseover = function (event, d) {
-    console.log(event.target.__data__.fascia);
-    const [mx, my] = d3.pointer(event);
-    tooltip_v2
-      .text("Valore: " + d.valore + " presenze")
-      .style("font-size", 1.5 + "rem")
-      .style("color", "red")
-      .style("visibility", "visible")
-      .attr("x", mx + 160 + "px")
-      .attr("y", my + 80 + "px");
-    tooltip.style("opacity", 0);
-    d3.select(this).style("stroke", d.colore).style("stroke-opacity", "0.75").style("stroke-width", "4px").style("opacity", 1);
-    d3.select(this).style("background-color", "black");
+    if (dragging) {
+      console.log(event.target.__data__.fascia);
+      const [mx, my] = d3.pointer(event);
+      tooltip_v2
+        .text("Valore: " + Math.floor(d.valore) + " presenze")
+        .style("font-size", 1.5 + "rem")
+        .style("color", "red")
+        .style("visibility", "visible")
+        .attr("x", mx + 160 + "px")
+        .attr("y", my + 80 + "px");
+      tooltip.style("opacity", 0);
+      d3.select(this).style("stroke", "#2f6effff" /*d.colore*/).style("stroke-opacity", "0.75").style("stroke-width", "4px").style("opacity", 1);
+      d3.select(this).style("background-color", "black");
+    }
   };
   const mousemove = function (event, d) {
-    const [mx, my] = d3.pointer(event);
-    tooltip_v2
-      .text("Valore: " + d.valore + " presenze")
-      .style("font-size", 1.5 + "rem")
-      .style("color", "red")
-      .style("visibility", "visible")
-      .attr("x", mx + 160 + "px")
-      .attr("y", my + 80 + "px");
-    tooltip_v3.style("visibility", "visible");
+    if (dragging) {
+      const [mx, my] = d3.pointer(event);
+      tooltip_v2
+        .text("Valore: " + Math.floor(d.valore) + " presenze")
+        .style("font-size", 1.5 + "rem")
+        .style("color", "red")
+        .style("visibility", "visible")
+        .attr("x", mx + 160 + "px")
+        .attr("y", my + 80 + "px");
+      tooltip_v3.style("visibility", "visible");
+    }
   };
   const mouseleave = function (event, d) {
     tooltip_v2.text("");
@@ -218,46 +300,13 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
 
   var count = 0;
 
-  scatter
-    .selectAll()
-    .data(arrayFasce, function (d) {
-      return d.giorno + ":" + d.valore;
-    })
-    .join("rect")
-    .attr("class", "dato")
-    .attr("x", function (d) {
-      if (x(d.fascia) !== undefined && y(d.giorno) !== undefined) {
-      }
-      return x(d.fascia);
-    })
-    .attr("y", function (d) {
-      //console.log(d);
-      if (d.giorno !== undefined) return y(d.giorno);
-      if (d.settimana !== undefined) return y(d.settimana);
-      if (d.mese !== undefined) return y(d.mese);
-    })
-    .attr("width", function (d) {
-      return x(x.domain()[1]) - x(x.domain()[0]);
-    })
-    .attr("height", function (d) {
-      const ticks = y.ticks();
-      const filteredTicks = ticks.filter((tick) => {
-        const hours = tick.getHours();
-        const minutes = tick.getMinutes();
-        return hours === 0 && minutes === 0;
-      });
-      //console.log(y.ticks());
-      //console.log(filteredTicks);
-      return height / 5 /*(filteredTicks.length - 1)*/;
-    })
-    .attr("clip-path", "url(#clip)")
-    .style("fill", function (d) {
-      d.colore = myColor(d.valore + 15);
-      return myColor(d.valore);
-    })
-    .on("mouseover", mouseover)
-    .on("mousemove", mousemove)
-    .on("mouseleave", mouseleave);
+  setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mouseleave, tipologiaY, arrayFasce);
+
+  const var1 = svg
+    .selectAll(".tick>text")
+    .data()
+    .map((d) => d);
+  console.log(var1);
 
   //######################################################################################
   //##                                                                                  ##
@@ -298,113 +347,46 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
       zoomPrecedente = event.transform.k;
       arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0], y.domain()[y.domain().length - 1]], tipologiaY);
       x = newX;
-      //scatter.selectAll(".dato").remove();
-      //console.log(arrayFasce);
-
-      /*scatter
-        .selectAll()
-        .data(arrayFasce, function (d) {
-          return d.giorno + ":" + d.valore;
-        })
-        //.join("rect")*/
-      scatter
-        .selectAll("rect")
-        .transition()
-        .duration(30)
-        .attr("x", function (d) {
-          return x(d.fascia);
-        })
-        .attr("y", function (d) {
-          if (d.giorno !== undefined) return y(d.giorno);
-          else return y(d.mese);
-        })
-        .attr("width", function (d) {
-          return x(x.domain()[1]) - x(x.domain()[0]);
-        })
-        .attr("height", function (d) {
-          const ticks = y.ticks();
-          const filteredTicks = ticks.filter((tick) => {
-            const hours = tick.getHours();
-            const minutes = tick.getMinutes();
-            return hours === 0 && minutes === 0;
-          });
-          return height / (filteredTicks.length - 1);
-        })
-        .attr("clip-path", "url(#clip)")
-        .style("fill", function (d) {
-          d.colore = myColor(d.valore + 15);
-          return myColor(d.valore);
-        });
-      /*.on("mouseover", mouseover)
-        .on("mousemove", mousemove)
-        .on("mouseleave", mouseleave);*/
-
-      svg.select(".xAxis").transition().duration(1000).call(d3.axisBottom(newX));
+      updateDataInChart(scatter, x, y, height, myColor, tipologiaY, arrayFasce);
+      svg.select(".xAxis").transition().duration(200).call(d3.axisBottom(newX));
     });
   scatter.call(
-    d3.drag().on("drag", function (event) {
-      if (event.x + 50 < posizionePrecedente || posizionePrecedente + 50 < event.x) {
-        const valoriAggiornati = getScorrimentoX(event, posizionePrecedente, inizioFinestra, fineFinestra, vista);
-        inizioFinestra = valoriAggiornati.inizio;
-        fineFinestra = valoriAggiornati.fine;
-        posizionePrecedente = event.x;
-        if (vista === 1) {
-          x = d3.scaleBand([0, width]).domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
-        } else if (vista === 2) {
-          x = d3.scaleBand([0, width]).domain(arrayX_filtered2.slice(inizioFinestra, fineFinestra));
-        } else if (vista === 3) {
-          x = d3.scaleBand([0, width]).domain(arrayX_filtered3.slice(inizioFinestra, fineFinestra));
-        } else if (vista === 4) {
-          x = d3.scaleBand([0, width]).domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
-        } else {
-          x = d3.scaleBand([0, width]).domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
-        }
-        x_settings = d3.axisBottom(x);
-        xAxis.call(x_settings);
-
-        //arrayFasce = data_formatting(db_fascia, db_data, dominio);
-        const arrayFasceRanged = arrayFasce.filter(function (d) {
-          if (new Set(x.domain()).has(d.fascia)) {
-            return d;
+    d3
+      .drag()
+      .on("end", function () {
+        dragging = true;
+      })
+      .on("drag", function (event) {
+        dragging = false;
+        if (event.x + 50 < posizionePrecedente || posizionePrecedente + 50 < event.x) {
+          const valoriAggiornati = getScorrimentoX(event, posizionePrecedente, inizioFinestra, fineFinestra, vista);
+          inizioFinestra = valoriAggiornati.inizio;
+          fineFinestra = valoriAggiornati.fine;
+          posizionePrecedente = event.x;
+          if (vista === 1) {
+            x = d3.scaleBand([0, width]).domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra));
+          } else if (vista === 2) {
+            x = d3.scaleBand([0, width]).domain(arrayX_filtered2.slice(inizioFinestra, fineFinestra));
+          } else if (vista === 3) {
+            x = d3.scaleBand([0, width]).domain(arrayX_filtered3.slice(inizioFinestra, fineFinestra));
+          } else if (vista === 4) {
+            x = d3.scaleBand([0, width]).domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
+          } else {
+            x = d3.scaleBand([0, width]).domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
           }
-        });
+          x_settings = d3.axisBottom(x);
+          xAxis.call(x_settings);
 
-        scatter.selectAll(".dato").remove();
-        scatter
-          .selectAll()
-          .data(arrayFasceRanged, function (d) {
-            return d.giorno + ":" + d.valore;
-          })
-          .join("rect")
-          .attr("x", function (d) {
-            return x(d.fascia);
-          })
-          .attr("y", function (d) {
-            return y(d.giorno);
-          })
-          .attr("width", function (d) {
-            return x(x.domain()[1]) - x(x.domain()[0]);
-          })
+          //arrayFasce = data_formatting(db_fascia, db_data, dominio);
+          const arrayFasceRanged = arrayFasce.filter(function (d) {
+            if (new Set(x.domain()).has(d.fascia)) {
+              return d;
+            }
+          });
 
-          .attr("height", function (d) {
-            const ticks = y.ticks();
-            const filteredTicks = ticks.filter((tick) => {
-              const hours = tick.getHours();
-              const minutes = tick.getMinutes();
-              return hours === 0 && minutes === 0;
-            });
-            return height / (filteredTicks.length - 1);
-          })
-          .attr("clip-path", "url(#clip)")
-          .style("fill", function (d) {
-            d.colore = myColor(d.valore + 15);
-            return myColor(d.valore);
-          })
-          .on("mouseover", mouseover)
-          .on("mousemove", mousemove)
-          .on("mouseleave", mouseleave);
-      }
-    })
+          updateDataInChart(scatter, x, y, height, myColor, tipologiaY, arrayFasce);
+        }
+      })
   );
   scatter.call(zoomX);
 
@@ -543,8 +525,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
               ])
               .range([0, height]);
             y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(1)).tickFormat(d3.timeFormat("%a %d %b %y"));
-          }
-          if (tipologiaY === 2) {
+          } else if (tipologiaY === 2) {
             y = d3
               .scaleTime()
               .domain([getIntervalloMensile(primo_giorno_mese_offset).inizio, getIntervalloMensile(primo_giorno_mese_offset).fine])
@@ -571,42 +552,7 @@ function d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTempo
         console.log("dominio");
         arrayFasce = data_formatting(db_fascia, db_data, dominio, tipologiaY);
 
-        scatter.selectAll(".dato").remove();
-        scatter
-          .selectAll()
-          .data(arrayFasce, function (d) {
-            return d.giorno + ":" + d.valore;
-          })
-          .join("rect")
-          .attr("x", function (d) {
-            return x(d.fascia);
-          })
-          .attr("y", function (d) {
-            if (d.giorno !== undefined) return y(d.giorno);
-            if (d.settimana !== undefined) return y(d.settimana);
-            if (d.mese !== undefined) return y(d.mese);
-          })
-          .attr("width", function (d) {
-            return x(x.domain()[1]) - x(x.domain()[0]);
-          })
-
-          .attr("height", function (d) {
-            const ticks = y.ticks();
-            const filteredTicks = ticks.filter((tick) => {
-              const hours = tick.getHours();
-              const minutes = tick.getMinutes();
-              return hours === 0 && minutes === 0;
-            });
-            return height / 5; //(filteredTicks.length - 1);
-          })
-          .attr("clip-path", "url(#clip)")
-          .style("fill", function (d) {
-            d.colore = myColor(d.valore + 15);
-            return myColor(d.valore);
-          })
-          .on("mouseover", mouseover)
-          .on("mousemove", mousemove)
-          .on("mouseleave", mouseleave);
+        setDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
       })
   );
 }
@@ -643,10 +589,6 @@ function App2() {
       }
     };
 
-    const mouseUp = (e) => {
-      setLock(false);
-    };
-
     document.addEventListener("mousemove", mouseDrag);
 
     //document.addEventListener('mouseup', mouseDrag);
@@ -656,11 +598,11 @@ function App2() {
         d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calendario&format=csv").then(function (data) {
           setDatiAcquisiti(data);
           setFascia(f);
-          d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, data, f, periodo, statistica);
+          d3_create_graphic(data, f, periodo, statistica);
         });
       });
     } else {
-      d3_create_graphic(spostamento, finestraTemporale, ampiezzaFinestraTemporale, dati_acquisiti, fascia, periodo, statistica);
+      d3_create_graphic(dati_acquisiti, fascia, periodo, statistica);
     }
 
     return function cleanup() {
@@ -672,7 +614,7 @@ function App2() {
     <div className={styles.container}>
       <br />
       <br />
-      <h2> ORGANIZZAZIONE/... </h2>
+      <h1> PRESENZE STAGIONALI </h1>
       <br />
       <br />
       <Select
@@ -688,7 +630,7 @@ function App2() {
         <MenuItem value={3}>Anno</MenuItem>
       </Select>
 
-      {periodo != 1 && (
+      {periodo === 3 && (
         <Select sx={{ minWidth: "200px" }} labelId="demo-simple-select-labell" id="demo-simple-selectt" value={statistica} label="Statistica" onChange={(event) => setStatistica(event.target.value)}>
           <MenuItem value={1}>Somma</MenuItem>
           <MenuItem value={2}>Media</MenuItem>
@@ -700,67 +642,6 @@ function App2() {
       <br />
       <svg width={1800} height={800} id="my_dataviz"></svg>
       <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-
-      <div className={styles.barra}>
-        <div
-          className={styles.maniglie}
-          onMouseDown={(event) => {
-            setValore(10);
-            setPreviousX(event.clientX);
-            setLock(true);
-          }}
-          onClick={() => {
-            setLock(false);
-          }}
-          onMouseOver={() => {
-            if (!lock) setValore(5);
-          }}
-          onMouseLeave={() => {
-            if (!lock) setValore(0);
-          }}
-          onMouseUp={(event) => {
-            setLock(false);
-          }}
-          style={{
-            backgroundColor: "green",
-            marginLeft: `${spostamentoCopia}px`,
-            width: `${calcola(spostamentoSlider) * 100}%`,
-            boxShadow: `0 0 0 ${valore}px rgba(76, 175, 80, 0.4)`,
-          }}
-        />
-        <br />
-        <br />
-        <Slider
-          aria-label="Volume"
-          value={spostamentoSlider}
-          onMouseUp={() => {
-            checkTimelineAndFix();
-            setSpostamento(calcola(spostamentoSlider));
-            setAmpiezzaFinestraTemporale(calcolaAmpiezzaTemporale(spostamentoSlider));
-          }}
-          onChange={(event) => {
-            setSpostamentoSlider(event.target.value);
-          }}
-        />
-      </div>
     </div>
   );
 }
