@@ -515,7 +515,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
           offset_settimana = offset_settimana - 7;
           offset_mese = offset_mese - 1;
           var primo_giorno_mese_offset = new Date(primo_giorno_mese_rispetto_oggi.getFullYear(), primo_giorno_mese_rispetto_oggi.getMonth() + offset_mese, 1);
-          console.log("ALOOORAAA: " + tipologiaY);
+          console.log("J" + primo_giorno_mese_offset);
           if (tipologiaY === 1) {
             y = d3
               .scaleTime()

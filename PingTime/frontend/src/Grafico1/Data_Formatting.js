@@ -2,11 +2,9 @@ import * as d3 from "d3";
 import { getGiornoDaSettimana } from "./Utility";
 
 function creaArrayFascia(db_fasce) {
-  console.log(db_fasce);
   db_fasce.sort((a, b) => {
     return a.id - b.id;
   });
-
   const dimensione_array_fascia = Number(db_fasce[db_fasce.length - 1].id);
   var arrayFascia = new Array(dimensione_array_fascia);
   for (let i = 0; i < db_fasce.length; i++) {
@@ -18,8 +16,7 @@ function creaArrayFascia(db_fasce) {
 function joinFasceOrariePresenze(db_calendario, db_fasce) {
   //Creo un'array di dimensione pari al numero delle fasce
   var join = new Array(db_calendario.length);
-  console.log(db_calendario.filter(function(a){if(a.settimana==="51")return a}).sort(function(a,b){return a.fascia_oraria-b.fascia_oraria}));
-  console.log(db_fasce);
+
   //Copio le informazioni della fascia i-esima nell'array in posizione i-esima
   for (let i = 0; i < db_calendario.length; i++) {
     join[i] = {};
@@ -41,7 +38,6 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
     return d3.ascending(a.day, b.day);
   });
 
-  console.log(join);
   return join;
 }
 
@@ -94,7 +90,6 @@ function creaArrayPerGraficoSettimana(join, codominio) {
     }
   }
   //Eliminare tutti i dati che hanno codominio fuori dal range
-
   join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
 
   // assegna un id incrementale (0,1,2,...) per ogni giorno distinto in join
@@ -105,7 +100,6 @@ function creaArrayPerGraficoSettimana(join, codominio) {
     if (!dayIdMap.has(dayKey)) dayIdMap.set(dayKey, nextDayId++);
     join[i].giorno_id = dayIdMap.get(dayKey);
   }
-  console.log(join);
 
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {

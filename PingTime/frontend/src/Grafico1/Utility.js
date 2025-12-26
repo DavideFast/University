@@ -15,14 +15,12 @@ export function getIntervalloSettimanale(date) {
     const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6);
     intervallo.inizio = inizioIntervallo;
     intervallo.fine = fineIntervallo;
-    console.log(intervallo);
     return intervallo;
   } else {
     const inizioIntervallo = date;
     const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6);
     intervallo.inizio = inizioIntervallo;
     intervallo.fine = fineIntervallo;
-    console.log(intervallo);
     return intervallo;
   }
 }
