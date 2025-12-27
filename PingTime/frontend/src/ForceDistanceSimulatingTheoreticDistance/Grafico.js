@@ -103,6 +103,9 @@ const createGraph = (data) => {
     }
   }
 
+  const minLevel = grafoElaborato.vertex[0].valore;
+  const maxLevel = grafoElaborato.vertex[grafoElaborato.vertex.length-1].valore;
+
   console.log(grafoElaborato.vertex);
   d3.select("#Prova").selectAll("*").remove(); // Clear previous content
   const svg = d3.select("#Prova").append("svg").attr("width", 1800).attr("height", 900);
@@ -135,14 +138,14 @@ const createGraph = (data) => {
     .join("circle")
     .attr("class", "cc")
     .attr("cx", function (d) {
-      console.log(d.id);
-      return Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - 6) * 100;
+      //console.log(d.id);
+      return Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * ((maxLevel-minLevel)/maxLevel*(d.valore - 5)) * 100;
     })
     .attr("cy", function (d) {
-      return Math.sin((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - 6) * 100;
+      return Math.sin((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * ((maxLevel-minLevel)/maxLevel*(d.valore - 5)) * 100;
     })
     .attr("r", function (d) {
-      return 15;
+      return 5;
     })
     .attr("fill", "#1f77b4");
   chart
@@ -172,7 +175,7 @@ function App5() {
 
   useEffect(() => {
     //Prossimante le posizioni x e y dovranno non essere randomiche ma essere calcolate tramite la graph teorethic distance (shortest path)
-    const nodes = Array.from({ length: 50 }, (_, i) => ({ id: i, x: Math.random() * 1700 + 10, y: Math.random() * 700 + 10, r: 20 }));
+    const nodes = Array.from({ length: 1000 }, (_, i) => ({ id: i, x: Math.random() * 1700 + 10, y: Math.random() * 700 + 10, r: 20 }));
     const links = [];
 
     for (let i = 0; i < nodes.length; i++) {
@@ -182,7 +185,7 @@ function App5() {
         }
       }
     }
-    var pp = new Array(20);
+    var pp = new Array(500);
     for (let i = 0; i < pp.length; i++) {
       pp[i] = links[i * 2];
     }

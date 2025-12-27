@@ -605,7 +605,7 @@ function App2() {
           <MenuItem value={1}>Somma</MenuItem>
           <MenuItem value={2}>Media</MenuItem>
           <MenuItem value={3}>Minimo</MenuItem>
-          <MenuItem value={3}>Massimo</MenuItem>
+          <MenuItem value={4}>Massimo</MenuItem>
         </Select>
       )}
       <br />

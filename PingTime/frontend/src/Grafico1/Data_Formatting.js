@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { getGiornoDaSettimana } from "./Utility";
+import { getGiornoDaSettimana, getIntervalloMensile } from "./Utility";
 
 function creaArrayFascia(db_fasce) {
   db_fasce.sort((a, b) => {
@@ -225,6 +225,8 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
     for (let j = 0; j < 288; j++) {
       arrayFasce[i * 288 + j] = {};
       arrayFasce[i * 288 + j].valore = 0;
+      arrayFasce[i * 288 + j].minimo = 0;
+      arrayFasce[i * 288 + j].massimo = 0;
 
       if (j < 120) {
         if (j % 12 === 0) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":00";
@@ -272,15 +274,19 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
   console.log(arrayFasce);
   //Eliminare tutti i dati che hanno codominio fuori dal range
   join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
-  //console.log(join);
+  console.log(join);
 
+  var numeroSettimanaPrecedente=0;
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {
     const inizio = join[i].inizio;
     const fine = join[i].fine;
     var lock = true;
     const mese = join[i].day.getMonth();
-    //console.log(mese);
+    var minimo=100;
+    var massimo=0;
+    var index=0;
+    
     const index_inizio = mese * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
     const index_fine = mese * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
 
@@ -289,7 +295,7 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
     }
     lock = true;
   }
-
+  
   //Calcolo la media quando richiesto
   if (media === 2) {
     console.log(media);
@@ -297,6 +303,46 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
       arrayFasce[i].valore = arrayFasce[i].valore / 31;
     }
   }
+
+  //Calcolo minimo
+  var minimo=100;
+  var massimo=0;
+  var meseIndex=0;
+  var arrayAppoggio;
+  if(media===3)
+  while(meseIndex<12){
+    console.log(new Date(anno,meseIndex+1,0));
+    arrayAppoggio=creaArrayPerGraficoMese(join,[getIntervalloMensile(new Date(anno,meseIndex,1)).inizio,getIntervalloMensile(new Date(anno,meseIndex,1)).fine]);
+    var numeroSettimane = arrayAppoggio.length/288;
+    for(let j=0;j<288;j++){
+    for(let i=0;i<numeroSettimane;i++){
+    if(minimo>arrayAppoggio[i*288+j].valore)
+      minimo=arrayAppoggio[j+i*288].valore
+    }
+    arrayFasce[meseIndex*288+j].valore=minimo;
+    minimo=100;
+  }
+   meseIndex=meseIndex+1;
+  }
+
+  //Calcolo massimo
+  if(media===4)
+  while(meseIndex<12){
+    console.log(new Date(anno,meseIndex+1,0));
+    arrayAppoggio=creaArrayPerGraficoMese(join,[getIntervalloMensile(new Date(anno,meseIndex,1)).inizio,getIntervalloMensile(new Date(anno,meseIndex,1)).fine]);
+    var numeroSettimane = arrayAppoggio.length/288;
+    for(let j=0;j<288;j++){
+    for(let i=0;i<numeroSettimane;i++){
+    if(massimo<arrayAppoggio[i*288+j].valore)
+      massimo=arrayAppoggio[j+i*288].valore
+    }
+    arrayFasce[meseIndex*288+j].valore=massimo;
+    massimo=0;
+  }
+   meseIndex=meseIndex+1;
+  }
+
+  
 
   return arrayFasce;
 }
