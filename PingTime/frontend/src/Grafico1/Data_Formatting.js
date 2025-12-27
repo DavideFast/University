@@ -276,17 +276,17 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
   join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
   console.log(join);
 
-  var numeroSettimanaPrecedente=0;
+  var numeroSettimanaPrecedente = 0;
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {
     const inizio = join[i].inizio;
     const fine = join[i].fine;
     var lock = true;
     const mese = join[i].day.getMonth();
-    var minimo=100;
-    var massimo=0;
-    var index=0;
-    
+    var minimo = 100;
+    var massimo = 0;
+    var index = 0;
+
     const index_inizio = mese * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
     const index_fine = mese * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
 
@@ -295,7 +295,7 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
     }
     lock = true;
   }
-  
+
   //Calcolo la media quando richiesto
   if (media === 2) {
     console.log(media);
@@ -305,44 +305,44 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
   }
 
   //Calcolo minimo
-  var minimo=100;
-  var massimo=0;
-  var meseIndex=0;
+  var minimo = 100;
+  var massimo = 0;
+  var meseIndex = 0;
   var arrayAppoggio;
-  if(media===3)
-  while(meseIndex<12){
-    console.log(new Date(anno,meseIndex+1,0));
-    arrayAppoggio=creaArrayPerGraficoMese(join,[getIntervalloMensile(new Date(anno,meseIndex,1)).inizio,getIntervalloMensile(new Date(anno,meseIndex,1)).fine]);
-    var numeroSettimane = arrayAppoggio.length/288;
-    for(let j=0;j<288;j++){
-    for(let i=0;i<numeroSettimane;i++){
-    if(minimo>arrayAppoggio[i*288+j].valore)
-      minimo=arrayAppoggio[j+i*288].valore
+  if (media === 3)
+    while (meseIndex < 12) {
+      console.log(new Date(anno, meseIndex + 1, 0));
+      arrayAppoggio = creaArrayPerGraficoMese(join, [getIntervalloMensile(new Date(anno, meseIndex, 1)).inizio, getIntervalloMensile(new Date(anno, meseIndex, 1)).fine]);
+      var numeroSettimane = arrayAppoggio.length / 288;
+      for (let j = 0; j < 288; j++) {
+        for (let i = 0; i < numeroSettimane; i++) {
+          if (minimo > arrayAppoggio[i * 288 + j].valore)
+            minimo = arrayAppoggio[j + i * 288].valore
+        }
+        arrayFasce[meseIndex * 288 + j].valore = minimo;
+        minimo = 100;
+      }
+      meseIndex = meseIndex + 1;
     }
-    arrayFasce[meseIndex*288+j].valore=minimo;
-    minimo=100;
-  }
-   meseIndex=meseIndex+1;
-  }
 
   //Calcolo massimo
-  if(media===4)
-  while(meseIndex<12){
-    console.log(new Date(anno,meseIndex+1,0));
-    arrayAppoggio=creaArrayPerGraficoMese(join,[getIntervalloMensile(new Date(anno,meseIndex,1)).inizio,getIntervalloMensile(new Date(anno,meseIndex,1)).fine]);
-    var numeroSettimane = arrayAppoggio.length/288;
-    for(let j=0;j<288;j++){
-    for(let i=0;i<numeroSettimane;i++){
-    if(massimo<arrayAppoggio[i*288+j].valore)
-      massimo=arrayAppoggio[j+i*288].valore
+  if (media === 4)
+    while (meseIndex < 12) {
+      console.log(new Date(anno, meseIndex + 1, 0));
+      arrayAppoggio = creaArrayPerGraficoMese(join, [getIntervalloMensile(new Date(anno, meseIndex, 1)).inizio, getIntervalloMensile(new Date(anno, meseIndex, 1)).fine]);
+      var numeroSettimane = arrayAppoggio.length / 288;
+      for (let j = 0; j < 288; j++) {
+        for (let i = 0; i < numeroSettimane; i++) {
+          if (massimo < arrayAppoggio[i * 288 + j].valore)
+            massimo = arrayAppoggio[j + i * 288].valore
+        }
+        arrayFasce[meseIndex * 288 + j].valore = massimo;
+        massimo = 0;
+      }
+      meseIndex = meseIndex + 1;
     }
-    arrayFasce[meseIndex*288+j].valore=massimo;
-    massimo=0;
-  }
-   meseIndex=meseIndex+1;
-  }
 
-  
+
 
   return arrayFasce;
 }
