@@ -316,7 +316,7 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
       var numeroSettimane = arrayAppoggio.length / 288;
       for (let j = 0; j < 288; j++) {
         for (let i = 0; i < numeroSettimane; i++) {
-          if (minimo > arrayAppoggio[i * 288 + j].valore)
+          if (minimo > arrayAppoggio[i * 288 + j].valore) 
             minimo = arrayAppoggio[j + i * 288].valore
         }
         arrayFasce[meseIndex * 288 + j].valore = minimo;
