@@ -10,8 +10,14 @@ import { setFinestra, calcolaAmpiezzaTemporale, calcola } from "./SliderObject_u
 import { arrayX, getIntervalloAnnuale, getIntervalloMensile, getIntervalloSettimanale, getScorrimentoX, getZoomX, getZoomY } from "./Utility";
 
 function setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mouseleave, tipologiaY, arrayFasce) {
-  scatter
+  console.log(scatter.selectAll());
+  console.log(d3.select("#area").selectAll("*"));
+  console.log(d3.select("#area").selectAll());
+  console.log(scatter.select("#area").selectAll());
+
+  d3.select("#area")
     .selectAll()
+    //.selectAll()
     .data(arrayFasce, function (d) {
       return d.giorno + ":" + d.valore;
     })
@@ -32,13 +38,13 @@ function setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mo
       return x(x.domain()[1]) - x(x.domain()[0]) - 2;
     })
     .attr("height", function (d) {
-      console.log(d.settimana);
+      //console.log(d.settimana);
       var mese = new Date(d.mese).getMonth();
       var anno = new Date(d.mese).getFullYear();
 
       var inizioRange = new Date(anno, mese, 1);
       var fineRange = new Date(anno, mese + 1, 0);
-      console.log(inizioRange);
+      //console.log(inizioRange);
       var valore = y(fineRange) - y(inizioRange);
 
       if (tipologiaY === 1) return height / 7 - 2;
@@ -55,46 +61,71 @@ function setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mo
     .on("mouseleave", mouseleave);
 }
 
-function updateDataInChart(scatter, x, y, height, myColor, tipologiaY, arrayFasce) {
+function updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce) {
   scatter.selectAll(".dato").remove();
-
+  console.log(arrayFasce);
   scatter
     .selectAll("rect")
+    .data(arrayFasce, function (d) {
+      return d.giorno + ":" + d.valore;
+    })
+    .join("rect")
     .attr("x", function (d) {
       return x(d.fascia);
     })
     .attr("y", function (d) {
       if (d.giorno !== undefined) return y(d.giorno);
-      else return y(d.mese);
+      if (d.settimana !== undefined) return y(d.settimana);
+      if (d.mese !== undefined) return y(d.mese);
     })
     .attr("width", function (d) {
       return x(x.domain()[1]) - x(x.domain()[0]) - 2;
     })
     .attr("height", function (d) {
+      var mese = new Date(d.mese).getMonth();
+      var anno = new Date(d.mese).getFullYear();
+
+      var inizioRange = new Date(anno, mese, 1);
+      var fineRange = new Date(anno, mese + 1, 0);
+      //console.log(inizioRange);
+      var valore = y(fineRange) - y(inizioRange);
+
       if (tipologiaY === 1) return height / 7 - 2;
-      if (tipologiaY === 2) return height / 5;
-      if (tipologiaY === 3) return height / 12 - 2;
+      if (tipologiaY === 2) return height / 5 - 2;
+      if (tipologiaY === 3) return valore;
     })
     .attr("clip-path", "url(#clip)")
     .style("fill", function (d) {
       d.colore = myColor(d.valore + 15);
       return myColor(d.valore);
-    });
-  /*.on("mouseover", mouseover)
-        .on("mousemove", mousemove)
-        .on("mouseleave", mouseleave);*/
+    })
+    .on("mouseover", mouseover)
+    .on("mousemove", mousemove)
+    .on("mouseleave", mouseleave);
 }
 
 function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
+  var ID_Time = {
+    dateTime: "%d %B %Y",
+    date: "%d.%m.%Y",
+    time: "%H:%M:%S",
+    periods: ["AM", "PM"],
+    days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+    shortDays: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+    months: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+    shortMonths: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"],
+  };
+
+  var IDTime = d3.timeFormatDefaultLocale(ID_Time);
   //######################################################################################
   //##                                                                                  ##
   //##                  IMPOSTA LE DIMENSIONI E I MARGINI DELLA HEATMAP                 ##
   //##                                                                                  ##
   //######################################################################################
 
-  const margin = { top: 80, right: 25, bottom: 50, left: 120 },
-    width = 1800 - margin.left - margin.right,
-    height = 800 - margin.top - margin.bottom;
+  const margin = { top: 80, right: 50, bottom: 50, left: 150 },
+    width = window.innerWidth * 0.9 - margin.right - margin.left,
+    height = window.innerHeight * 0.7 - margin.top - margin.bottom;
 
   //######################################################################################
   //##                                                                                  ##
@@ -105,12 +136,15 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   d3.select("#my_dataviz").selectAll("*").remove(); // Clear previous content
   const svg = d3
     .select("#my_dataviz")
-    .append("svg")
+    .attr("width", window.innerWidth * 0.9)
+    .attr("height", window.innerHeight * 0.7);
+  /*.append("svg")
 
     .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+    .attr("height", height + margin.top + margin.bottom)*/
+  //.append("g")
+  //.attr("width", window.innerWidth * 0.9 - margin.left - margin.right)
+  //.attr("height", window.innerHeight * 0.8 - margin.left - margin.right)
 
   //######################################################################################
   //##                                                                                  ##
@@ -124,7 +158,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   if (tipologiaY === 3) dominio = [new Date(getIntervalloAnnuale(new Date()).inizio), new Date(getIntervalloAnnuale(new Date()).fine)];
 
   var arrayFasce = data_formatting(db_fascia, db_data, dominio, tipologiaY, statisticaG);
-  console.log(dominio);
+  //console.log(dominio);
 
   //######################################################################################
   //##                                                                                  ##
@@ -140,7 +174,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   const arrayX_filtered3 = arrayX.filter((item) => item.endsWith("00") || item.endsWith("15") || item.endsWith("30") || item.endsWith("45"));
   const arrayX_filtered4 = arrayX.filter((item) => item.endsWith("0"));
   const arrayX_filtered5 = arrayX;
-  console.log(arrayX_filtered1);
+  //console.log(arrayX_filtered1);
 
   var x = d3.scaleBand([0, width]).domain(arrayX_filtered1.slice(inizioFinestra, fineFinestra)).paddingOuter(0).paddingInner(1);
 
@@ -172,15 +206,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
       .range([0, height]);
     y_settings = d3.axisLeft(y).ticks(d3.timeMonth.every(1)).tickFormat(d3.timeFormat("%B %Y"));
   }
-  console.log(y.domain());
-
-  //######################################################################################
-  //##                                                                                  ##
-  //##                              CREAZIONE DELLA CLIP-PATH                           ##
-  //##                                                                                  ##
-  //######################################################################################
-
-  var clip = svg.append("defs").append("SVG:clipPath").attr("id", "clip").append("SVG:rect").attr("width", width).attr("height", height).attr("x", 0).attr("y", 0);
+  //console.log(y.domain());
 
   //######################################################################################
   //##                                                                                  ##
@@ -188,7 +214,21 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   //##                                                                                  ##
   //######################################################################################
 
-  var scatter = svg.append("g");
+  var scatter = svg
+    /*.append("defs")
+    .append("clipPath")
+    .attr("id", "clip-area")
+    .attr("clipPathUnits", "userSpaceOnUse")
+
+    .append("rect")
+    .attr("x", 50)
+    .attr("y", 20)
+    .attr("width", 200)
+    .attr("height", 100)*/
+    .append("g")
+    .attr("id", "area")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`)
+    .attr("clip-path", "url(#clip-area)");
 
   //######################################################################################
   //##                                                                                  ##
@@ -259,7 +299,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
 
   const mouseover = function (event, d) {
     if (dragging) {
-      console.log(event.target.__data__.fascia);
+      //console.log(event.target.__data__.fascia);
       const [mx, my] = d3.pointer(event);
       tooltip_v2
         .text("Valore: " + Math.floor(d.valore) + " presenze")
@@ -306,7 +346,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
     .selectAll(".tick>text")
     .data()
     .map((d) => d);
-  console.log(var1);
+  //console.log(var1);
 
   //######################################################################################
   //##                                                                                  ##
@@ -314,7 +354,8 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   //##                                                                                  ##
   //######################################################################################
 
-  var xAxis = svg
+  var xAxis = d3
+    .select("#area")
     .append("g")
     .style("font-size", 12)
 
@@ -322,7 +363,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
     .attr("transform", `translate(0, ${height})`)
     .call(x_settings);
 
-  const yAxis = svg.append("g").attr("transform", `translate(0,0)`).style("font-size", 15).attr("class", "yAxis").call(y_settings);
+  const yAxis = d3.select("#area").append("g").attr("transform", `translate(0,0)`).style("font-size", 15).attr("class", "yAxis").call(y_settings);
 
   //######################################################################################
   //##                                                                                  ##
@@ -347,7 +388,8 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
       zoomPrecedente = event.transform.k;
       arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0], y.domain()[y.domain().length - 1]], tipologiaY);
       x = newX;
-      updateDataInChart(scatter, x, y, height, myColor, tipologiaY, arrayFasce);
+      updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
+      svg.select(".yAxis").transition().duration(200).call(y_settings);
       svg.select(".xAxis").transition().duration(200).call(d3.axisBottom(newX));
     });
   scatter.call(
@@ -376,15 +418,17 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
           }
           x_settings = d3.axisBottom(x);
           xAxis.call(x_settings);
-
-          //arrayFasce = data_formatting(db_fascia, db_data, dominio);
+          console.log("OKI");
+          arrayFasce = data_formatting(db_fascia, db_data, dominio, tipologiaY, statisticaG);
+          console.log("STEP 3");
+          console.log(arrayFasce);
+          console.log("STEP 4");
           const arrayFasceRanged = arrayFasce.filter(function (d) {
             if (new Set(x.domain()).has(d.fascia)) {
               return d;
             }
           });
-
-          updateDataInChart(scatter, x, y, height, myColor, tipologiaY, arrayFasce);
+          updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasceRanged);
         }
       })
   );
@@ -396,71 +440,6 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   //##                                                                                  ##
   //######################################################################################
 
-  /*const zoomY = d3
-    .zoom()
-    .scaleExtent([-Infinity, Infinity]) // limita lo zoom tra 1x e 10x
-    .on("zoom", (event) => {
-      console.log(event);
-      y = event.transform.rescaleY(y).nice();
-
-      arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0], y.domain()[y.domain().length - 1]]);
-
-      scatter.selectAll(".dato").remove();
-      scatter
-        .selectAll()
-        .data(arrayFasce, function (d) {
-          return d.giorno + ":" + d.valore;
-        })
-        .join("rect")
-        .attr("x", function (d) {
-          return x(d.fascia);
-        })
-        .attr("y", function (d) {
-          return y(d.giorno);
-        })
-        .attr("width", function (d) {
-          return x(x.domain()[1]) - x(x.domain()[0]);
-        })
-
-        .attr("height", function (d) {
-          const ticks = y.ticks();
-          const filteredTicks = ticks.filter((tick) => {
-            const hours = tick.getHours();
-            const minutes = tick.getMinutes();
-            return hours === 0 && minutes === 0;
-          });
-          return height / (filteredTicks.length - 1);
-        })
-        .attr("clip-path", "url(#clip)")
-        .style("fill", function (d) {
-          d.colore = myColor(d.valore + 15);
-          return myColor(d.valore);
-        })
-        .on("mouseover", mouseover)
-        .on("mousemove", mousemove)
-        .on("mouseleave", mouseleave);
-      console.log(event.transform.k);
-      if (event.transform.k > 0.8)
-        svg
-          .select(".yAxis")
-          .transition()
-          .duration(20)
-          .call(d3.axisLeft(y).ticks(d3.timeDay.every(1)).tickFormat(d3.timeFormat("%a %d")));
-      else if (event.transform.k > 0.5)
-        svg
-          .select(".yAxis")
-          .transition()
-          .duration(20)
-          .call(d3.axisLeft(y).ticks(d3.timeWeek.every(1)).tickFormat(d3.timeFormat("%b %d")));
-      else
-        svg
-          .select(".yAxis")
-          .transition()
-          .duration(20)
-          .call(d3.axisLeft(y).ticks(d3.timeMonth.every(1)).tickFormat(d3.timeFormat("%B")));
-    });*/
-  //yAxis.call(zoomY);
-
   var anno_corrente = y.domain()[0].getFullYear();
   var offset_settimana = 0;
   var offset_mese = 0;
@@ -471,11 +450,11 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
     d3
       .drag()
       .on("start", function (event) {
-        console.log(posizioneY);
+        //console.log(posizioneY);
         posizioneY = event.y;
       })
       .on("end", function (event) {
-        console.log(event.y + " - " + posizioneY);
+        //console.log(event.y + " - " + posizioneY);
         const oggi = new Date();
         const primo_giorno_mese_rispetto_oggi = new Date(oggi.getFullYear(), oggi.getMonth(), 1);
 
@@ -500,7 +479,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
               .domain([getIntervalloMensile(primo_giorno_mese_offset).inizio, getIntervalloMensile(primo_giorno_mese_offset).fine])
               .range([0, height]);
             y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(7)).tickFormat(d3.timeFormat("%B %V %d"));
-            console.log(y.domain());
+            //console.log(y.domain());
           } else {
             y = d3
               .scaleTime()
@@ -515,7 +494,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
           offset_settimana = offset_settimana - 7;
           offset_mese = offset_mese - 1;
           var primo_giorno_mese_offset = new Date(primo_giorno_mese_rispetto_oggi.getFullYear(), primo_giorno_mese_rispetto_oggi.getMonth() + offset_mese, 1);
-          console.log("J" + primo_giorno_mese_offset);
+          //console.log("J" + primo_giorno_mese_offset);
           if (tipologiaY === 1) {
             y = d3
               .scaleTime()
@@ -548,11 +527,9 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
         if (tipologiaY === 2) dominio = [new Date(getIntervalloMensile(primo_giorno_mese_offset).inizio), new Date(getIntervalloMensile(primo_giorno_mese_offset).fine)];
         if (tipologiaY === 3) dominio = [new Date(getIntervalloAnnuale(new Date(anno_corrente, 0, 1)).inizio), new Date(getIntervalloAnnuale(new Date(anno_corrente, 0, 1)).fine)];
 
-        console.log(dominio);
-        console.log("dominio");
         arrayFasce = data_formatting(db_fascia, db_data, dominio, tipologiaY);
 
-        setDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
+        updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
       })
   );
 }
@@ -605,9 +582,9 @@ function App2() {
       d3_create_graphic(dati_acquisiti, fascia, periodo, statistica);
     }
 
-    return function cleanup() {
-      document.removeEventListener("mousemove", mouseDrag);
-    };
+    console.log("we");
+    console.log(window.innerWidth);
+    console.log(window.innerHeight);
   }, [periodo, spostamento, lock, finestraTemporale, statistica]);
 
   return (
@@ -617,21 +594,14 @@ function App2() {
       <h1> PRESENZE STAGIONALI </h1>
       <br />
       <br />
-      <Select
-        sx={{ minWidth: "200px", marginRight: "20px" }}
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
-        value={periodo}
-        label="Periodo temporale"
-        onChange={(event) => setPeriodo(event.target.value)}
-      >
+      <Select sx={{ minWidth: "200px", marginRight: "20px" }} id="demo-simple-select" value={periodo} label="Periodo" onChange={(event) => setPeriodo(event.target.value)}>
         <MenuItem value={1}>Settimana</MenuItem>
         <MenuItem value={2}>Mese</MenuItem>
         <MenuItem value={3}>Anno</MenuItem>
       </Select>
 
       {periodo === 3 && (
-        <Select sx={{ minWidth: "200px" }} labelId="demo-simple-select-labell" id="demo-simple-selectt" value={statistica} label="Statistica" onChange={(event) => setStatistica(event.target.value)}>
+        <Select sx={{ minWidth: "200px" }} id="demo-simple-selectt" value={statistica} label="Statistica" onChange={(event) => setStatistica(event.target.value)}>
           <MenuItem value={1}>Somma</MenuItem>
           <MenuItem value={2}>Media</MenuItem>
           <MenuItem value={3}>Minimo</MenuItem>
@@ -640,7 +610,7 @@ function App2() {
       )}
       <br />
       <br />
-      <svg width={1800} height={800} id="my_dataviz"></svg>
+      <svg id="my_dataviz" style={{ marginLeft: "0.25vw" }}></svg>
       <br />
     </div>
   );

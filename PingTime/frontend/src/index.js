@@ -2,11 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
+import LineChart from "./LineChart/Grafico.js";
 import App2 from "./Grafico1/Grafico.js";
 import App3 from "./Grafico2/Grafico.js";
 import reportWebVitals from "./reportWebVitals";
 
-import App4 from "./Barchart/Grafico.js";
 import App5 from "./ForceDistanceSimulatingTheoreticDistance/Grafico.js";
 import GraphVisualization from "./Node-Link/Grafico.js";
 
@@ -15,7 +15,8 @@ root.render(
   <div>
     <App />
     <App2 />
-    <App4 />
+
+    <LineChart />
     <GraphVisualization />
     <App5 />
   </div>

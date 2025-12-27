@@ -114,6 +114,8 @@ function creaArrayPerGraficoSettimana(join, codominio) {
     lock = true;
   }
 
+  console.log(arrayFasce);
+  console.log("STEP 2");
   return arrayFasce;
 }
 
@@ -135,7 +137,7 @@ function getIndexFromWeeks(codominio, dimensione) {
 
 function creaArrayPerGraficoMese(join, codominio, media) {
   //Calcola quanti giorni sono presenti sull'asse y visibile
-
+  console.log(codominio);
   const anno = codominio[0].getFullYear();
   const mese = codominio[0].getMonth();
   var contatore = 0;
@@ -189,7 +191,6 @@ function creaArrayPerGraficoMese(join, codominio, media) {
   console.log(arrayFasce);
   //Eliminare tutti i dati che hanno codominio fuori dal range
   join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
-  console.log(join);
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {
     const inizio = join[i].inizio;
@@ -198,12 +199,10 @@ function creaArrayPerGraficoMese(join, codominio, media) {
     var giorno_join = join[i].day;
     var settimana = 0;
     for (var k = 0; k < array.length; k++) {
-      if (array[k].setHours(0) < giorno_join.setHours(0)) settimana = settimana + 1;
+      if (array[k].setHours(0) <= giorno_join.setHours(0)) settimana = settimana + 1;
     }
-    console.log(settimana);
-    console.log(giorno_join);
-    const index_inizio = settimana * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
-    const index_fine = settimana * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
+    const index_inizio = (settimana - 1) * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
+    const index_fine = (settimana - 1) * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
 
     for (let j = index_inizio; j < index_fine; j++) {
       //console.log("     " + j);
@@ -303,6 +302,7 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
 }
 
 export function data_formatting(db_fasce, db_calendario, codominio, tipologia, media) {
+  console.log("STEP 1");
   if (tipologia === 1) return creaArrayPerGraficoSettimana(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio);
   if (tipologia === 2) return creaArrayPerGraficoMese(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio);
   if (tipologia === 3) return creaArrayPerGraficoAnno(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio, media);
