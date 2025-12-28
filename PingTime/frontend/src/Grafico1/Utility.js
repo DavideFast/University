@@ -72,11 +72,11 @@ export function getScorrimentoX(event, posPrecedente, inizioFinestra, fineFinest
     }
     if (vista === 2) {
       //Solo 48 celle
-      if (fineFinestra < 48) {
+      if (fineFinestra < 49) {
         if (fineFinestra + spostamentoAvanti < 48) {
           inizioFinestra = inizioFinestra + spostamentoAvanti;
           fineFinestra = fineFinestra + spostamentoAvanti;
-        } else if (fineFinestra < 47) {
+        } else if (fineFinestra < 49) {
           inizioFinestra = inizioFinestra + 1;
           fineFinestra = fineFinestra + 1;
         }
@@ -85,11 +85,11 @@ export function getScorrimentoX(event, posPrecedente, inizioFinestra, fineFinest
 
     if (vista === 3) {
       //Solo 96 celle
-      if (fineFinestra < 96) {
+      if (fineFinestra < 97) {
         if (fineFinestra + spostamentoAvanti < 96) {
           inizioFinestra = inizioFinestra + spostamentoAvanti * 2;
           fineFinestra = fineFinestra + spostamentoAvanti * 2;
-        } else if (fineFinestra < 95) {
+        } else if (fineFinestra < 97) {
           inizioFinestra = inizioFinestra + 1;
           fineFinestra = fineFinestra + 1;
         }
@@ -98,11 +98,11 @@ export function getScorrimentoX(event, posPrecedente, inizioFinestra, fineFinest
 
     if (vista === 4) {
       //Solo 144 celle
-      if (fineFinestra < 144) {
+      if (fineFinestra < 145) {
         if (fineFinestra + spostamentoAvanti < 144) {
           inizioFinestra = inizioFinestra + spostamentoAvanti * 3;
           fineFinestra = fineFinestra + spostamentoAvanti * 3;
-        } else if (fineFinestra < 143) {
+        } else if (fineFinestra < 145) {
           inizioFinestra = inizioFinestra + 1;
           fineFinestra = fineFinestra + 1;
         }
@@ -111,11 +111,11 @@ export function getScorrimentoX(event, posPrecedente, inizioFinestra, fineFinest
 
     if (vista === 5) {
       //Solo 288 celle
-      if (fineFinestra < 288) {
-        if (fineFinestra + spostamentoAvanti < 288) {
+      if (fineFinestra < 289) {
+        if (fineFinestra + spostamentoAvanti < 289) {
           inizioFinestra = inizioFinestra + spostamentoAvanti * 6;
           fineFinestra = fineFinestra + spostamentoAvanti * 6;
-        } else if (fineFinestra < 287) {
+        } else if (fineFinestra < 289) {
           inizioFinestra = inizioFinestra + 1;
           fineFinestra = fineFinestra + 1;
         }
