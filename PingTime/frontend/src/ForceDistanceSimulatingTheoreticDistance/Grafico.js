@@ -24,7 +24,6 @@ const { connectedComponents } = require("graphology-components");
 //########################################################################################
 
 function getConnectivity(grafo) {
-  console.log(grafo);
   const connected = connectedComponents(grafo);
   return connected;
 }
@@ -48,7 +47,6 @@ function createGraphStructure(grafo, pesato) {
     graph = new Graph({ type: "undirected" });
     for (let i = 0; i < grafo.vertex.length; i++) {
       graph.addNode(grafo.vertex[i].id);
-      console.log(grafo.vertex[i].id);
     }
     for (let i = 0; i < grafo.links.length; i++) graph.addEdgeWithKey(grafo.links[i].src + " - " + grafo.links[i].dst, grafo.links[i].src, grafo.links[i].dst, { weight: grafo.links[i].weight });
   } else {
@@ -56,14 +54,11 @@ function createGraphStructure(grafo, pesato) {
 
     for (let i = 0; i < grafo.vertex.length; i++) {
       graph.addNode(grafo.vertex[i].id);
-      console.log("         " + grafo.vertex[i]);
     }
     for (let i = 0; i < grafo.links.length; i++) {
-      console.log(grafo.links[i].src);
       graph.addEdge(grafo.links[i].src, grafo.links[i].dst);
     }
   }
-  console.log(graph);
   return graph;
 }
 
@@ -71,23 +66,18 @@ const getTheoricDistance = (grafo, pesato) => {
   //Creo il grafo con graphology
   const graph = createGraphStructure(grafo, pesato);
   const connesso = getConnectivity(graph);
-  console.log(connesso);
   //Lancio Djikstra per ogni nodi. Restituisce la distanza rispetto a tutti i nodi
   var shortestPath = algoritmoDijkstra(graph);
   console.log(shortestPath);
 
   for (let i = 0; i < grafo.vertex.length; i++) {
-    grafo.vertex[i] = { id: grafo.vertex[i], valore: 0 };
-    console.log(grafo.vertex[i]);
     for (let j = 0; j < grafo.vertex.length; j++) {
       if (shortestPath[i][j] !== undefined) {
-        console.log(i + " - " + j);
         grafo.vertex[i].valore = grafo.vertex[i].valore + shortestPath[i][j].length - 1;
       } else grafo.vertex[i].valore = grafo.vertex[i].valore + grafo.vertex.length + 1;
     }
-    grafo.vertex[i].valore = Math.trunc((((grafo.vertex[i].valore / grafo.vertex.length) * 100) / grafo.vertex.length) * 2) / 2;
+    grafo.vertex[i].valore = Math.floor(grafo.vertex[i].valore / grafo.vertex.length);
   }
-  console.log(grafo);
   return grafo;
 };
 
@@ -104,6 +94,7 @@ const ottimizzaGrafo = (data, pesato) => {
 };
 
 const createGraph = (data, pesato) => {
+  console.log(data);
   var grafoElaborato = ottimizzaGrafo(data, pesato);
 
   grafoElaborato.vertex.sort(function (a, b) {
@@ -137,35 +128,32 @@ const createGraph = (data, pesato) => {
         grafoElaborato.vertex[j].numero = contatore;
         grafoElaborato.vertex[j].coefficiente = j - ultimo_index;
       }
-      console.log("Entrato " + i);
       contatore = 1;
       start = grafoElaborato.vertex[i].valore;
       ultimo_index = i;
 
       //Se non è l'ultimo e non è maggiore del precedente lo conto
     } else {
-      console.log("Entrato " + i);
       contatore = contatore + 1;
     }
   }
-
+  console.log(grafoElaborato.vertex);
   const minLevel = grafoElaborato.vertex[0].valore;
   const maxLevel = grafoElaborato.vertex[grafoElaborato.vertex.length - 1].valore;
 
-  if (pesato) var myColor = d3.scaleSequential([1, 20], d3.interpolateTurbo);
-  else var myColor = d3.scaleSequential([1, 10], d3.interpolateTurbo);
-  console.log(window);
+  if (pesato) var myColor = d3.scaleSequential([minLevel - 20, maxLevel + 20], d3.interpolateRdYlGn);
+  else var myColor = d3.scaleSequential([minLevel - 20, maxLevel + 20], d3.interpolateRdYlGn);
 
   d3.select("#Prova").selectAll("*").remove(); // Clear previous content
   const svg = d3
     .select("#Prova")
     .attr("margin-left", window.innerWidth * 0.1)
-    .attr("width", window.innerHeight * 0.75)
-    .attr("height", window.innerHeight * 0.75); //.append("svg").attr("width", 1800).attr("height", 900);
+    .attr("width", window.innerHeight * 1)
+    .attr("height", window.innerHeight * 1); //.append("svg").attr("width", 1800).attr("height", 900);
   const chart = svg
     .append("g")
     .attr("id", "c")
-    .attr("transform", `translate(${(window.innerHeight * 0.75) / 2}, ${(window.innerHeight * 0.75) / 2})`);
+    .attr("transform", `translate(${(window.innerHeight * 1) / 2}, ${(window.innerHeight * 1) / 2})`);
   chart.append("path").datum(data).attr("id", "l").attr("fill", "none").attr("stroke", "steelblue").attr("stroke-width", 2);
 
   //##################################################################################################
@@ -179,12 +167,11 @@ const createGraph = (data, pesato) => {
     .append("rect")
     .attr("fill", "#ffffff")
     .attr("stroke", "black")
+    .attr("stroke-width", 4)
     .attr("rx", 5) // Rounded corners (optional)
-    .attr("ry", 5)
-    .append("text")
-    .text("PRova");
+    .attr("ry", 5);
 
-  const tooltipText = tooltip.append("text").attr("fill", "white").attr("x", 5).attr("y", -5).style("font-size", "12px");
+  const tooltipText = tooltip.append("text").attr("x", 5).attr("y", 5).style("font-size", "12px");
   //################################################################################################################
   //##                                                                                                            ##
   //##                                              CREAZIONE ASSI                                                ##
@@ -398,9 +385,13 @@ const createGraph = (data, pesato) => {
     .on("mouseover", function (event, d) {
       d3.select(this).attr("stroke", "orange").attr("stroke-width", 2.5);
       tooltip.style("display", null);
-      tooltip.attr("transform", `translate(${event.clientX}, ${event.clientY}`);
-      tooltipText.text("Prova");
+      tooltip.attr("transform", `translate(${event.clientX}, ${event.clientY})`);
       const bbox = tooltipText.node().getBBox();
+      tooltipText
+        .text("Provaaaaaa")
+        .attr("x", 110)
+        .attr("y", -bbox.height + 120);
+
       tooltipRect
         .attr("width", bbox.width + 100)
         .attr("height", bbox.height + 100)
@@ -436,46 +427,45 @@ const createGraph = (data, pesato) => {
     .join("circle")
     .attr("class", "cc")
     .attr("cx", function (d) {
-      return Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - minLevel + 2) * 100;
+      var angoloGradi = Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente);
+      return angoloGradi * Math.ceil((d.valore * 4) / maxLevel) * 100;
+      //return Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - minLevel + 2) * 100;
     })
     .attr("cy", function (d) {
-      return Math.sin((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - minLevel + 2) * 100;
+      var angoloGradi = Math.sin((((360 / d.numero) * Math.PI) / 180) * d.coefficiente);
+      return angoloGradi * Math.ceil((d.valore * 4) / maxLevel) * 100;
+      //return Math.sin((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - minLevel + 2) * 100;
     })
     .attr("r", function (d) {
       return 12.5;
     })
     .attr("fill", function (d) {
-      return myColor(d.valore);
+      return myColor(maxLevel - d.valore);
     })
     .text(function (d) {
       return d.id;
     })
     .on("mouseover", function (event, d) {
-      d3.select(this).style("fill", "orange"); // Change color on hover
-      console.log(`Mouse over: ${d}`); // Log data value
+      var x = d3.select(this)._groups[0][0].cx.animVal.value + 30;
+      var y = d3.select(this)._groups[0][0].cy.animVal.value + 30;
+      d3.select(this).style("r", 25);
+      d3.select(this).attr("stroke", "orange").attr("stroke-width", 2.5);
+      tooltip.style("display", null);
+      tooltip.attr("transform", `translate(${+window.innerHeight / 2 + x}, ${window.innerHeight / 2 + y})`);
+      const bbox = tooltipText.node().getBBox();
+      tooltipText.text(d.nome).attr("x", 0).attr("y", 0);
+
+      tooltipRect.attr("width", 250).attr("height", 100).attr("x", -10).attr("y", -20);
     })
     .on("mouseleave", function (event, d) {
-      d3.select(this).style("fill", function (d) {
-        return myColor(d.valore);
-      }); // Log data value
+      d3.select(this).attr("stroke", "steelblue").attr("stroke-width", 0.5);
+      tooltip.style("display", "none");
+      d3.select(this)
+        .style("fill", function (d) {
+          return myColor(maxLevel - d.valore);
+        })
+        .style("r", 12.5); // Log data value
     });
-  /*chart
-    .selectAll()
-    .data(grafoElaborato.vertex)
-    .join("text")
-    .text(function (d) {
-      return d.id;
-    })
-    .attr("stroke", "white")
-    .attr("stroke-width", "1px")
-    .attr("class", "tt")
-    .attr("x", function (d) {
-      if (d.id > 9) return Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - minLevel + 2) * 100 - 9;
-      if (d.id <= 9) return Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - minLevel + 2) * 100 - 4;
-    })
-    .attr("y", function (d) {
-      return Math.sin((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - minLevel + 2) * 100 + 5;
-    });*/
 };
 
 //########################################################################################
@@ -494,12 +484,9 @@ function App5() {
     if (start) {
       //Prossimante le posizioni x e y dovranno non essere randomiche ma essere calcolate tramite la graph teorethic distance (shortest path)
       d3.json("https://mrkprojects.altervista.org/dataVis/playerList.php").then((vertici) => {
-        for (let i = 0; i < vertici.length; i++) vertici[i] = { id: i, nome: vertici[i] };
+        for (let i = 0; i < vertici.length; i++) vertici[i] = { id: i, nome: vertici[i], valore: 0 };
         setNodes(vertici);
-        console.log(vertici);
         d3.json("https://mrkprojects.altervista.org/dataVis/adjMatrix.php?interval=W&index=40").then((archi) => {
-          console.log(vertici);
-          console.log(archi);
           var archiElaborato = archi.filter((d) => {
             var lock1 = false;
             var lock2 = false;
@@ -542,6 +529,7 @@ function App5() {
       />
       <br />
       <svg id="Prova" className={styles.area_disegno} />
+      <br />
     </div>
   );
 }

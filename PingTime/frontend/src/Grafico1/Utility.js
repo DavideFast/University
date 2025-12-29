@@ -7,20 +7,26 @@ import * as d3 from "d3";
  */
 export function getIntervalloSettimanale(date) {
   var intervallo = {};
-
+  console.log(date);
   var giorno = date.getDay();
 
   if (giorno !== 1) {
-    const inizioIntervallo = d3.utcMonday.floor(date);
-    const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6);
+    const inizioIntervallo = d3.utcMonday.floor(date).setHours(0);
+    const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6).setHours(24);
     intervallo.inizio = inizioIntervallo;
     intervallo.fine = fineIntervallo;
+    console.log("------");
+    console.log(intervallo);
     return intervallo;
   } else {
-    const inizioIntervallo = date;
-    const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6);
+    var inizioIntervallo = new Date(date).setHours(0);
+    inizioIntervallo = new Date(inizioIntervallo).setMinutes(0);
+    inizioIntervallo = new Date(inizioIntervallo).setSeconds(0);
+    const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6).setHours(24);
     intervallo.inizio = inizioIntervallo;
     intervallo.fine = fineIntervallo;
+    console.log("------");
+    console.log("              " + new Date(intervallo.inizio));
     return intervallo;
   }
 }

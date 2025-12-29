@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { getGiornoDaSettimana, getIntervalloMensile } from "./Utility";
+import { getGiornoDaSettimana, getIntervalloSettimanale, getIntervalloMensile } from "./Utility";
 
 function creaArrayFascia(db_fasce) {
   db_fasce.sort((a, b) => {
@@ -16,7 +16,7 @@ function creaArrayFascia(db_fasce) {
 function joinFasceOrariePresenze(db_calendario, db_fasce) {
   //Creo un'array di dimensione pari al numero delle fasce
   var join = new Array(db_calendario.length);
-
+  console.log(db_calendario);
   //Copio le informazioni della fascia i-esima nell'array in posizione i-esima
   for (let i = 0; i < db_calendario.length; i++) {
     join[i] = {};
@@ -31,6 +31,7 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
     if (join[i].giorno === "Venerdì") join[i].giorno_numerico = 5;
     if (join[i].giorno === "Sabato") join[i].giorno_numerico = 6;
     join[i].day = getGiornoDaSettimana(db_calendario[i].settimana, join[i].giorno_numerico);
+    join[i].id = db_calendario[i].alias;
   }
 
   //Ordino in ordine cronologico
@@ -106,11 +107,16 @@ function creaArrayPerGraficoSettimana(join, codominio) {
     const inizio = join[i].inizio;
     const fine = join[i].fine;
     var lock = true;
+    //console.log(join);
     const giorno = join[i].giorno_id;
     const index_inizio = giorno * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
     const index_fine = giorno * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
 
-    for (let j = index_inizio; j < index_fine; j++) arrayFasce[j].valore += 1;
+    for (let j = index_inizio; j < index_fine; j++) {
+      arrayFasce[j].valore += 1;
+      if (arrayFasce[j].persone !== undefined) arrayFasce[j].persone = join[i].id + "," + arrayFasce[j].persone;
+      else arrayFasce[j].persone = join[i].id;
+    }
     lock = true;
   }
 
@@ -131,7 +137,7 @@ function getIndexFromWeeks(codominio, dimensione) {
       array[settimane - 1] = d3.utcDay.offset(codominio[0], contatore - 1);
     }
   }
-  console.log(array);
+  console.log("array" + array);
   return array;
 }
 
@@ -209,6 +215,47 @@ function creaArrayPerGraficoMese(join, codominio, media) {
       arrayFasce[j].valore += 1;
     }
     lock = true;
+  }
+
+  //Faccio la media
+  if (media === 2) {
+    for (let i = 0; i < arrayFasce.length; i++) {
+      arrayFasce[i].valore = arrayFasce[i].valore / 7;
+    }
+  }
+
+  var massimo = 0;
+  var minimo = 100;
+  //Faccio il minimo
+  if (media === 3) {
+    for (let i = 0; i < settimane; i++) {
+      var giorni = creaArrayPerGraficoSettimana(join, [getIntervalloSettimanale(array[i]).inizio, getIntervalloSettimanale(array[i]).fine]);
+      for (let j = 0; j < 288; j++) {
+        for (let k = 0; k < 7; k++) {
+          if (minimo > giorni[k * 288 + j].valore) {
+            minimo = giorni[k * 288 + j].valore;
+          }
+        }
+        arrayFasce[i * 288 + j].valore = minimo;
+        minimo = 100;
+      }
+    }
+  }
+  //Faccio il massimo
+  if (media === 4) {
+    for (let i = 0; i < settimane; i++) {
+      var giorni = creaArrayPerGraficoSettimana(join, [getIntervalloSettimanale(array[i]).inizio, getIntervalloSettimanale(array[i]).fine]);
+      console.log(giorni);
+      for (let j = 0; j < 288; j++) {
+        for (let k = 0; k < 5; k++) {
+          if (massimo < giorni[k * 288 + j].valore) {
+            massimo = giorni[k * 288 + j].valore;
+          }
+        }
+        arrayFasce[i * 288 + j].valore = massimo;
+        massimo = 0;
+      }
+    }
   }
 
   return arrayFasce;
@@ -316,8 +363,7 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
       var numeroSettimane = arrayAppoggio.length / 288;
       for (let j = 0; j < 288; j++) {
         for (let i = 0; i < numeroSettimane; i++) {
-          if (minimo > arrayAppoggio[i * 288 + j].valore)
-            minimo = arrayAppoggio[j + i * 288].valore
+          if (minimo > arrayAppoggio[i * 288 + j].valore) minimo = arrayAppoggio[j + i * 288].valore;
         }
         arrayFasce[meseIndex * 288 + j].valore = minimo;
         minimo = 100;
@@ -333,8 +379,7 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
       var numeroSettimane = arrayAppoggio.length / 288;
       for (let j = 0; j < 288; j++) {
         for (let i = 0; i < numeroSettimane; i++) {
-          if (massimo < arrayAppoggio[i * 288 + j].valore)
-            massimo = arrayAppoggio[j + i * 288].valore
+          if (massimo < arrayAppoggio[i * 288 + j].valore) massimo = arrayAppoggio[j + i * 288].valore;
         }
         arrayFasce[meseIndex * 288 + j].valore = massimo;
         massimo = 0;
@@ -342,14 +387,12 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
       meseIndex = meseIndex + 1;
     }
 
-
-
   return arrayFasce;
 }
 
 export function data_formatting(db_fasce, db_calendario, codominio, tipologia, media) {
   console.log("STEP 1");
   if (tipologia === 1) return creaArrayPerGraficoSettimana(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio);
-  if (tipologia === 2) return creaArrayPerGraficoMese(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio);
+  if (tipologia === 2) return creaArrayPerGraficoMese(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio, media);
   if (tipologia === 3) return creaArrayPerGraficoAnno(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio, media);
 }

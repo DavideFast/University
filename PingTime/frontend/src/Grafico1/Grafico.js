@@ -9,12 +9,8 @@ import { data_formatting } from "./Data_Formatting";
 import { setFinestra, calcolaAmpiezzaTemporale, calcola } from "./SliderObject_utility";
 import { arrayX, getIntervalloAnnuale, getIntervalloMensile, getIntervalloSettimanale, getScorrimentoX, getZoomX, getZoomY } from "./Utility";
 
-function setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mouseleave, tipologiaY, arrayFasce) {
-  console.log(scatter.selectAll());
-  console.log(d3.select("#area").selectAll("*"));
-  console.log(d3.select("#area").selectAll());
-  console.log(scatter.select("#area").selectAll());
-
+function setDataInChart(vista, x, y, height, myColor, mouseover, mousemove, mouseleave, tipologiaY, arrayFasce) {
+  console.log(arrayFasce);
   d3.select("#dati")
     .selectAll()
     //.selectAll()
@@ -24,8 +20,6 @@ function setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mo
     .join("rect")
     .attr("class", "dato")
     .attr("x", function (d) {
-      if (x(d.fascia) !== undefined && y(d.giorno) !== undefined) {
-      }
       return x(d.fascia);
     })
     .attr("y", function (d) {
@@ -53,6 +47,19 @@ function setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mo
     })
     .attr("clip-path", "url(#clip-area)")
     .style("fill", function (d) {
+      var previsione;
+      if (vista === 1 && d.fascia.split(":")[1] === "00" && d.valore === 0) {
+        for (let i = 0; i < arrayFasce.length; i++)
+          if (arrayFasce[i].fascia === d.fascia && arrayFasce[i].giorno === d.giorno) {
+            previsione = i;
+            break;
+          }
+        console.log(previsione);
+        if (previsione + 10 < arrayFasce.length && arrayFasce[previsione + 10] != 0) {
+          console.log("BRURUUU");
+          return myColor(arrayFasce[previsione + 10].valore);
+        }
+      }
       d.colore = myColor(d.valore + 15);
       return myColor(d.valore);
     })
@@ -61,9 +68,8 @@ function setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mo
     .on("mouseleave", mouseleave);
 }
 
-function updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce) {
+function updateDataInChart(scatter, vista, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce) {
   scatter.selectAll(".dato").remove();
-  console.log(arrayFasce);
   scatter
     .selectAll("rect")
     .data(arrayFasce, function (d) {
@@ -96,6 +102,19 @@ function updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover
     })
     .attr("clip-path", "url(#clip)")
     .style("fill", function (d) {
+      var previsione;
+      if (vista === 1 && d.fascia.split(":")[1] === "00" && d.valore === 0) {
+        for (let i = 0; i < arrayFasce.length; i++)
+          if (arrayFasce[i].fascia === d.fascia && arrayFasce[i].giorno === d.giorno) {
+            previsione = i;
+            break;
+          }
+        console.log(previsione);
+        if (previsione + 10 < arrayFasce.length && arrayFasce[previsione + 10] != 0) {
+          console.log("BRURUUU");
+          return myColor(arrayFasce[previsione + 10].valore);
+        }
+      }
       d.colore = myColor(d.valore + 15);
       return myColor(d.valore);
     })
@@ -153,7 +172,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   //######################################################################################
 
   var dominio;
-  if (tipologiaY === 1) dominio = [new Date(getIntervalloSettimanale(new Date()).inizio.setHours(0)), new Date(getIntervalloSettimanale(new Date()).fine.setHours(24))];
+  if (tipologiaY === 1) dominio = [new Date(getIntervalloSettimanale(new Date()).inizio), new Date(getIntervalloSettimanale(new Date()).fine)];
   if (tipologiaY === 2) dominio = [new Date(getIntervalloMensile(new Date()).inizio), new Date(getIntervalloMensile(new Date()).fine)];
   if (tipologiaY === 3) dominio = [new Date(getIntervalloAnnuale(new Date()).inizio), new Date(getIntervalloAnnuale(new Date()).fine)];
 
@@ -190,15 +209,16 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   if (tipologiaY === 1) {
     var y = d3
       .scaleTime()
-      .domain([getIntervalloSettimanale(new Date()).inizio.setHours(0), getIntervalloSettimanale(new Date()).fine.setHours(24)])
+      .domain([getIntervalloSettimanale(new Date()).inizio, getIntervalloSettimanale(new Date()).fine])
       .range([0, height]);
-    y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(1)).tickFormat(d3.timeFormat("%a %d %b %Y"));
+    y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(1)).tickFormat(d3.timeFormat("%A %d %b %Y"));
+    console.log([getIntervalloSettimanale(new Date()).inizio, getIntervalloSettimanale(new Date()).fine]);
   } else if (tipologiaY === 2) {
     var y = d3
       .scaleTime()
       .domain([getIntervalloMensile(new Date()).inizio.setHours(0), getIntervalloMensile(new Date()).fine])
       .range([0, height]);
-    y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(7)).tickFormat(d3.timeFormat("%B  %V %d"));
+    y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(7)).tickFormat(d3.timeFormat("%b  %d  Settimana %V"));
   } else {
     var y = d3
       .scaleTime()
@@ -206,7 +226,8 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
       .range([0, height]);
     y_settings = d3.axisLeft(y).ticks(d3.timeMonth.every(1)).tickFormat(d3.timeFormat("%B %Y"));
   }
-  //console.log(y.domain());
+  console.log("PROVA");
+  console.log(y.ticks());
 
   //######################################################################################
   //##                                                                                  ##
@@ -221,7 +242,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
     .attr("x", -200)
     .attr("y", -50)
     .attr("width", width + margin.left + margin.right)
-    .attr("height", 900);
+    .attr("height", height + margin.top + margin.bottom);
   var scatter = svg.append("g").attr("id", "area").attr("transform", `translate(${margin.left}, ${margin.top})`).attr("clip-path", "url(#clip-area)").append("g").attr("id", "dati");
 
   //######################################################################################
@@ -248,21 +269,28 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
 
   const tooltip = d3
     .select("#my_dataviz")
-    .append("div")
+    .append("rect")
+    .attr("width", 20)
+    .attr("height", 35)
+    .attr("class", "tooltip-group")
+    .attr("rx", 15)
+    .attr("rx", 15)
+    .attr("stroke", "purple")
+    .attr("stroke-width", 5)
+    .attr("fill", "white")
+    .style("opacity", 0)
+    .attr("class", "tooltip");
 
-    .attr("fill", "black")
-    .style("opacity", 1)
-    .attr("class", "tooltip")
-    .style("background-color", "black")
+  /*.style("background-color", "black")
     .style("border", "solid")
     .style("border-width", "5px")
     .style("border-radius", "5px")
-    .style("padding", "5px");
+    .style("padding", "5px");*/
 
   const tooltip_v2 = d3
     .select("#my_dataviz")
     .append("text")
-    .attr("class", "tooltip")
+    .attr("class", "tooltip-group")
     .style("position", "absolute")
     .attr("fill", "black")
     .style("z-index", "14000000")
@@ -273,6 +301,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   const tooltip_v3 = d3
     .select("#my_dataviz")
     .append("div")
+    .attr("class", "tooltip-group")
     .style("position", "absolute")
     .style("visibility", "hidden")
     .style("background-color", "white")
@@ -299,16 +328,18 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
 
   const mouseover = function (event, d) {
     if (dragging) {
-      //console.log(event.target.__data__.fascia);
       const [mx, my] = d3.pointer(event);
-      tooltip_v2
+      /*tooltip_v2
         .text("Valore: " + Math.floor(d.valore) + " presenze")
         .style("font-size", 1.5 + "rem")
         .style("color", "red")
         .style("visibility", "visible")
         .attr("x", mx + 160 + "px")
-        .attr("y", my + 80 + "px");
-      tooltip.style("opacity", 0);
+        .attr("y", my + 150 + "px");*/
+      /*tooltip
+        .style("opacity", 1)
+        .attr("x", mx + 160 + "px")
+        .attr("y", my + 80 + "px");*/
       d3.select(this).style("stroke", "#2f6effff" /*d.colore*/).style("stroke-opacity", "0.75").style("stroke-width", "4px").style("opacity", 1);
       d3.select(this).style("background-color", "black");
     }
@@ -316,18 +347,109 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   const mousemove = function (event, d) {
     if (dragging) {
       const [mx, my] = d3.pointer(event);
-      tooltip_v2
-        .text("Valore: " + Math.floor(d.valore) + " presenze")
-        .style("font-size", 1.5 + "rem")
-        .style("color", "red")
-        .style("visibility", "visible")
-        .attr("x", mx + 160 + "px")
-        .attr("y", my + 80 + "px");
-      tooltip_v3.style("visibility", "visible");
+      if (event.target.__data__.persone !== undefined) {
+        var previsione = event.target.__data__;
+
+        var testo = previsione.persone;
+        tooltip_v2
+          //.text("Valore: " + Math.floor(d.valore) + " presenze")
+          .text("N° persone: " + Math.floor(previsione.valore))
+          .style("font-size", 20 + "px")
+          .style("stroke", "red")
+          .style("stroke-width", 0.5)
+          .style("visibility", "visible")
+          .attr("x", mx + 165 + "px");
+
+        if (my > (height - margin.top - margin.bottom) / 2 || previsione.valore > 2) tooltip_v2.attr("y", my - 160 + "px");
+        if (my <= (height - margin.top - margin.bottom) / 2 || previsione.valore < 3) tooltip_v2.attr("y", my + 110 + "px");
+
+        testo.split(",").forEach((line, i) => {
+          tooltip_v2
+            .append("tspan")
+            .style("stroke", "black")
+            .style("stroke-width", 0.25)
+            .style("font-size", 15 + "px")
+            .attr("x", mx + 170 + "px") // reset x for each line
+            .attr("dy", 25 + "px") // vertical offset
+            .text(line);
+        });
+        tooltip
+          .style("opacity", 1)
+          .attr("height", 50 + Math.floor(previsione.valore) * 27.5)
+          .attr("x", mx + 160 + "px");
+
+        tooltip_v3.style("visibility", "visible");
+
+        if (my > (height - margin.top - margin.bottom) / 2 && previsione.valore > 2) tooltip.attr("y", my - 200 + "px");
+        if (my <= (height - margin.top - margin.bottom) / 2 || previsione.valore < 3) tooltip.attr("y", my + 80 + "px");
+      } else {
+        var previsione = event.target.__data__;
+        if (vista === 1 && event.target.__data__.fascia.split(":")[1] === "00" && event.target.__data__.valore === 0) {
+          for (let i = 0; i < arrayFasce.length; i++)
+            if (arrayFasce[i].fascia === previsione.fascia && arrayFasce[i].giorno === previsione.giorno) {
+              previsione = i;
+              console.log("PROVAAAAAA");
+              break;
+            }
+          if (previsione + 10 < arrayFasce.length && arrayFasce[previsione + 10] != 0) {
+            previsione = arrayFasce[previsione + 10];
+          }
+        }
+        var testo = previsione.persone;
+        if (previsione.persone != undefined) {
+          tooltip_v2
+            //.text("Valore: " + Math.floor(d.valore) + " presenze")
+            .text("N° persone: " + Math.floor(previsione.valore))
+            .style("font-size", 20 + "px")
+            .style("stroke", "red")
+            .style("stroke-width", 0.5)
+            .style("visibility", "visible")
+            .attr("x", mx + 165 + "px");
+          if (my > (height - margin.top - margin.bottom) / 2 && previsione.valore > 2) tooltip_v2.attr("y", my - 160 + "px");
+          if (my <= (height - margin.top - margin.bottom) / 2 || previsione.valore < 3) tooltip_v2.attr("y", my + 110 + "px");
+
+          testo.split(",").forEach((line, i) => {
+            tooltip_v2
+              .append("tspan")
+              .style("stroke", "black")
+              .style("stroke-width", 0.25)
+              .style("font-size", 15 + "px")
+              .attr("x", mx + 170 + "px") // reset x for each line
+              .attr("dy", 25 + "px") // vertical offset
+              .text(line);
+          });
+          tooltip
+            .style("opacity", 1)
+            .attr("height", 50 + Math.floor(previsione.valore) * 27.5)
+            .attr("x", mx + 160 + "px");
+
+          tooltip_v3.style("visibility", "visible");
+
+          if (my > (height - margin.top - margin.bottom) / 2 && previsione.valore > 2) tooltip.attr("y", my - 200 + "px");
+          if (my <= (height - margin.top - margin.bottom) / 2 || previsione.valore < 3) tooltip.attr("y", my + 80 + "px");
+        } else {
+          tooltip
+            .style("opacity", 1)
+            .attr("height", 50)
+            .attr("width", 150)
+            .attr("x", mx + 160 + "px")
+            .attr("y", my + 80 + "px");
+          tooltip_v2
+            //.text("Valore: " + Math.floor(d.valore) + " presenze")
+            .text("N° persone: " + Math.floor(previsione.valore))
+            .style("font-size", 20 + "px")
+            .style("stroke", "black")
+            .style("stroke-width", 0.5)
+            .style("visibility", "visible")
+            .attr("x", mx + 165 + "px")
+            .attr("y", my + 110 + "px");
+        }
+      }
     }
   };
   const mouseleave = function (event, d) {
     tooltip_v2.text("");
+    tooltip.attr("x", -100 + "px").attr("y", -100 + "px");
     tooltip.style("opacity", 0);
     d3.select(this).style("stroke", "none").style("opacity", 1);
   };
@@ -338,7 +460,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   //##                                                                                  ##
   //######################################################################################
 
-  setDataInChart(scatter, x, y, height, myColor, mouseover, mousemove, mouseleave, tipologiaY, arrayFasce);
+  setDataInChart(vista, x, y, height, myColor, mouseover, mousemove, mouseleave, tipologiaY, arrayFasce);
 
   //######################################################################################
   //##                                                                                  ##
@@ -353,7 +475,29 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
     .attr("transform", `translate(${margin.left}, ${margin.top + height})`)
     .call(x_settings);
 
-  const yAxis = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`).style("font-size", 15).attr("class", "yAxis").call(y_settings);
+  const yAxis = svg
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top + 0})`)
+    .style("font-size", 12)
+    .call(y_settings);
+  svg
+    .append("rect")
+    .attr("transform", `translate(${margin.left},${margin.top + 0})`)
+    .attr("fill", "#d5191900")
+    .attr("class", "yAxis")
+    .attr("x", -margin.left)
+    .attr("y", 0)
+    .attr("width", margin.left)
+    .attr("height", height);
+  svg
+    .append("rect")
+    .attr("transform", `translate(${margin.left}, ${margin.top + height})`)
+    .attr("fill", "rgba(213, 25, 25, 0)")
+    .attr("class", "xAxis")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", width)
+    .attr("height", margin.bottom);
 
   //######################################################################################
   //##                                                                                  ##
@@ -378,7 +522,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
       zoomPrecedente = event.transform.k;
       arrayFasce = data_formatting(db_fascia, db_data, [y.domain()[0], y.domain()[y.domain().length - 1]], tipologiaY, statisticaG);
       x = newX;
-      updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
+      updateDataInChart(scatter, vista, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
       svg.select(".yAxis").transition().duration(200).call(y_settings);
       svg.select(".xAxis").transition().duration(200).call(d3.axisBottom(newX));
     });
@@ -421,7 +565,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
                 return d;
               }
             });
-            updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasceRanged);
+            updateDataInChart(scatter, vista, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasceRanged);
           }
         }
       })
@@ -440,7 +584,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
 
   var posizioneY = 0;
 
-  yAxis.on("wheel", function (event) {
+  d3.select(".yAxis").on("wheel", function (event) {
     console.log(event);
     event.preventDefault();
     const oggi = new Date();
@@ -455,10 +599,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
       if (tipologiaY === 1) {
         y = d3
           .scaleTime()
-          .domain([
-            getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio.setHours(0),
-            getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine.setHours(24),
-          ])
+          .domain([getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio, getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine])
           .range([0, height]);
         y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(1)).tickFormat(d3.timeFormat("%a %d %b %y"));
       } else if (tipologiaY === 2) {
@@ -486,10 +627,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
       if (tipologiaY === 1) {
         y = d3
           .scaleTime()
-          .domain([
-            getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio.setHours(0),
-            getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine.setHours(24),
-          ])
+          .domain([getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio, getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine])
           .range([0, height]);
         y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(1)).tickFormat(d3.timeFormat("%a %d %b %y"));
       } else if (tipologiaY === 2) {
@@ -508,19 +646,16 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
     }
     yAxis.call(y_settings);
     if (tipologiaY === 1)
-      dominio = [
-        new Date(getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio.setHours(0)),
-        new Date(getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine.setHours(24)),
-      ];
+      dominio = [new Date(getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio), new Date(getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine)];
     if (tipologiaY === 2) dominio = [new Date(getIntervalloMensile(primo_giorno_mese_offset).inizio), new Date(getIntervalloMensile(primo_giorno_mese_offset).fine)];
     if (tipologiaY === 3) dominio = [new Date(getIntervalloAnnuale(new Date(anno_corrente, 0, 1)).inizio), new Date(getIntervalloAnnuale(new Date(anno_corrente, 0, 1)).fine)];
 
     arrayFasce = data_formatting(db_fascia, db_data, dominio, tipologiaY);
 
-    updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
+    updateDataInChart(scatter, vista, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
   });
 
-  yAxis.call(
+  d3.select(".yAxis").call(
     d3
       .drag()
       .on("start", function (event) {
@@ -534,9 +669,10 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
         //console.log(event.y + " - " + posizioneY);
         const oggi = new Date();
         const primo_giorno_mese_rispetto_oggi = new Date(oggi.getFullYear(), oggi.getMonth(), 1);
-
+        var primo_giorno_mese_offset = new Date(primo_giorno_mese_rispetto_oggi.getFullYear(), primo_giorno_mese_rispetto_oggi.getMonth() + offset_mese, 1);
         //Scorri avanti nel tempo
         if (event.y + 50 < posizioneY) {
+          console.log("OK");
           anno_corrente = anno_corrente + 1;
           offset_settimana = offset_settimana + 7;
           offset_mese = offset_mese + 1;
@@ -567,6 +703,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
         }
         //Scorri indietro nel tempo
         if (posizioneY + 50 < event.y) {
+          console.log("OK");
           anno_corrente = anno_corrente - 1;
           offset_settimana = offset_settimana - 7;
           offset_mese = offset_mese - 1;
@@ -575,10 +712,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
           if (tipologiaY === 1) {
             y = d3
               .scaleTime()
-              .domain([
-                getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio.setHours(0),
-                getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine.setHours(24),
-              ])
+              .domain([getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio, getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine])
               .range([0, height]);
             y_settings = d3.axisLeft(y).ticks(d3.timeDay.every(1)).tickFormat(d3.timeFormat("%a %d %b %y"));
           } else if (tipologiaY === 2) {
@@ -598,15 +732,15 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
         yAxis.call(y_settings);
         if (tipologiaY === 1)
           dominio = [
-            new Date(getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio.setHours(0)),
-            new Date(getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine.setHours(24)),
+            new Date(getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).inizio),
+            new Date(getIntervalloSettimanale(d3.utcDay.offset(new Date(), offset_settimana)).fine),
           ];
         if (tipologiaY === 2) dominio = [new Date(getIntervalloMensile(primo_giorno_mese_offset).inizio), new Date(getIntervalloMensile(primo_giorno_mese_offset).fine)];
         if (tipologiaY === 3) dominio = [new Date(getIntervalloAnnuale(new Date(anno_corrente, 0, 1)).inizio), new Date(getIntervalloAnnuale(new Date(anno_corrente, 0, 1)).fine)];
 
         arrayFasce = data_formatting(db_fascia, db_data, dominio, tipologiaY);
 
-        updateDataInChart(scatter, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
+        updateDataInChart(scatter, vista, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
       })
   );
 }
@@ -614,39 +748,11 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
 function App2() {
   const [periodo, setPeriodo] = React.useState(1);
   const [statistica, setStatistica] = React.useState(1);
-  const [spostamento, setSpostamento] = React.useState(1);
-  const [spostamentoSlider, setSpostamentoSlider] = React.useState(100);
-  const [spostamentoCopia, setSpostamentoCopia] = React.useState(0);
-  const [valore, setValore] = React.useState(0);
-  const [lock, setLock] = React.useState(false);
-  const [previousX, setPreviousX] = React.useState(0);
-  const [finestraTemporale, setFinestraTemporale] = React.useState(0); //4 ore
-  const [ampiezzaFinestraTemporale, setAmpiezzaFinestraTemporale] = React.useState(24); //4 ore
+
   const [dati_acquisiti, setDatiAcquisiti] = React.useState([]);
   const [fascia, setFascia] = React.useState([]);
 
-  const checkTimelineAndFix = () => {
-    var numero = spostamentoCopia;
-    while (numero + calcola(spostamentoSlider) * 960 > 960) {
-      numero = numero - 1;
-    }
-    setSpostamentoCopia(numero);
-  };
-
   useEffect(() => {
-    setFinestraTemporale(setFinestra(spostamentoCopia));
-
-    const mouseDrag = (e) => {
-      if (lock) {
-        if (spostamentoCopia + calcola(spostamentoSlider) * 960 + e.clientX - previousX <= 960 && spostamentoCopia + e.clientX - previousX >= 0)
-          setSpostamentoCopia(spostamentoCopia + e.clientX - previousX);
-      }
-    };
-
-    document.addEventListener("mousemove", mouseDrag);
-
-    //document.addEventListener('mouseup', mouseDrag);
-
     if (dati_acquisiti.length !== null) {
       d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Fascia_Oraria&format=csv").then(function (f) {
         d3.csv("https://mrkprojects.altervista.org/dataVis/api.php?table=pingtime_Calendario&format=csv").then(function (data) {
@@ -658,11 +764,7 @@ function App2() {
     } else {
       d3_create_graphic(dati_acquisiti, fascia, periodo, statistica);
     }
-
-    console.log("we");
-    console.log(window.innerWidth);
-    console.log(window.innerHeight);
-  }, [periodo, spostamento, lock, finestraTemporale, statistica]);
+  }, [periodo, statistica]);
 
   return (
     <div className={styles.container}>
@@ -677,7 +779,7 @@ function App2() {
         <MenuItem value={3}>Anno</MenuItem>
       </Select>
 
-      {periodo === 3 && (
+      {(periodo === 3 || periodo === 2) && (
         <Select sx={{ minWidth: "200px" }} id="demo-simple-selectt" value={statistica} label="Statistica" onChange={(event) => setStatistica(event.target.value)}>
           <MenuItem value={1}>Somma</MenuItem>
           <MenuItem value={2}>Media</MenuItem>

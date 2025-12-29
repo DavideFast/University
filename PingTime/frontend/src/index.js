@@ -17,7 +17,6 @@ root.render(
     <App2 />
 
     <LineChart />
-    <GraphVisualization />
     <App5 />
   </div>
 );
