@@ -418,12 +418,22 @@ const createGraph = (data, pesato) => {
     .attr("stroke-width", 0.5)
     .attr("fill", "#ffffff")
     .on("mouseover", function (event, d) {
+      var count=0;
+      for(let i=0;i<data.vertex.length;i++){
+        var x = d3.select("#b"+data.vertex[i].id)._groups[0][0].cx.animVal.value;
+        var y = d3.select("#b"+data.vertex[i].id)._groups[0][0].cy.animVal.value;
+        var raggio = Math.round((x**2+y**2)**(1/2));
+        console.log(raggio);
+        if(raggio===400){
+          count=count+1;
+        }
+      }
       d3.select(this).attr("stroke", "orange").attr("stroke-width", 2.5);
       tooltip.style("display", null);
       tooltip.attr("transform", `translate(${event.clientX}, ${event.clientY})`);
       const bbox = tooltipText.node().getBBox();
       tooltipText
-        .text("Provaaaaaa")
+        .text("Provaaaaaa: "+count)
         .attr("x", 110)
         .attr("y", -bbox.height + 120);
 
