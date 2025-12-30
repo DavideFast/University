@@ -2,7 +2,6 @@ import * as d3 from "d3";
 import styles from "./Grafico.module.css";
 import { useEffect } from "react";
 import React from "react";
-import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 
@@ -10,6 +9,7 @@ import Switch from "@mui/material/Switch";
 const Graph = require("graphology");
 const { dijkstra } = require("graphology-shortest-path");
 const { connectedComponents } = require("graphology-components");
+const shortestPath = require("graphology-shortest-path");
 
 //########################################################################################
 //##                                                                                    ##
@@ -28,7 +28,7 @@ function getConnectivity(grafo) {
   return connected;
 }
 
-function algoritmoDijkstra(graph) {
+function algoritmoDijkstra(graph, pesato, grafo) {
   // Mappa per salvare tutti i risultati: { 'NodoA': { 'NodoB': 5, ... }, ... }
   const allPairsDistances = {};
 
@@ -36,8 +36,29 @@ function algoritmoDijkstra(graph) {
     // Eseguiamo Dijkstra partendo da ogni nodo. Questa funzione restituisce un oggetto con le distanze verso tutti gli altri nodi
     const distances = dijkstra.singleSource(graph, sourceNode);
     allPairsDistances[sourceNode] = distances;
+    //----------------------------------------------------------------------------
+    for (let i = 0; i < grafo.vertex.length; i++) {
+      const path = shortestPath.dijkstra.bidirectional(graph, sourceNode, grafo.vertex[i].id, {
+        weightAttribute: "weight",
+      });
+
+      if (!path) {
+        if (!pesato) allPairsDistances[sourceNode][i] = { path: ["Sconnesso"], peso: grafo.vertex.length };
+        if (pesato) allPairsDistances[sourceNode][i] = { path: ["Sconnesso"], peso: 0 };
+      } else {
+        // Calculate total weight of the path
+        let totalWeight = 0;
+        for (let j = 0; j < path.length - 1; j++) {
+          const edge = graph.edge(path[j], path[j + 1]);
+          const weight = graph.getEdgeAttribute(edge, "weight");
+          totalWeight += weight;
+        }
+        if (pesato) allPairsDistances[sourceNode][i] = { path: allPairsDistances[sourceNode][i], peso: totalWeight };
+        else allPairsDistances[sourceNode][i] = { path: allPairsDistances[sourceNode][i], peso: totalWeight };
+      }
+    }
   });
-  // Esempio: Distanza tra A e B
+
   return allPairsDistances;
 }
 
@@ -48,7 +69,10 @@ function createGraphStructure(grafo, pesato) {
     for (let i = 0; i < grafo.vertex.length; i++) {
       graph.addNode(grafo.vertex[i].id);
     }
-    for (let i = 0; i < grafo.links.length; i++) graph.addEdgeWithKey(grafo.links[i].src + " - " + grafo.links[i].dst, grafo.links[i].src, grafo.links[i].dst, { weight: grafo.links[i].weight });
+    for (let i = 0; i < grafo.links.length; i++) {
+      graph.addEdgeWithKey(grafo.links[i].src + " - " + grafo.links[i].dst, grafo.links[i].src, grafo.links[i].dst, { weight: grafo.links[i].weight });
+      console.log(grafo.links[i].weight);
+    }
   } else {
     graph = new Graph({ type: "undirected" });
 
@@ -56,7 +80,7 @@ function createGraphStructure(grafo, pesato) {
       graph.addNode(grafo.vertex[i].id);
     }
     for (let i = 0; i < grafo.links.length; i++) {
-      graph.addEdge(grafo.links[i].src, grafo.links[i].dst);
+      graph.addEdgeWithKey(grafo.links[i].src + " - " + grafo.links[i].dst, grafo.links[i].src, grafo.links[i].dst, { weight: 1 });
     }
   }
   return graph;
@@ -67,17 +91,22 @@ const getTheoricDistance = (grafo, pesato) => {
   const graph = createGraphStructure(grafo, pesato);
   const connesso = getConnectivity(graph);
   //Lancio Djikstra per ogni nodi. Restituisce la distanza rispetto a tutti i nodi
-  var shortestPath = algoritmoDijkstra(graph);
-  console.log(shortestPath);
+  var shortestPath = algoritmoDijkstra(graph, pesato, grafo);
 
   for (let i = 0; i < grafo.vertex.length; i++) {
     for (let j = 0; j < grafo.vertex.length; j++) {
-      if (shortestPath[i][j] !== undefined) {
-        grafo.vertex[i].valore = grafo.vertex[i].valore + shortestPath[i][j].length - 1;
-      } else grafo.vertex[i].valore = grafo.vertex[i].valore + grafo.vertex.length + 1;
+      grafo.vertex[i].valore = grafo.vertex[i].valore + shortestPath[grafo.vertex[i].id][j].peso;
+      //console.log(grafo.vertex[0].valore + "-" + shortestPath[0][j].peso);
+      //if (shortestPath[i][j] !== undefined) {
+      //grafo.vertex[i].valore = grafo.vertex[i].valore + shortestPath[i][j].length - 1;
+      //} else grafo.vertex[i].valore = grafo.vertex[i].valore + grafo.vertex.length + 1;
     }
-    grafo.vertex[i].valore = Math.floor(grafo.vertex[i].valore / grafo.vertex.length);
+    if (!pesato) grafo.vertex[i].valore = Math.ceil(grafo.vertex[i].valore / (grafo.vertex.length - 1) / 10) * 10;
+    if (pesato) grafo.vertex[i].valore = Math.floor(grafo.vertex[i].valore / 10) * 10;
+    //grafo.vertex[i].valore = Math.floor(grafo.vertex[i].valore / grafo.vertex.length);
   }
+  console.log(shortestPath);
+  console.log(grafo.vertex);
   return grafo;
 };
 
@@ -94,7 +123,6 @@ const ottimizzaGrafo = (data, pesato) => {
 };
 
 const createGraph = (data, pesato) => {
-  console.log(data);
   var grafoElaborato = ottimizzaGrafo(data, pesato);
 
   grafoElaborato.vertex.sort(function (a, b) {
@@ -137,11 +165,10 @@ const createGraph = (data, pesato) => {
       contatore = contatore + 1;
     }
   }
-  console.log(grafoElaborato.vertex);
   const minLevel = grafoElaborato.vertex[0].valore;
   const maxLevel = grafoElaborato.vertex[grafoElaborato.vertex.length - 1].valore;
 
-  if (pesato) var myColor = d3.scaleSequential([minLevel - 20, maxLevel + 20], d3.interpolateRdYlGn);
+  if (pesato) var myColor = d3.scaleSequential([minLevel - 100, maxLevel + 20], d3.interpolateRdYlGn);
   else var myColor = d3.scaleSequential([minLevel - 20, maxLevel + 20], d3.interpolateRdYlGn);
 
   d3.select("#Prova").selectAll("*").remove(); // Clear previous content
@@ -155,7 +182,14 @@ const createGraph = (data, pesato) => {
     .attr("id", "c")
     .attr("transform", `translate(${(window.innerHeight * 1) / 2}, ${(window.innerHeight * 1) / 2})`);
   chart.append("path").datum(data).attr("id", "l").attr("fill", "none").attr("stroke", "steelblue").attr("stroke-width", 2);
-
+  /*svg
+    .append("rect")
+    .attr("width", window.innerHeight * 1)
+    .attr("height", window.innerHeight * 1)
+    .attr("id", "c_max")
+    .attr("fill", "#ffffff00")
+    .attr("x", 0)
+    .attr("y", 0);*/
   //##################################################################################################
   //##                                                                                              ##
   //##                                            TOOLTIP                                           ##
@@ -403,6 +437,18 @@ const createGraph = (data, pesato) => {
       tooltip.style("display", "none");
     });
 
+  d3.select("#c").call(
+    d3.zoom().on("zoom", function (event) {
+      console.log(event.transform);
+      var trasformazione = { k: event.transform.k, x: 610, y: 510 };
+      event.transform.x = window.innerHeight / 2;
+      event.transform.y = window.innerHeight / 2;
+      if (event.transform.k < 0.4) event.transform.k = 0.45;
+      if (event.transform.k > 5) event.transform.k = 5;
+      d3.select("#c").attr("transform", event.transform);
+    })
+  );
+
   // Etichette raggio
   chart.append("text").attr("class", "axis-label").attr("x", 10).attr("y", -105).text("1").attr("stroke", "steelblue").attr("stroke-width", 0.5);
   chart.append("text").attr("class", "axis-label").attr("x", 10).attr("y", -205).text("2").attr("stroke", "steelblue").attr("stroke-width", 0.5);
@@ -428,12 +474,12 @@ const createGraph = (data, pesato) => {
     .attr("class", "cc")
     .attr("cx", function (d) {
       var angoloGradi = Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente);
-      return angoloGradi * Math.ceil((d.valore * 4) / maxLevel) * 100;
+      return angoloGradi * Math.ceil((d.valore * 15) / maxLevel) * 50;
       //return Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - minLevel + 2) * 100;
     })
     .attr("cy", function (d) {
       var angoloGradi = Math.sin((((360 / d.numero) * Math.PI) / 180) * d.coefficiente);
-      return angoloGradi * Math.ceil((d.valore * 4) / maxLevel) * 100;
+      return angoloGradi * Math.ceil((d.valore * 15) / maxLevel) * 50;
       //return Math.sin((((360 / d.numero) * Math.PI) / 180) * d.coefficiente) * (d.valore - minLevel + 2) * 100;
     })
     .attr("r", function (d) {
@@ -517,16 +563,21 @@ function App5() {
   return (
     <div className={styles.container}>
       <h1>RELAZIONI TRA ISCRITTI</h1>
-      <FormControlLabel
-        control={
-          <Switch
-            onChange={() => {
-              setPesato(!pesato);
-            }}
+      <div className={styles.container_flex}>
+        <div className={styles.flex}>
+          <h5>Persone che hanno giocato con più giocatori al centro</h5>
+          <FormControlLabel
+            control={
+              <Switch
+                onChange={() => {
+                  setPesato(!pesato);
+                }}
+              />
+            }
           />
-        }
-        label="Considera numero di allenamenti insieme"
-      />
+          <h5>Persone con più allenamenti al centro</h5>
+        </div>
+      </div>
       <br />
       <svg id="Prova" className={styles.area_disegno} />
       <br />

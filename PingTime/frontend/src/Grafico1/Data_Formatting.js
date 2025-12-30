@@ -16,7 +16,6 @@ function creaArrayFascia(db_fasce) {
 function joinFasceOrariePresenze(db_calendario, db_fasce) {
   //Creo un'array di dimensione pari al numero delle fasce
   var join = new Array(db_calendario.length);
-  console.log(db_calendario);
   //Copio le informazioni della fascia i-esima nell'array in posizione i-esima
   for (let i = 0; i < db_calendario.length; i++) {
     join[i] = {};
@@ -44,7 +43,8 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
 
 function creaArrayPerGraficoSettimana(join, codominio) {
   //Calcola quanti giorni sono presenti sull'asse y visibile
-  const giorni = Math.floor((codominio[1] - codominio[0]) / (1000 * 60 * 60 * 24));
+
+  const giorni = 7; //Math.floor((codominio[1] - codominio[0]) / (1000 * 60 * 60 * 24));
 
   //Crea un array di dimensione pari al numero di tick del dominio per il numero di tick del codominio del grafico
   var arrayFasce = new Array(giorni * 24 * 12);
@@ -107,7 +107,6 @@ function creaArrayPerGraficoSettimana(join, codominio) {
     const inizio = join[i].inizio;
     const fine = join[i].fine;
     var lock = true;
-    //console.log(join);
     const giorno = join[i].giorno_id;
     const index_inizio = giorno * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
     const index_fine = giorno * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
@@ -120,8 +119,6 @@ function creaArrayPerGraficoSettimana(join, codominio) {
     lock = true;
   }
 
-  console.log(arrayFasce);
-  console.log("STEP 2");
   return arrayFasce;
 }
 
@@ -129,7 +126,6 @@ function getIndexFromWeeks(codominio, dimensione) {
   var contatore = 0;
   var settimane = 0;
   var array = new Array(dimensione);
-  console.log(dimensione);
   while (codominio[1] - d3.utcDay.offset(codominio[0], contatore) > 0) {
     contatore = contatore + 1;
     if (d3.utcDay.offset(codominio[0], contatore - 1).getDay() === 1) {
@@ -137,13 +133,11 @@ function getIndexFromWeeks(codominio, dimensione) {
       array[settimane - 1] = d3.utcDay.offset(codominio[0], contatore - 1);
     }
   }
-  console.log("array" + array);
   return array;
 }
 
 function creaArrayPerGraficoMese(join, codominio, media) {
   //Calcola quanti giorni sono presenti sull'asse y visibile
-  console.log(codominio);
   const anno = codominio[0].getFullYear();
   const mese = codominio[0].getMonth();
   var contatore = 0;
@@ -154,7 +148,7 @@ function creaArrayPerGraficoMese(join, codominio, media) {
   }
   contatore = 0;
   var array = getIndexFromWeeks(codominio, settimane);
-  console.log(array);
+  console.log(codominio);
 
   //Crea un array di dimensione pari al numero di tick del dominio per il numero di tick del codominio del grafico
   var arrayFasce = new Array(settimane * 24 * 12);
@@ -162,6 +156,7 @@ function creaArrayPerGraficoMese(join, codominio, media) {
     for (let j = 0; j < 288; j++) {
       arrayFasce[i * 288 + j] = {};
       arrayFasce[i * 288 + j].valore = 0;
+      arrayFasce[i * 288 + j].numero_settimane = settimane;
 
       if (j < 120) {
         if (j % 12 === 0) arrayFasce[i * 288 + j].fascia = "0" + Math.floor(j / 12) + ":00";
@@ -194,9 +189,9 @@ function creaArrayPerGraficoMese(join, codominio, media) {
       arrayFasce[i * 288 + j].settimana = array[i];
     }
   }
-  console.log(arrayFasce);
   //Eliminare tutti i dati che hanno codominio fuori dal range
   join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
+  console.log(join);
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {
     const inizio = join[i].inizio;
@@ -211,7 +206,6 @@ function creaArrayPerGraficoMese(join, codominio, media) {
     const index_fine = (settimana - 1) * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
 
     for (let j = index_inizio; j < index_fine; j++) {
-      //console.log("     " + j);
       arrayFasce[j].valore += 1;
     }
     lock = true;
@@ -245,7 +239,6 @@ function creaArrayPerGraficoMese(join, codominio, media) {
   if (media === 4) {
     for (let i = 0; i < settimane; i++) {
       var giorni = creaArrayPerGraficoSettimana(join, [getIntervalloSettimanale(array[i]).inizio, getIntervalloSettimanale(array[i]).fine]);
-      console.log(giorni);
       for (let j = 0; j < 288; j++) {
         for (let k = 0; k < 5; k++) {
           if (massimo < giorni[k * 288 + j].valore) {
@@ -257,7 +250,6 @@ function creaArrayPerGraficoMese(join, codominio, media) {
       }
     }
   }
-
   return arrayFasce;
 }
 
@@ -265,7 +257,6 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
   //Calcola quanti giorni sono presenti sull'asse y visibile
   const mesi = 12;
   const anno = codominio[0].getFullYear();
-  console.log("----" + anno);
   //Crea un array di dimensione pari al numero di tick del dominio per il numero di tick del codominio del grafico
   var arrayFasce = new Array(mesi * 24 * 12);
   for (let i = 0; i < mesi; i++) {
@@ -318,10 +309,8 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
       if (i === 11) arrayFasce[i * 288 + j].mese = new Date(anno, 11, 1);
     }
   }
-  console.log(arrayFasce);
   //Eliminare tutti i dati che hanno codominio fuori dal range
   join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
-  console.log(join);
 
   var numeroSettimanaPrecedente = 0;
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
@@ -345,7 +334,6 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
 
   //Calcolo la media quando richiesto
   if (media === 2) {
-    console.log(media);
     for (let i = 0; i < arrayFasce.length; i++) {
       arrayFasce[i].valore = arrayFasce[i].valore / 31;
     }
@@ -358,7 +346,6 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
   var arrayAppoggio;
   if (media === 3)
     while (meseIndex < 12) {
-      console.log(new Date(anno, meseIndex + 1, 0));
       arrayAppoggio = creaArrayPerGraficoMese(join, [getIntervalloMensile(new Date(anno, meseIndex, 1)).inizio, getIntervalloMensile(new Date(anno, meseIndex, 1)).fine]);
       var numeroSettimane = arrayAppoggio.length / 288;
       for (let j = 0; j < 288; j++) {
@@ -374,7 +361,6 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
   //Calcolo massimo
   if (media === 4)
     while (meseIndex < 12) {
-      console.log(new Date(anno, meseIndex + 1, 0));
       arrayAppoggio = creaArrayPerGraficoMese(join, [getIntervalloMensile(new Date(anno, meseIndex, 1)).inizio, getIntervalloMensile(new Date(anno, meseIndex, 1)).fine]);
       var numeroSettimane = arrayAppoggio.length / 288;
       for (let j = 0; j < 288; j++) {
@@ -391,7 +377,6 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
 }
 
 export function data_formatting(db_fasce, db_calendario, codominio, tipologia, media) {
-  console.log("STEP 1");
   if (tipologia === 1) return creaArrayPerGraficoSettimana(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio);
   if (tipologia === 2) return creaArrayPerGraficoMese(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio, media);
   if (tipologia === 3) return creaArrayPerGraficoAnno(joinFasceOrariePresenze(db_calendario, creaArrayFascia(db_fasce)), codominio, media);

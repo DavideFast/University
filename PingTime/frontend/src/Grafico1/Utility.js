@@ -7,7 +7,6 @@ import * as d3 from "d3";
  */
 export function getIntervalloSettimanale(date) {
   var intervallo = {};
-  console.log(date);
   var giorno = date.getDay();
 
   if (giorno !== 1) {
@@ -15,8 +14,6 @@ export function getIntervalloSettimanale(date) {
     const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6).setHours(24);
     intervallo.inizio = inizioIntervallo;
     intervallo.fine = fineIntervallo;
-    console.log("------");
-    console.log(intervallo);
     return intervallo;
   } else {
     var inizioIntervallo = new Date(date).setHours(0);
@@ -25,37 +22,34 @@ export function getIntervalloSettimanale(date) {
     const fineIntervallo = d3.utcDay.offset(inizioIntervallo, 6).setHours(24);
     intervallo.inizio = inizioIntervallo;
     intervallo.fine = fineIntervallo;
-    console.log("------");
-    console.log("              " + new Date(intervallo.inizio));
     return intervallo;
   }
 }
 
 export function getIntervalloMensile(date) {
   var intervallo = {};
-  console.log(date);
   const mese = date.getMonth();
   var anno = date.getFullYear();
   var contatore = 1;
-  if (new Date(anno, mese, contatore).getDay === 6) {
-    intervallo.inizio = new Date(anno, mese, 1);
+  if (new Date(Date.UTC(anno, mese, contatore)).getDay === 6) {
+    intervallo.inizio = new Date(Date.UTC(anno, mese, 1, 0, 0, 0));
   } else {
-    intervallo.inizio = d3.timeMonday.floor(new Date(anno, mese, contatore));
+    intervallo.inizio = d3.utcMonday.floor(new Date(Date.UTC(anno, mese, contatore, 0, 0, 0)));
   }
-  intervallo.fine = new Date(d3.timeSunday.ceil(new Date(anno, mese + 1, 0)));
-  intervallo.fine = new Date(intervallo.fine.setHours(24));
-  intervallo.fine = new Date(intervallo.fine.setMinutes(0));
+  intervallo.fine = d3.utcDay.floor(d3.utcMonday.ceil(new Date(Date.UTC(anno, mese + 1, 0, 0, 0, 0))));
+  intervallo.ticks = d3.utcDay.range(d3.utcDay.offset(intervallo.inizio, 0), d3.utcDay.offset(d3.utcMonday.ceil(new Date(Date.UTC(anno, mese + 1, 0, 0, 0, 0))), 1), 7);
+  /*intervallo.fine = new Date(Date.UTC(intervallo.fine.setHours(24)));
   console.log(intervallo);
+  intervallo.fine = new Date(Date.UTC(intervallo.fine.setMinutes(0)));
+  console.log(intervallo);*/
   return intervallo;
 }
 
 export function getIntervalloAnnuale(date) {
   var intervallo = {};
-  console.log(date.getFullYear());
   var anno = date.getFullYear();
   intervallo.inizio = new Date(anno, 0, 1);
   intervallo.fine = new Date(anno, 11, 31);
-  console.log(intervallo);
   return intervallo;
 }
 
@@ -183,18 +177,12 @@ export function getZoomX(event, inizioFinestra, fineFinestra, vista_old, zoomPre
   if (vista_old === 4) numero = 144;
   if (vista_old === 5) numero = 288;
   const fasciaValue = event.sourceEvent.target.__data__.fascia;
-  console.log("FasciaValue: " + fasciaValue);
   var index = 0;
-  console.log(vista_old);
   if (vista_old === 1) index = arrayX_filtered1.findIndex((item) => item === fasciaValue);
   if (vista_old === 2) index = arrayX_filtered2.findIndex((item) => item === fasciaValue);
   if (vista_old === 3) index = arrayX_filtered3.findIndex((item) => item === fasciaValue);
   if (vista_old === 4) index = arrayX_filtered4.findIndex((item) => item === fasciaValue);
   if (vista_old === 5) index = arrayX_filtered5.findIndex((item) => item === fasciaValue);
-  console.log("Index: " + index);
-  console.log("Index: " + vista_old);
-  console.log(arrayX_filtered4);
-  console.log(fasciaValue);
   var newX = x;
   var vista = vista_old;
   if ((event.transform.k - zoomPrecedente) / event.transform.k > 0.1 && zoomPrecedente !== -1) {
@@ -217,9 +205,6 @@ export function getZoomX(event, inizioFinestra, fineFinestra, vista_old, zoomPre
       else inizioFinestra = 0;
       if (index * 1.5 + 12 < Math.floor(numero * 1.5)) fineFinestra = Math.floor(index * 1.5) + 12;
       else fineFinestra = Math.floor(numero * 1.5) - 1;
-      console.log(numero);
-      console.log(inizioFinestra);
-      console.log(fineFinestra);
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered4.slice(inizioFinestra, fineFinestra));
       vista = 4;
     } else if (vista === 4) {
@@ -230,10 +215,6 @@ export function getZoomX(event, inizioFinestra, fineFinestra, vista_old, zoomPre
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
       vista = 5;
     } else {
-      console.log("Vista: " + vista);
-      console.log("Inizio: " + inizioFinestra);
-      console.log("Fine: " + fineFinestra);
-      console.log();
       newX = d3.scaleBand([0, width]).domain(arrayX_filtered5.slice(inizioFinestra, fineFinestra));
       vista = 5;
     }
