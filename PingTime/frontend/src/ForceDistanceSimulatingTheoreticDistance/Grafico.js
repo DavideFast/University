@@ -107,7 +107,7 @@ const getTheoricDistance = (grafo, pesato) => {
   }
   console.log(shortestPath);
   console.log(grafo.vertex);
-  return grafo;
+  return {grafo:grafo,matrice:shortestPath};
 };
 
 //########################################################################################
@@ -123,7 +123,8 @@ const ottimizzaGrafo = (data, pesato) => {
 };
 
 const createGraph = (data, pesato) => {
-  var grafoElaborato = ottimizzaGrafo(data, pesato);
+  var grafoElaborato = ottimizzaGrafo(data, pesato).grafo;
+  var matriceDiAdiacenza = ottimizzaGrafo(data, pesato).matrice;
 
   grafoElaborato.vertex.sort(function (a, b) {
     return d3.ascending(a.valore, b.valore);
@@ -472,6 +473,7 @@ const createGraph = (data, pesato) => {
     .data(grafoElaborato.vertex)
     .join("circle")
     .attr("class", "cc")
+    .attr("id",function(d){return "b"+d.id})
     .attr("cx", function (d) {
       var angoloGradi = Math.cos((((360 / d.numero) * Math.PI) / 180) * d.coefficiente);
       return angoloGradi * Math.ceil((d.valore * 15) / maxLevel) * 50;
@@ -507,10 +509,38 @@ const createGraph = (data, pesato) => {
       d3.select(this).attr("stroke", "steelblue").attr("stroke-width", 0.5);
       tooltip.style("display", "none");
       d3.select(this)
-        .style("fill", function (d) {
+        /*.style("fill", function (d) {
           return myColor(maxLevel - d.valore);
-        })
+        })*/
         .style("r", 12.5); // Log data value
+    })
+    
+    d3.selectAll(".cc").on("click", function(event) {
+                  console.log(this.id);
+                  for(let i=0;i<data.vertex.length;i++)
+                    d3.select("#b"+data.vertex[i].id).attr("fill","orange");
+                  
+                  console.log(data.vertex[0].nome);
+                  for(let i=0;i<data.vertex.length;i++){
+                    if(matriceDiAdiacenza[this.id.replace("b","")][i].peso===1){
+                      console.log(data.vertex[i].id);
+                    d3.select("#b"+data.vertex[i].id).attr("fill","#ff8800ff");
+                    }
+                    if(matriceDiAdiacenza[this.id.replace("b","")][i].peso!==1){
+                      console.log(data.vertex[i].id);
+                    d3.select("#b"+data.vertex[i].id).attr("fill","#ff880017");
+                    }
+                  }
+                  d3.select(this).attr("fill","green")
+                  event.stopPropagation();
+    });
+    chart.on("click",function(){
+      console.log(this);
+      if(!pesato)
+      d3.selectAll(".cc").attr("fill", "orange");
+      else
+        for(let i=0;i<data.vertex.length;i++)
+          d3.select("#b"+data.vertex[i].id).attr("fill",myColor(maxLevel-data.vertex[i].valore));
     });
 };
 
