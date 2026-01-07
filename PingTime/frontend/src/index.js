@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import App from "./App";
+import App from "./App.js";
 import LineChart from "./LineChart/Grafico.js";
 import App2 from "./Grafico1/Grafico.js";
 import App3 from "./Grafico2/Grafico.js";
@@ -14,9 +14,21 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <div>
     <App />
+    <br />
+    <br />
+    <hr />
     <App2 />
-
+    <br />
+    <br />
+    <br />
+    <br />
+    <hr />
     <LineChart />
+    <br />
+    <br />
+    <br />
+    <br />
+    <hr />
     <App5 />
   </div>
 );

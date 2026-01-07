@@ -29,8 +29,9 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
     if (join[i].giorno === "Giovedì") join[i].giorno_numerico = 4;
     if (join[i].giorno === "Venerdì") join[i].giorno_numerico = 5;
     if (join[i].giorno === "Sabato") join[i].giorno_numerico = 6;
-    join[i].day = getGiornoDaSettimana(db_calendario[i].settimana, join[i].giorno_numerico);
+    join[i].day = getGiornoDaSettimana(db_calendario[i].settimana, join[i].giorno_numerico, db_calendario[i].anno);
     join[i].id = db_calendario[i].alias;
+    console.log(db_calendario);
   }
 
   //Ordino in ordine cronologico
@@ -45,7 +46,6 @@ function creaArrayPerGraficoSettimana(join, codominio) {
   //Calcola quanti giorni sono presenti sull'asse y visibile
 
   const giorni = 7; //Math.floor((codominio[1] - codominio[0]) / (1000 * 60 * 60 * 24));
-
   //Crea un array di dimensione pari al numero di tick del dominio per il numero di tick del codominio del grafico
   var arrayFasce = new Array(giorni * 24 * 12);
   for (let i = 0; i < giorni; i++) {
@@ -92,7 +92,6 @@ function creaArrayPerGraficoSettimana(join, codominio) {
   }
   //Eliminare tutti i dati che hanno codominio fuori dal range
   join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
-
   // assegna un id incrementale (0,1,2,...) per ogni giorno distinto in join
   const dayIdMap = new Map();
   let nextDayId = 0;
@@ -118,7 +117,6 @@ function creaArrayPerGraficoSettimana(join, codominio) {
     }
     lock = true;
   }
-
   return arrayFasce;
 }
 
@@ -138,17 +136,19 @@ function getIndexFromWeeks(codominio, dimensione) {
 
 function creaArrayPerGraficoMese(join, codominio, media) {
   //Calcola quanti giorni sono presenti sull'asse y visibile
+  console.log(codominio);
   const anno = codominio[0].getFullYear();
   const mese = codominio[0].getMonth();
   var contatore = 0;
   var settimane = 0;
   while (codominio[1] - d3.utcDay.offset(codominio[0], contatore) > 0) {
     contatore = contatore + 1;
-    if (d3.utcDay.offset(codominio[0], contatore - 1).getDay() === 1) settimane = settimane + 1;
+    if (d3.utcDay.offset(codominio[0], contatore - 1).getDay() === 1) {
+      settimane = settimane + 1;
+    }
   }
   contatore = 0;
   var array = getIndexFromWeeks(codominio, settimane);
-  console.log(codominio);
 
   //Crea un array di dimensione pari al numero di tick del dominio per il numero di tick del codominio del grafico
   var arrayFasce = new Array(settimane * 24 * 12);
@@ -190,17 +190,21 @@ function creaArrayPerGraficoMese(join, codominio, media) {
     }
   }
   //Eliminare tutti i dati che hanno codominio fuori dal range
-  join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
+  var inRange = new Date(Date.UTC(codominio[0].getFullYear(), codominio[0].getMonth(), codominio[0].getDate()));
+  var outRange = new Date(Date.UTC(codominio[1].getFullYear(), codominio[1].getMonth(), codominio[1].getDate()));
+  console.log(join);
+
+  join = join.filter((item) => item.day >= inRange && item.day < outRange);
   console.log(join);
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {
     const inizio = join[i].inizio;
     const fine = join[i].fine;
     var lock = true;
-    var giorno_join = join[i].day;
+    var giorno_join = new Date(join[i].day).setHours(0);
     var settimana = 0;
     for (var k = 0; k < array.length; k++) {
-      if (array[k].setHours(0) <= giorno_join.setHours(0)) settimana = settimana + 1;
+      if (array[k].setHours(0) <= giorno_join) settimana = settimana + 1;
     }
     const index_inizio = (settimana - 1) * 288 + (inizio.split(":")[0] * 12 + inizio.split(":")[1] / 5);
     const index_fine = (settimana - 1) * 288 + (fine.split(":")[0] * 12 + fine.split(":")[1] / 5);
@@ -311,7 +315,6 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
   }
   //Eliminare tutti i dati che hanno codominio fuori dal range
   join = join.filter((item) => item.day >= codominio[0] && item.day < codominio[1]);
-
   var numeroSettimanaPrecedente = 0;
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {
@@ -346,22 +349,31 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
   var arrayAppoggio;
   if (media === 3)
     while (meseIndex < 12) {
-      arrayAppoggio = creaArrayPerGraficoMese(join, [getIntervalloMensile(new Date(anno, meseIndex, 1)).inizio, getIntervalloMensile(new Date(anno, meseIndex, 1)).fine]);
+      arrayAppoggio = creaArrayPerGraficoMese(join, [getIntervalloMensile(new Date(Date.UTC(anno, meseIndex, 1))).inizio, getIntervalloMensile(new Date(Date.UTC(anno, meseIndex, 1))).fine], 3);
+      if (meseIndex == 10) {
+        //console.log([getIntervalloMensile(new Date(Date.UTC(anno, meseIndex, 1))).inizio, getIntervalloMensile(new Date(Date.UTC(anno, meseIndex, 1))).fine]);
+        //console.log(arrayAppoggio);
+      }
       var numeroSettimane = arrayAppoggio.length / 288;
       for (let j = 0; j < 288; j++) {
         for (let i = 0; i < numeroSettimane; i++) {
+          if (meseIndex == 10 && j > 203 && j < 229) {
+            //console.log("Settimana " + i + " fascia " + j + " " + arrayAppoggio[i * 288 + j].settimana);
+          }
           if (minimo > arrayAppoggio[i * 288 + j].valore) minimo = arrayAppoggio[j + i * 288].valore;
         }
         arrayFasce[meseIndex * 288 + j].valore = minimo;
         minimo = 100;
+        //console.log("---------------");
       }
+
       meseIndex = meseIndex + 1;
     }
 
   //Calcolo massimo
   if (media === 4)
     while (meseIndex < 12) {
-      arrayAppoggio = creaArrayPerGraficoMese(join, [getIntervalloMensile(new Date(anno, meseIndex, 1)).inizio, getIntervalloMensile(new Date(anno, meseIndex, 1)).fine]);
+      arrayAppoggio = creaArrayPerGraficoMese(join, [getIntervalloMensile(new Date(anno, meseIndex, 1)).inizio, getIntervalloMensile(new Date(anno, meseIndex, 1)).fine], 4);
       var numeroSettimane = arrayAppoggio.length / 288;
       for (let j = 0; j < 288; j++) {
         for (let i = 0; i < numeroSettimane; i++) {

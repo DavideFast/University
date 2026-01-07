@@ -1,18 +1,23 @@
 import * as d3 from "d3";
 import styles from "./Grafico.module.css";
-import { use, useEffect } from "react";
-import React from "react";
-import { MenuItem, Select } from "@mui/material";
+import React, { useEffect } from "react";
+import { MenuItem, Select, InputLabel } from "@mui/material";
 
-const YEAR = 2025;
+// Helper function to parse time string that may contain year (e.g., "40_2025" or "40")
+const parseTimeValue = (timeStr) => {
+  const parts = timeStr.toString().split("_");
+  if (parts.length === 2) {
+    return { period: +parts[0], year: +parts[1] };
+  }
+  // Fallback for old format without year - use 2025 as default
+  return { period: +timeStr, year: 2025 };
+};
 
 // Helper function to get date range for a week number
 const getWeekDateRange = (weekNumber, year) => {
   const firstDayOfYear = new Date(year, 0, 1);
   const daysOffset = (weekNumber - 1) * 7;
-  const startOfWeek = new Date(
-    firstDayOfYear.getTime() + daysOffset * 24 * 60 * 60 * 1000
-  );
+  const startOfWeek = new Date(firstDayOfYear.getTime() + daysOffset * 24 * 60 * 60 * 1000);
 
   // Adjust to Monday (ISO week starts on Monday)
   const dayOfWeek = startOfWeek.getDay();
@@ -31,69 +36,141 @@ const getWeekDateRange = (weekNumber, year) => {
   return `${formatDate(startOfWeek)}-${formatDate(endOfWeek)}`;
 };
 
-const drawLineChart = (data, interval) => {
+// Return Monday-start and Sunday-end dates for a week number
+const getWeekStartEnd = (weekNumber, year) => {
+  const firstDayOfYear = new Date(year, 0, 1);
+  const daysOffset = (weekNumber - 1) * 7;
+  const startOfWeek = new Date(firstDayOfYear.getTime() + daysOffset * 24 * 60 * 60 * 1000);
+
+  const dayOfWeek = startOfWeek.getDay();
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  startOfWeek.setDate(startOfWeek.getDate() + diff);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  return { start: startOfWeek, end: endOfWeek };
+};
+
+const formatDateFull = (date) => {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, onOffsetChange, selectedYear, onYearChange) => {
   // Set dimensions and margins
-  const margin = { top: 100, right: 170, bottom: 80, left: 60 };
-  const width = 1400;
-  const height = 700;
+  const margin = { top: 140, right: 170, bottom: 80, left: 60 };
+  const width = window.innerWidth * 0.9;
+  const height = window.innerHeight * 0.7;
   const innerWidth = width - (margin.left + margin.right);
   const innerHeight = height - (margin.top + margin.bottom);
 
   // Create SVG
   d3.select("#line-chart").selectAll("*").remove();
-  const svg = d3
-    .select("#line-chart")
-    .append("svg")
-    .attr("viewBox", `0 0 ${width} ${height}`);
+  const svg = d3.select("#line-chart").append("svg").attr("viewBox", `0 0 ${width} ${height}`);
 
-  const innerChart = svg
-    .append("g")
-    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+  const innerChart = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
 
   // Convert data to display format with proper labels based on interval
-  const displayArray = data
+  const baseArray = data
     .map((d) => {
+      let { period, year } = parseTimeValue(d.time);
       let label;
       if (interval === "W") {
-        label = getWeekDateRange(+d.time, YEAR);
+        label = getWeekDateRange(period, year);
       } else if (interval === "M") {
-        const months = [
-          "Gen",
-          "Feb",
-          "Mar",
-          "Apr",
-          "Mag",
-          "Giu",
-          "Lug",
-          "Ago",
-          "Set",
-          "Ott",
-          "Nov",
-          "Dic",
-        ];
-        label = months[+d.time - 1] || `Mese ${d.time}`;
+        const months = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+        label = months[period - 1] || `Mese ${period}`;
       } else {
         label = `Anno ${d.time}`;
+        year = period; // For yearly, period is actually the year
       }
       return {
-        period: +d.time,
+        period: period,
+        year: year,
         label: label,
         presences: +d.presences,
         absences: +d.absences,
         cancellations: +d.cancellations,
       };
     })
-    .sort((a, b) => a.period - b.period);
-  console.log(displayArray);
+    .sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      return a.period - b.period;
+    });
+
+  if (!baseArray.length) return;
+
+  // Remove duplicates: keep only the first occurrence of each period+year combination
+  const deduplicatedArray = [];
+  const seen = new Set();
+  for (const item of baseArray) {
+    const key = `${item.year}-${item.period}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduplicatedArray.push(item);
+    }
+  }
+
+  // Filter data by selected year, and additionally filter months for monthly view. Don't filter if period is yearly.
+  const yearFilteredArray = interval === "Y" ? deduplicatedArray : deduplicatedArray.filter((d) => d.year === selectedYear);
+
+  const filteredBaseArray = interval === "M" ? yearFilteredArray.filter((d) => d.period >= 1 && d.period <= 12) : yearFilteredArray;
+
+  if (!filteredBaseArray.length) return;
+
+  // Determine span and clamped offset for navigation
+  const span = interval === "W" ? (timeRange === "3m" ? 13 : timeRange === "6m" ? 26 : timeRange === "12m" ? 52 : filteredBaseArray.length) : interval === "M" ? 12 : filteredBaseArray.length;
+
+  const minPeriod = d3.min(filteredBaseArray, (d) => d.period) || 0;
+  const maxPeriod = d3.max(filteredBaseArray, (d) => d.period) || 0;
+  const maxOffset = Math.max(0, Math.floor(Math.max(0, maxPeriod - span + 1 - minPeriod) / span));
+  const offset = Math.min(rangeOffset || 0, maxOffset);
+  if (onOffsetChange && offset !== rangeOffset) {
+    onOffsetChange(offset);
+  }
+
+  const windowStart = Math.max(minPeriod, maxPeriod - span + 1 - offset * span);
+  const windowEnd = windowStart + span - 1;
+
+  const displayArray = filteredBaseArray.filter((d) => d.period >= windowStart && d.period <= windowEnd);
+
+  if (!displayArray.length) return;
+
+  const rangeLabel = (() => {
+    const minDataItem = d3.minIndex(displayArray, (d) => d.period);
+    const maxDataItem = d3.maxIndex(displayArray, (d) => d.period);
+    console.log({ minDataItem, maxDataItem });
+    console.log({ displayArray });
+    if (displayArray.length === 0) return "No data";
+
+    const minD = displayArray[minDataItem >= 0 ? minDataItem : 0];
+    const maxD = displayArray[maxDataItem >= 0 ? maxDataItem : displayArray.length - 1];
+
+    if (interval === "W") {
+      const { start } = getWeekStartEnd(minD.period, minD.year);
+      const { end } = getWeekStartEnd(maxD.period, maxD.year);
+      return `${formatDateFull(start)} - ${formatDateFull(end)}`;
+    }
+    if (interval === "M") {
+      const year = minD.year;
+      return `Anno ${year}`;
+    }
+    if (interval === "Y") {
+      return `Anni ${minD.year} - ${maxD.year}`;
+    }
+    const start = new Date(minD.year, 0, 1);
+    const end = new Date(maxD.year, 11, 31);
+    return `${formatDateFull(start)} - ${formatDateFull(end)}`;
+  })();
   // Create scales
   const x = d3
     .scaleLinear()
     .domain(d3.extent(displayArray, (d) => d.period))
     .range([0, innerWidth]);
 
-  const maxValue = d3.max(displayArray, (d) =>
-    Math.max(d.presences, d.absences, d.cancellations)
-  );
+  const maxValue = d3.max(displayArray, (d) => Math.max(d.presences, d.absences, d.cancellations));
   let y = d3.scaleLinear().domain([0, maxValue]).range([innerHeight, 0]);
 
   // Add X axis
@@ -117,8 +194,7 @@ const drawLineChart = (data, interval) => {
     .attr("transform", "rotate(-45)");
 
   // Add X axis label
-  const xAxisLabel =
-    interval === "W" ? "Settimana" : interval === "M" ? "Mese" : "Anno";
+  const xAxisLabel = interval === "W" ? "Settimana" : interval === "M" ? "Mese" : "Anno";
   svg
     .append("text")
     .attr("x", margin.left + innerWidth / 2)
@@ -127,13 +203,80 @@ const drawLineChart = (data, interval) => {
     .style("font-size", "14px")
     .text(xAxisLabel);
 
+  // Add range title
+  svg
+    .append("text")
+    .attr("x", margin.left + innerWidth / 2)
+    .attr("y", 40)
+    .style("text-anchor", "middle")
+    .style("font-size", "18px")
+    .style("font-weight", "bold")
+    .text(rangeLabel);
+
+  // Navigation arrows (back/forward) with year transition support
+  const titleX = margin.left + innerWidth / 2;
+  const titleY = 38;
+  const arrowOffset = 160;
+
+  // Get all available years in data
+  const availableYears = [...new Set(deduplicatedArray.map((d) => d.year))].sort();
+  const currentYearIndex = availableYears.indexOf(selectedYear);
+
+  // Check if we're at boundaries within current year
+  const isAtStartOfYear = offset >= maxOffset;
+  const isAtEndOfYear = offset <= 0;
+  const canGoPreviousYear = currentYearIndex > 0;
+  const canGoNextYear = currentYearIndex < availableYears.length - 1;
+
+  const backDisabled = isAtStartOfYear && !canGoPreviousYear;
+  const forwardDisabled = isAtEndOfYear && !canGoNextYear;
+
+  const addArrow = (xPos, label, disabled, onClick) => {
+    const g = svg
+      .append("g")
+      .attr("transform", `translate(${xPos}, ${titleY - 14})`)
+      .style("cursor", disabled ? "default" : "pointer")
+      .style("opacity", disabled ? 0.35 : 1)
+      .on("click", () => {
+        if (disabled || (!onOffsetChange && !onYearChange)) return;
+        onClick();
+      });
+
+    g.append("rect").attr("x", -18).attr("y", -4).attr("width", 36).attr("height", 28).attr("rx", 6).attr("fill", "#f5f5f5").attr("stroke", "#c7c7c7").attr("stroke-width", 1.5);
+
+    g.append("text").attr("x", 0).attr("y", 12).attr("text-anchor", "middle").attr("dominant-baseline", "middle").style("font-size", "16px").style("font-weight", 700).text(label);
+  };
+
+  // Only add arrows if not yearly view
+  if (interval !== "Y") {
+    addArrow(titleX - arrowOffset, "◀", backDisabled, () => {
+      if (isAtStartOfYear && canGoPreviousYear) {
+        // Go to previous year and start from end
+        onYearChange(availableYears[currentYearIndex - 1]);
+        onOffsetChange(0);
+      } else if (!isAtStartOfYear) {
+        // Move within current year
+        onOffsetChange(Math.min(maxOffset, offset + 1));
+      }
+    });
+
+    addArrow(titleX + arrowOffset, "▶", forwardDisabled, () => {
+      if (isAtEndOfYear && canGoNextYear) {
+        // Go to next year and start from beginning
+        onYearChange(availableYears[currentYearIndex + 1]);
+        onOffsetChange(0);
+      } else if (!isAtEndOfYear) {
+        // Move within current year
+        onOffsetChange(Math.max(0, offset - 1));
+      }
+    });
+  }
+
   // Add Y axis
   innerChart
     .append("g")
     .attr("class", "y-axis")
-    .call(
-      d3.axisLeft(y).ticks(Math.min(15, maxValue)).tickFormat(d3.format("d"))
-    );
+    .call(d3.axisLeft(y).ticks(Math.min(15, maxValue)).tickFormat(d3.format("d")));
 
   // Add Y axis label
   svg
@@ -160,7 +303,16 @@ const drawLineChart = (data, interval) => {
         .line()
         .x((d) => x(d.period))
         .y((d) => y(d.presences))
-    );
+    )
+    .style("cursor", "pointer")
+    .on("mouseover", function () {
+      d3.select(this).attr("stroke-width", 4.5);
+      innerChart.selectAll(".clicked-connection-presences").attr("stroke-width", 4.5);
+    })
+    .on("mouseout", function () {
+      d3.select(this).attr("stroke-width", 3);
+      innerChart.selectAll(".clicked-connection-presences").attr("stroke-width", 4);
+    });
 
   // Add presences dots
   innerChart
@@ -188,7 +340,16 @@ const drawLineChart = (data, interval) => {
         .line()
         .x((d) => x(d.period))
         .y((d) => y(d.absences))
-    );
+    )
+    .style("cursor", "pointer")
+    .on("mouseover", function () {
+      d3.select(this).attr("stroke-width", 4.5);
+      innerChart.selectAll(".clicked-connection-absences").attr("stroke-width", 4.5);
+    })
+    .on("mouseout", function () {
+      d3.select(this).attr("stroke-width", 3);
+      innerChart.selectAll(".clicked-connection-absences").attr("stroke-width", 4);
+    });
 
   // Add absences dots
   innerChart
@@ -216,7 +377,16 @@ const drawLineChart = (data, interval) => {
         .line()
         .x((d) => x(d.period))
         .y((d) => y(d.cancellations))
-    );
+    )
+    .style("cursor", "pointer")
+    .on("mouseover", function () {
+      d3.select(this).attr("stroke-width", 4.5);
+      innerChart.selectAll(".clicked-connection-cancellations").attr("stroke-width", 4.5);
+    })
+    .on("mouseout", function () {
+      d3.select(this).attr("stroke-width", 3);
+      innerChart.selectAll(".clicked-connection-cancellations").attr("stroke-width", 4);
+    });
 
   // Add cancellations dots
   innerChart
@@ -259,9 +429,7 @@ const drawLineChart = (data, interval) => {
     if (clickedLines.length < 2) return;
 
     // Collect and sort periods (adjacent pairs in x/order)
-    const periods = clickedLines
-      .map((n) => +d3.select(n).attr("data-period"))
-      .sort((a, b) => a - b);
+    const periods = clickedLines.map((n) => +d3.select(n).attr("data-period")).sort((a, b) => a - b);
 
     for (let i = 0; i < periods.length - 1; i++) {
       const p1 = periods[i];
@@ -292,9 +460,15 @@ const drawLineChart = (data, interval) => {
         .attr("stroke", "#4CAF50")
         .attr("stroke-width", 4)
         .attr("stroke-dasharray", "6 4")
+        .style("cursor", "pointer")
         .on("mouseover", function () {
-          d3.select(this).raise();
+          d3.select(this).raise().attr("stroke-width", 5);
+          innerChart.select(".line-presences").attr("stroke-width", 6);
           d3.selectAll(".clicked-connection-label-presences").raise();
+        })
+        .on("mouseout", function () {
+          d3.select(this).attr("stroke-width", 4);
+          innerChart.select(".line-presences").attr("stroke-width", 3);
         });
       // Add a text box in the middle of the line with % change
       const v1 = d1.presences;
@@ -315,21 +489,19 @@ const drawLineChart = (data, interval) => {
         .attr("data-period1", p1)
         .attr("data-period2", p2)
         .attr("transform", `translate(${mx}, ${my})`)
+        .style("cursor", "pointer")
         .on("mouseover", function () {
           d3.select(this).raise();
+          d3.selectAll(".clicked-connection-presences").attr("stroke-width", 4.5).raise();
+          innerChart.select(".line-presences").attr("stroke-width", 4.5);
           d3.selectAll(".clicked-connection-label-presences").raise();
+        })
+        .on("mouseout", function () {
+          d3.selectAll(".clicked-connection-presences").attr("stroke-width", 4);
+          innerChart.select(".line-presences").attr("stroke-width", 3);
         });
-      const text = label
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr("dy", "0.35em")
-        .style("font-size", "10px")
-        .style("font-weight", "600")
-        .style("fill", strokeColor)
-        .text(pctStr);
-      const bbox = text.node()
-        ? text.node().getBBox()
-        : { x: -14, y: -8, width: 28, height: 16 };
+      const text = label.append("text").attr("text-anchor", "middle").attr("dy", "0.35em").style("font-size", "10px").style("font-weight", "600").style("fill", strokeColor).text(pctStr);
+      const bbox = text.node() ? text.node().getBBox() : { x: -14, y: -8, width: 28, height: 16 };
       label
         .insert("rect", "text")
         .attr("x", bbox.x - 4)
@@ -343,18 +515,11 @@ const drawLineChart = (data, interval) => {
     }
     //check if legend item is inactive for presences and hide the connections if so
     const legendItem = d3.selectAll(".legend-group g").filter(function () {
-      return (
-        d3.select(this).select("text").text() === "Presenze" &&
-        d3.select(this).classed("inactive")
-      );
+      return d3.select(this).select("text").text() === "Presenze" && d3.select(this).classed("inactive");
     });
     if (!legendItem.empty()) {
-      innerChart
-        .selectAll(".clicked-connection-presences")
-        .style("display", "none");
-      innerChart
-        .selectAll(".clicked-connection-label-presences")
-        .style("display", "none");
+      innerChart.selectAll(".clicked-connection-presences").style("display", "none");
+      innerChart.selectAll(".clicked-connection-label-presences").style("display", "none");
     }
   };
 
@@ -366,9 +531,7 @@ const drawLineChart = (data, interval) => {
     const clickedLines = innerChart.selectAll(".clicked-line").nodes();
     if (clickedLines.length < 2) return;
 
-    const periods = clickedLines
-      .map((n) => +d3.select(n).attr("data-period"))
-      .sort((a, b) => a - b);
+    const periods = clickedLines.map((n) => +d3.select(n).attr("data-period")).sort((a, b) => a - b);
 
     for (let i = 0; i < periods.length - 1; i++) {
       const p1 = periods[i];
@@ -399,9 +562,15 @@ const drawLineChart = (data, interval) => {
         .attr("stroke", "#F44336")
         .attr("stroke-width", 4)
         .attr("stroke-dasharray", "6 4")
+        .style("cursor", "pointer")
         .on("mouseover", function () {
-          d3.select(this).raise();
+          d3.select(this).raise().attr("stroke-width", 5);
+          innerChart.select(".line-absences").attr("stroke-width", 6);
           d3.selectAll(".clicked-connection-label-absences").raise();
+        })
+        .on("mouseout", function () {
+          d3.select(this).attr("stroke-width", 4);
+          innerChart.select(".line-absences").attr("stroke-width", 3);
         });
 
       // Label with % change
@@ -423,21 +592,19 @@ const drawLineChart = (data, interval) => {
         .attr("data-period1", p1)
         .attr("data-period2", p2)
         .attr("transform", `translate(${mx}, ${my})`)
+        .style("cursor", "pointer")
         .on("mouseover", function () {
           d3.select(this).raise();
+          d3.selectAll(".clicked-connection-absences").attr("stroke-width", 4.5).raise();
+          innerChart.select(".line-absences").attr("stroke-width", 4.5);
           d3.selectAll(".clicked-connection-label-absences").raise();
+        })
+        .on("mouseout", function () {
+          d3.selectAll(".clicked-connection-absences").attr("stroke-width", 4);
+          innerChart.select(".line-absences").attr("stroke-width", 3);
         });
-      const text = label
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr("dy", "0.35em")
-        .style("font-size", "10px")
-        .style("font-weight", "600")
-        .style("fill", strokeColor)
-        .text(pctStr);
-      const bbox = text.node()
-        ? text.node().getBBox()
-        : { x: -14, y: -8, width: 28, height: 16 };
+      const text = label.append("text").attr("text-anchor", "middle").attr("dy", "0.35em").style("font-size", "10px").style("font-weight", "600").style("fill", strokeColor).text(pctStr);
+      const bbox = text.node() ? text.node().getBBox() : { x: -14, y: -8, width: 28, height: 16 };
       label
         .insert("rect", "text")
         .attr("x", bbox.x - 4)
@@ -451,18 +618,11 @@ const drawLineChart = (data, interval) => {
     }
     //check if legend item is inactive for presences and hide the connections if so
     const legendItem = d3.selectAll(".legend-group g").filter(function () {
-      return (
-        d3.select(this).select("text").text() === "Assenze" &&
-        d3.select(this).classed("inactive")
-      );
+      return d3.select(this).select("text").text() === "Assenze" && d3.select(this).classed("inactive");
     });
     if (!legendItem.empty()) {
-      innerChart
-        .selectAll(".clicked-connection-absences")
-        .style("display", "none");
-      innerChart
-        .selectAll(".clicked-connection-label-absences")
-        .style("display", "none");
+      innerChart.selectAll(".clicked-connection-absences").style("display", "none");
+      innerChart.selectAll(".clicked-connection-label-absences").style("display", "none");
     }
   };
 
@@ -474,9 +634,7 @@ const drawLineChart = (data, interval) => {
     const clickedLines = innerChart.selectAll(".clicked-line").nodes();
     if (clickedLines.length < 2) return;
 
-    const periods = clickedLines
-      .map((n) => +d3.select(n).attr("data-period"))
-      .sort((a, b) => a - b);
+    const periods = clickedLines.map((n) => +d3.select(n).attr("data-period")).sort((a, b) => a - b);
 
     for (let i = 0; i < periods.length - 1; i++) {
       const p1 = periods[i];
@@ -507,9 +665,15 @@ const drawLineChart = (data, interval) => {
         .attr("stroke", "#FBC02D")
         .attr("stroke-width", 4)
         .attr("stroke-dasharray", "6 4")
+        .style("cursor", "pointer")
         .on("mouseover", function () {
-          d3.select(this).raise();
+          d3.select(this).raise().attr("stroke-width", 5);
+          innerChart.select(".line-cancellations").attr("stroke-width", 6);
           d3.selectAll(".clicked-connection-label-cancellations").raise();
+        })
+        .on("mouseout", function () {
+          d3.select(this).attr("stroke-width", 4);
+          innerChart.select(".line-cancellations").attr("stroke-width", 3);
         });
       // Label with % change
       const v1 = d1.cancellations;
@@ -530,21 +694,19 @@ const drawLineChart = (data, interval) => {
         .attr("data-period1", p1)
         .attr("data-period2", p2)
         .attr("transform", `translate(${mx}, ${my})`)
+        .style("cursor", "pointer")
         .on("mouseover", function () {
           d3.select(this).raise();
+          d3.selectAll(".clicked-connection-cancellations").attr("stroke-width", 4.5).raise();
+          innerChart.select(".line-cancellations").attr("stroke-width", 4.5);
           d3.selectAll(".clicked-connection-label-cancellations").raise();
+        })
+        .on("mouseout", function () {
+          d3.selectAll(".clicked-connection-cancellations").attr("stroke-width", 4);
+          innerChart.select(".line-cancellations").attr("stroke-width", 3);
         });
-      const text = label
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr("dy", "0.35em")
-        .style("font-size", "10px")
-        .style("font-weight", "600")
-        .style("fill", strokeColor)
-        .text(pctStr);
-      const bbox = text.node()
-        ? text.node().getBBox()
-        : { x: -14, y: -8, width: 28, height: 16 };
+      const text = label.append("text").attr("text-anchor", "middle").attr("dy", "0.35em").style("font-size", "10px").style("font-weight", "600").style("fill", strokeColor).text(pctStr);
+      const bbox = text.node() ? text.node().getBBox() : { x: -14, y: -8, width: 28, height: 16 };
       label
         .insert("rect", "text")
         .attr("x", bbox.x - 4)
@@ -559,18 +721,11 @@ const drawLineChart = (data, interval) => {
 
     //check if legend item is inactive for presences and hide the connections if so
     const legendItem = d3.selectAll(".legend-group g").filter(function () {
-      return (
-        d3.select(this).select("text").text() === "Cancellazioni" &&
-        d3.select(this).classed("inactive")
-      );
+      return d3.select(this).select("text").text() === "Cancellazioni" && d3.select(this).classed("inactive");
     });
     if (!legendItem.empty()) {
-      innerChart
-        .selectAll(".clicked-connection-cancellations")
-        .style("display", "none");
-      innerChart
-        .selectAll(".clicked-connection-label-cancellations")
-        .style("display", "none");
+      innerChart.selectAll(".clicked-connection-cancellations").style("display", "none");
+      innerChart.selectAll(".clicked-connection-label-cancellations").style("display", "none");
     }
   };
 
@@ -582,9 +737,7 @@ const drawLineChart = (data, interval) => {
     const clickedLines = innerChart.selectAll(".clicked-line").nodes();
     if (clickedLines.length < 2) return;
 
-    const periods = clickedLines
-      .map((n) => +d3.select(n).attr("data-period"))
-      .sort((a, b) => a - b);
+    const periods = clickedLines.map((n) => +d3.select(n).attr("data-period")).sort((a, b) => a - b);
 
     for (let i = 0; i < periods.length - 1; i++) {
       const p1 = periods[i];
@@ -609,12 +762,7 @@ const drawLineChart = (data, interval) => {
   };
 
   // Add invisible rects for hover detection with vertical lines
-  const hoverGroup = innerChart
-    .selectAll(".hover-group")
-    .data(displayArray)
-    .enter()
-    .append("g")
-    .attr("class", "hover-group");
+  const hoverGroup = innerChart.selectAll(".hover-group").data(displayArray).enter().append("g").attr("class", "hover-group");
 
   // Add vertical line (hidden by default)
   hoverGroup
@@ -631,10 +779,7 @@ const drawLineChart = (data, interval) => {
     .style("pointer-events", "none");
 
   // Add invisible rect for better hover detection
-  const rectWidth =
-    displayArray.length > 1
-      ? Math.min(60, (innerWidth / displayArray.length) * 0.8)
-      : 30;
+  const rectWidth = displayArray.length > 1 ? Math.min(60, (innerWidth / displayArray.length) * 0.8) : 30;
 
   hoverGroup
     .append("rect")
@@ -659,9 +804,7 @@ const drawLineChart = (data, interval) => {
         .style("top", event.pageY - 28 + "px");
     })
     .on("mousemove", function (event) {
-      tooltip
-        .style("left", event.pageX + 10 + "px")
-        .style("top", event.pageY - 28 + "px");
+      tooltip.style("left", event.pageX + 10 + "px").style("top", event.pageY - 28 + "px");
     })
     .on("mouseout", function () {
       d3.select(this.parentNode).select(".vertical-line").attr("opacity", 0);
@@ -678,7 +821,45 @@ const drawLineChart = (data, interval) => {
       if (exists) return;
 
       // Draw a vertical line that persists on click, fix a tooltip on the top
-      innerChart
+      const clickedLineGroup = innerChart
+        .append("g")
+        .attr("class", "clicked-line-group")
+        .attr("data-period", d.period)
+        .style("cursor", "pointer")
+        .on("mouseover", function () {
+          // Highlight the line
+          d3.select(this).select(".clicked-line").attr("stroke-width", 2);
+          // Bring text group to front
+          innerChart
+            .selectAll(".clicked-text")
+            .filter(function () {
+              return d3.select(this).attr("data-period") == d.period;
+            })
+            .raise();
+        })
+        .on("mouseout", function () {
+          // Reset the line
+          d3.select(this).select(".clicked-line").attr("stroke-width", 1.5);
+        })
+        .on("contextmenu", function (event) {
+          event.preventDefault();
+          // Remove line group
+          d3.select(this).remove();
+          // Remove associated text box
+          innerChart
+            .selectAll(".clicked-text")
+            .filter(function () {
+              return d3.select(this).attr("data-period") == d.period;
+            })
+            .remove();
+          // Update connection after removal
+          updateDimRanges();
+          updateConnectionPresences();
+          updateConnectionAbsences();
+          updateConnectionCancellations();
+        });
+
+      clickedLineGroup
         .append("line")
         .attr("class", "clicked-line")
         .attr("x1", x(d.period))
@@ -687,21 +868,55 @@ const drawLineChart = (data, interval) => {
         .attr("y2", innerHeight)
         .attr("stroke", "#000")
         .attr("stroke-width", 1.5)
-        .attr("data-period", d.period);
+        .attr("data-period", d.period)
+        .style("pointer-events", "none");
+
+      // Add hover rect for better line detection
+      clickedLineGroup
+        .append("rect")
+        .attr("class", "line-hover-rect")
+        .attr("x", x(d.period) - 5)
+        .attr("y", 0)
+        .attr("width", 10)
+        .attr("height", innerHeight)
+        .attr("fill", "transparent")
+        .style("pointer-events", "auto");
 
       // Add a text box with data at the click point
       const textGroup = innerChart
         .append("g")
         .attr("class", "clicked-text")
         .attr("transform", `translate(${x(d.period)}, -5)`)
+        .attr("data-period", d.period)
+        .style("cursor", "pointer")
+        .on("mouseover", function () {
+          // Bring text group to front
+          d3.select(this).raise();
+          // Highlight the corresponding line
+          innerChart
+            .selectAll(".clicked-line")
+            .filter(function () {
+              return d3.select(this).attr("data-period") == d.period;
+            })
+            .attr("stroke-width", 2);
+        })
+        .on("mouseout", function () {
+          // Reset the line
+          innerChart
+            .selectAll(".clicked-line")
+            .filter(function () {
+              return d3.select(this).attr("data-period") == d.period;
+            })
+            .attr("stroke-width", 1.5);
+        })
         .on("contextmenu", function (event) {
           event.preventDefault();
           //remove this text box on right click and line
           d3.select(this).remove();
-          // Remove line if present
-          d3.selectAll(".clicked-line")
+          // Remove line group if present
+          d3.selectAll(".clicked-line-group")
             .filter(function () {
-              return d3.select(this).attr("x1") == x(d.period);
+              return d3.select(this).attr("data-period") == d.period;
             })
             .remove();
           // Update connection after removal
@@ -725,45 +940,16 @@ const drawLineChart = (data, interval) => {
         .attr("rx", 3);
 
       // Add week label
-      textGroup
-        .append("text")
-        .attr("class", "week-label")
-        .attr("x", 0)
-        .attr("y", -50)
-        .attr("text-anchor", "middle")
-        .style("font-size", "11px")
-        .style("font-weight", "bold")
-        .text(d.label);
+      textGroup.append("text").attr("class", "week-label").attr("x", 0).attr("y", -50).attr("text-anchor", "middle").style("font-size", "11px").style("font-weight", "bold").text(d.label);
 
       // Add presences
-      textGroup
-        .append("text")
-        .attr("x", 0)
-        .attr("y", -36)
-        .attr("text-anchor", "middle")
-        .style("font-size", "10px")
-        .style("fill", "#4CAF50")
-        .text(`Presenze: ${d.presences}`);
+      textGroup.append("text").attr("x", 0).attr("y", -36).attr("text-anchor", "middle").style("font-size", "10px").style("fill", "#4CAF50").text(`Presenze: ${d.presences}`);
 
       // Add absences
-      textGroup
-        .append("text")
-        .attr("x", 0)
-        .attr("y", -24)
-        .attr("text-anchor", "middle")
-        .style("font-size", "10px")
-        .style("fill", "#F44336")
-        .text(`Assenze: ${d.absences}`);
+      textGroup.append("text").attr("x", 0).attr("y", -24).attr("text-anchor", "middle").style("font-size", "10px").style("fill", "#F44336").text(`Assenze: ${d.absences}`);
 
       // Add cancellations
-      textGroup
-        .append("text")
-        .attr("x", 0)
-        .attr("y", -12)
-        .attr("text-anchor", "middle")
-        .style("font-size", "10px")
-        .style("fill", "#FBC02D")
-        .text(`Cancellazioni: ${d.cancellations}`);
+      textGroup.append("text").attr("x", 0).attr("y", -12).attr("text-anchor", "middle").style("font-size", "10px").style("fill", "#FBC02D").text(`Cancellazioni: ${d.cancellations}`);
       updateDimRanges();
       // Update presences connection if exactly two lines fixed
       updateConnectionPresences();
@@ -773,18 +959,16 @@ const drawLineChart = (data, interval) => {
     })
     .on("contextmenu", function (event, d) {
       event.preventDefault();
-      // Remove line if present
-      d3.selectAll(".clicked-line")
+      // Remove line group if present
+      d3.selectAll(".clicked-line-group")
         .filter(function () {
-          return d3.select(this).attr("x1") == x(d.period);
+          return d3.select(this).attr("data-period") == d.period;
         })
         .remove();
       // Remove associated text box
       d3.selectAll(".clicked-text")
         .filter(function () {
-          const transform = d3.select(this).attr("transform");
-          const lineTransform = `translate(${x(d.period)}, -5)`;
-          return transform === lineTransform;
+          return d3.select(this).attr("data-period") == d.period;
         })
         .remove();
       // Update connection after removal
@@ -798,21 +982,10 @@ const drawLineChart = (data, interval) => {
   const legend = svg
     .append("g")
     .attr("class", "legend-group")
-    .attr(
-      "transform",
-      `translate(${margin.left + innerWidth + 20}, ${
-        margin.top + innerHeight / 2
-      })`
-    );
+    .attr("transform", `translate(${margin.left + innerWidth + 20}, ${margin.top + innerHeight / 2})`);
 
   // Add a legend title
-  legend
-    .append("text")
-    .attr("x", 0)
-    .attr("y", -10)
-    .style("font-size", "16px")
-    .style("font-weight", "bold")
-    .text("Legenda");
+  legend.append("text").attr("x", 0).attr("y", -10).style("font-size", "16px").style("font-weight", "bold").text("Legenda");
 
   const legendData = [
     { label: "Presenze", color: "#4CAF50" },
@@ -855,15 +1028,19 @@ const drawLineChart = (data, interval) => {
       if (active.absences) values.push(d.absences);
       if (active.cancellations) values.push(d.cancellations);
     });
+    const nextMin = Math.max(0, d3.min(values) || 0);
     const nextMax = Math.max(1, d3.max(values) || 0);
-    y = y.domain([0, nextMax]);
+    y = y.domain([nextMin, nextMax]);
 
     innerChart
       .select(".y-axis")
       .transition()
       .duration(400)
       .call(
-        d3.axisLeft(y).ticks(Math.min(15, nextMax)).tickFormat(d3.format("d"))
+        d3
+          .axisLeft(y)
+          .ticks(Math.min(15, nextMax - nextMin))
+          .tickFormat(d3.format("d"))
       );
 
     const linePres = d3
@@ -941,9 +1118,7 @@ const drawLineChart = (data, interval) => {
         if (!d1 || !d2) return;
         const mx = (x(p1) + x(p2)) / 2;
         const my = (y(accessor(d1)) + y(accessor(d2))) / 2;
-        g.transition()
-          .duration(400)
-          .attr("transform", `translate(${mx}, ${my})`);
+        g.transition().duration(400).attr("transform", `translate(${mx}, ${my})`);
 
         const text = g.select("text");
         const rect = g.select("rect");
@@ -958,21 +1133,9 @@ const drawLineChart = (data, interval) => {
       });
     };
 
-    repositionConnections(
-      ".clicked-connection-presences",
-      ".clicked-connection-label-presences",
-      (d) => d.presences
-    );
-    repositionConnections(
-      ".clicked-connection-absences",
-      ".clicked-connection-label-absences",
-      (d) => d.absences
-    );
-    repositionConnections(
-      ".clicked-connection-cancellations",
-      ".clicked-connection-label-cancellations",
-      (d) => d.cancellations
-    );
+    repositionConnections(".clicked-connection-presences", ".clicked-connection-label-presences", (d) => d.presences);
+    repositionConnections(".clicked-connection-absences", ".clicked-connection-label-absences", (d) => d.absences);
+    repositionConnections(".clicked-connection-cancellations", ".clicked-connection-label-cancellations", (d) => d.cancellations);
   };
 
   legendData.forEach((item, i) => {
@@ -994,12 +1157,8 @@ const drawLineChart = (data, interval) => {
             })
             .style("display", display);
           // Also toggle the connection line for presences
-          innerChart
-            .selectAll(".clicked-connection-presences")
-            .style("display", display);
-          innerChart
-            .selectAll(".clicked-connection-label-presences")
-            .style("display", display);
+          innerChart.selectAll(".clicked-connection-presences").style("display", display);
+          innerChart.selectAll(".clicked-connection-label-presences").style("display", display);
         } else if (item.label === "Assenze") {
           innerChart.selectAll(".dot-absences").style("display", display);
           innerChart
@@ -1008,12 +1167,8 @@ const drawLineChart = (data, interval) => {
               return d3.select(this).attr("stroke") === "#F44336";
             })
             .style("display", display);
-          innerChart
-            .selectAll(".clicked-connection-absences")
-            .style("display", display);
-          innerChart
-            .selectAll(".clicked-connection-label-absences")
-            .style("display", display);
+          innerChart.selectAll(".clicked-connection-absences").style("display", display);
+          innerChart.selectAll(".clicked-connection-label-absences").style("display", display);
         } else if (item.label === "Cancellazioni") {
           innerChart.selectAll(".dot-cancellations").style("display", display);
           innerChart
@@ -1022,25 +1177,14 @@ const drawLineChart = (data, interval) => {
               return d3.select(this).attr("stroke") === "#FFEB3B";
             })
             .style("display", display);
-          innerChart
-            .selectAll(".clicked-connection-cancellations")
-            .style("display", display);
-          innerChart
-            .selectAll(".clicked-connection-label-cancellations")
-            .style("display", display);
+          innerChart.selectAll(".clicked-connection-cancellations").style("display", display);
+          innerChart.selectAll(".clicked-connection-label-cancellations").style("display", display);
         }
         // Update opacity of legend item
         d3.select(this).style("opacity", isActive ? 1 : 0.5);
         rescaleY();
       });
-    legendGroup
-      .append("line")
-      .attr("x1", 0)
-      .attr("x2", 30)
-      .attr("y1", 10)
-      .attr("y2", 10)
-      .attr("stroke", item.color)
-      .attr("stroke-width", 3);
+    legendGroup.append("line").attr("x1", 0).attr("x2", 30).attr("y1", 10).attr("y2", 10).attr("stroke", item.color).attr("stroke-width", 3);
 
     legendGroup
       .append("circle")
@@ -1051,53 +1195,96 @@ const drawLineChart = (data, interval) => {
       .attr("stroke", item.stroke || item.color)
       .attr("stroke-width", 1);
 
-    legendGroup
-      .append("text")
-      .attr("x", 40)
-      .attr("y", 10)
-      .attr("dy", "0.32em")
-      .text(item.label)
-      .style("font-size", "14px");
+    legendGroup.append("text").attr("x", 40).attr("y", 10).attr("dy", "0.32em").text(item.label).style("font-size", "14px");
   });
+
+  // Quick range buttons (only for weekly view)
+  if (interval === "W") {
+    const quickRanges = [
+      { key: "3m", label: "3 mesi", weeks: 13 },
+      { key: "6m", label: "6 mesi", weeks: 26 },
+      { key: "12m", label: "12 mesi", weeks: 52 },
+    ];
+
+    const quickGroup = svg
+      .append("g")
+      .attr("class", "quick-range")
+      .attr("transform", `translate(${margin.left + innerWidth + 20}, ${margin.top - 60})`);
+
+    // Add title for the time period selector
+    quickGroup.append("text").attr("x", 60).attr("y", -15).attr("text-anchor", "middle").style("font-size", "14px").style("font-weight", "bold").text("Periodo temporale");
+
+    quickGroup
+      .selectAll("g")
+      .data(quickRanges)
+      .enter()
+      .append("g")
+      .attr("transform", (d, i) => `translate(0, ${i * 42})`)
+      .style("cursor", "pointer")
+      .on("click", (_, d) => {
+        if (onRangeChange) onRangeChange(d.key);
+      })
+      .each(function (d) {
+        const g = d3.select(this);
+        const isActive = d.key === timeRange;
+        g.append("rect")
+          .attr("width", 120)
+          .attr("height", 32)
+          .attr("rx", 6)
+          .attr("fill", isActive ? "#1976d2" : "#f2f2f2")
+          .attr("stroke", isActive ? "#0d47a1" : "#cfcfcf")
+          .attr("stroke-width", 2)
+          .attr("opacity", 0.95);
+        g.append("text")
+          .attr("x", 60)
+          .attr("y", 18)
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .style("font-size", "13px")
+          .style("font-weight", isActive ? "700" : "500")
+          .style("fill", isActive ? "white" : "#333")
+          .text(d.label);
+      });
+  }
 };
 
 function LineChart() {
   const [interval, setInterval] = React.useState("W");
   const [athlete, setAthlete] = React.useState("All");
   const [playerList, setPlayerList] = React.useState([]);
+  const [timeRange, setTimeRange] = React.useState("12m");
+  const [rangeOffset, setRangeOffset] = React.useState(0);
+  const [selectedYear, setSelectedYear] = React.useState(2025);
 
   useEffect(() => {
     //Load athletes list from API (json containing only array of strings)
-    d3.json("https://mrkprojects.altervista.org/dataVis/playerList.php").then(
-      (data) => {
-        setPlayerList(data);
-      }
-    );
+    d3.json("https://mrkprojects.altervista.org/dataVis/playerList.php").then((data) => {
+      setPlayerList(data);
+    });
     // Load data from CSV and draw chart
-    d3.csv(
-      "https://mrkprojects.altervista.org/dataVis/attendences.php?interval=W"
-    ).then((data) => {
+    d3.csv("https://mrkprojects.altervista.org/dataVis/attendences.php?interval=W").then((data) => {
       console.log(data);
-      drawLineChart(data, "W");
+      drawLineChart(data, "W", timeRange, setTimeRange, rangeOffset, setRangeOffset, selectedYear, setSelectedYear);
     });
   }, []);
 
   useEffect(() => {
+    // Reset navigation offset when granularity or time window changes
+    setRangeOffset(0);
+  }, [interval, timeRange, selectedYear]);
+
+  useEffect(() => {
     // Reload data and redraw chart on interval or athlete change
-    d3.csv(
-      `https://mrkprojects.altervista.org/dataVis/attendences.php?interval=${interval}${
-        athlete !== "All" ? `&athlete=${athlete}` : ""
-      }`
-    ).then((data) => {
-      drawLineChart(data, interval);
+    d3.csv(`https://mrkprojects.altervista.org/dataVis/attendences.php?interval=${interval}${athlete !== "All" ? `&athlete=${athlete}` : ""}`).then((data) => {
+      drawLineChart(data, interval, timeRange, setTimeRange, rangeOffset, setRangeOffset, selectedYear, setSelectedYear);
     });
-  }, [interval, athlete]);
+  }, [interval, athlete, timeRange, rangeOffset, selectedYear]);
 
   return (
     <div className={styles.container}>
       <br />
       <br />
-      <h2> Weekly Attendance Analysis </h2>
+      <h1>ANDAMENTO DELLE PRESENZE</h1>
       <br />
       <br />
       <Select
@@ -1112,14 +1299,7 @@ function LineChart() {
         <MenuItem value={"M"}>Mensile</MenuItem>
         <MenuItem value={"Y"}>Annuale</MenuItem>
       </Select>
-      <Select
-        sx={{ minWidth: "200px" }}
-        labelId="linechart1-atleta-label"
-        id="linechart1-atleta"
-        value={athlete}
-        label="Atleta"
-        onChange={(event) => setAthlete(event.target.value)}
-      >
+      <Select sx={{ minWidth: "200px" }} labelId="linechart1-atleta-label" id="linechart1-atleta" value={athlete} label="Atleta" onChange={(event) => setAthlete(event.target.value)}>
         <MenuItem value={"All"}>All</MenuItem>
         {playerList.map((alias) => (
           <MenuItem key={alias} value={alias}>
@@ -1129,11 +1309,27 @@ function LineChart() {
       </Select>
       <br />
       <br />
-      <svg
-        viewBox="0 0 1540 780"
-        id="line-chart"
-        style={{ width: "90%", height: "auto" }}
-      ></svg>
+      <InputLabel>
+        Agendo sul <b>primo selettore</b> si specifica il raggruppamento temporale (settimana, mese ed anno).
+      </InputLabel>
+      <InputLabel>
+        Agendo sul <b>secondo selettore</b> si specifica l'atleta obiettivo dell'analisi.
+      </InputLabel>
+      <InputLabel>
+        <b>All'interno del grafico</b> è possibile specificare quante settimane visualizzare.
+      </InputLabel>
+      <InputLabel>
+        <b>Cliccando sugli elementi della legenda</b> è possibile nascondere o visualizzare le rispettive statistiche.
+      </InputLabel>
+      <InputLabel>
+        Direttamente dal grafico è possibile evidenziare tramite <b>click sinistro</b> più istanti di tempo per effettuare dei confronti
+      </InputLabel>
+      <InputLabel>
+        Tramite il <b>click destro</b> del mouse si rimuovono gli istanti temporali fissati precedentemente
+      </InputLabel>
+      <br />
+      <br />
+      <svg viewBox="0 0 1540 780" id="line-chart" style={{ width: "90%", height: "auto", marginLeft: "0.25vw" }}></svg>
     </div>
   );
 }
