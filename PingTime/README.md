@@ -9,6 +9,9 @@ PingTime is an application developed for the "Models and Alghoritms For Data Vis
 > This project is made by Mirko Bruschi, Michele Dalmonte and me.
 > These version is the exam one, but the project is evolving, check for last release here: https://github.com/0101mirko1010/PingTimeVis
 
+
+<br/>
+<br/>
 # INTRODUCTION
 
 This project was designed for a table tennis club. The app's goal is to provide the club with tools to efficiently analyze attendance, absences, and cancellations, maximizing time slot utilization and promoting better training through informed matchmaking.
