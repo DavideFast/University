@@ -45,7 +45,7 @@ The application could handle these task:
 - Identify interval time with low usage
 - Compare gym usage among weeks, months or years
 - Analyze a specific interval time
-- <br/>
+<br/>
 - Monitoring attendences, absences and cancellations trends
 - Compare attendences, absences and cancellations through different periods of time
 - Analyze training trends of a specific athlete
