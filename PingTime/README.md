@@ -85,8 +85,8 @@ In this visual idiom on the x-Axis there are the weeks and on the y-Axis the qua
 
 In this chart there are 5 types of interaction:
 - Zooming (with the mouse wheel) in the chart permit to zoom in/out the view (the center of zooming is always the origin)
-- Hovering a circle pop out the name of the player
-- Hovering a circle pop out the number of player on that circle
+- Hovering a node pop out the name of the player
+- Hovering a circle pop out the number of player on that circle (of that value)
 
 
 # EXAMPLES
