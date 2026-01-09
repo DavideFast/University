@@ -2,6 +2,7 @@
 
 > [!NOTE]
 > This project is made by Mirko Bruschi, Michele Dalmonte and me.
+> The project end here, but you can check for last release here: https://github.com/0101mirko1010/PingTimeVis
 
 PingTime is an application developed for the "Models and Alghoritms For Data Visualization" exam.
 
