@@ -81,7 +81,8 @@ Here the angular position means nothing, while the radial distance from the orig
 <br/>
 <br/>
 >**Marks:** circle area
-><br/>>**Channel:** Radial position and color
+><br/>
+>**Channel:** Radial position and color
 
 # INTERACTION DESIGN
 Let's report all type of interaction for each visual idioms:
