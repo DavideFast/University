@@ -75,6 +75,7 @@ In this chart there are 5 types of interaction:
 - Zooming (with mouse wheel) in the chart increase/decrease the hour resolution
 - Dragging (with mouse) in the chart permit to move along x axis
 - Dragging (with mouse) or scrolling (with mouse wheel) over the y-axis permit to change the weeks/months/years time period
+- Hovering a cell (with mouse pointer) permit to obtain major details (detail on demand) and in particular number and names of the players
 
 #### Line Chart
 
@@ -82,8 +83,10 @@ In this visual idiom on the x-Axis there are the weeks and on the y-Axis the qua
 
 #### Radial Chart
 
-Here the angular position means nothing, while the radial distance from the origin simbolize the quantitative of heterogenous match played with different players in the week. An higher value of heterogenous match is a good value and it is displayed newar the origin while a bad value is displayed far from the origin.
-
+In this chart there are 5 types of interaction:
+- Zooming (with the mouse wheel) in the chart permit to zoom in/out the view (the center of zooming is always the origin)
+- Hovering a circle pop out the name of the player
+- Hovering a circle pop out the number of player on that circle
 
 
 # EXAMPLES
