@@ -69,6 +69,8 @@ The application should handle these task:
 - Monitoring evolution of social hub through the weeks
 - Support conscious mathcmaking to make heterogeneus groups
 
+<br/>
+
 # VISUALIZATION DESIGN
 
 The visual idioms choose for this application are mainly three:
