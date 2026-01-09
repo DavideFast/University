@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import App from "./cardsKPI/App.js";
+import CardsKPI from "./cardsKPI/App.js";
 import LineChart from "./LineChart/Grafico.js";
 import App2 from "./Grafico1/Grafico.js";
 import reportWebVitals from "./reportWebVitals";
@@ -10,7 +10,7 @@ import App5 from "./ForceDistanceSimulatingTheoreticDistance/Grafico.js";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <div>
-    <App />
+    <CardsKPI />
     <br />
     <br />
     <hr />

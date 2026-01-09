@@ -78,7 +78,7 @@ function getWeeksInMonth(calendarYear, month) {
   });
 }
 
-function App() {
+function CardsKPI() {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
@@ -359,4 +359,4 @@ function App() {
   );
 }
 
-export default App;
+export default CardsKPI;
