@@ -1,14 +1,11 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import App from "./App.js";
+import App from "./cardsKPI/App.js";
 import LineChart from "./LineChart/Grafico.js";
 import App2 from "./Grafico1/Grafico.js";
-import App3 from "./Grafico2/Grafico.js";
 import reportWebVitals from "./reportWebVitals";
 
 import App5 from "./ForceDistanceSimulatingTheoreticDistance/Grafico.js";
-import GraphVisualization from "./Node-Link/Grafico.js";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

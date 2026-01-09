@@ -31,7 +31,6 @@ function joinFasceOrariePresenze(db_calendario, db_fasce) {
     if (join[i].giorno === "Sabato") join[i].giorno_numerico = 6;
     join[i].day = getGiornoDaSettimana(db_calendario[i].settimana, join[i].giorno_numerico, db_calendario[i].anno);
     join[i].id = db_calendario[i].alias;
-    console.log(db_calendario);
   }
 
   //Ordino in ordine cronologico
@@ -136,7 +135,6 @@ function getIndexFromWeeks(codominio, dimensione) {
 
 function creaArrayPerGraficoMese(join, codominio, media) {
   //Calcola quanti giorni sono presenti sull'asse y visibile
-  console.log(codominio);
   const anno = codominio[0].getFullYear();
   const mese = codominio[0].getMonth();
   var contatore = 0;
@@ -192,10 +190,8 @@ function creaArrayPerGraficoMese(join, codominio, media) {
   //Eliminare tutti i dati che hanno codominio fuori dal range
   var inRange = new Date(Date.UTC(codominio[0].getFullYear(), codominio[0].getMonth(), codominio[0].getDate()));
   var outRange = new Date(Date.UTC(codominio[1].getFullYear(), codominio[1].getMonth(), codominio[1].getDate()));
-  console.log(join);
 
   join = join.filter((item) => item.day >= inRange && item.day < outRange);
-  console.log(join);
   //Per ogni presenza in un certo intervallo orario aggiornare il valore di 1
   for (let i = 0; i < join.length; i++) {
     const inizio = join[i].inizio;
@@ -351,20 +347,16 @@ function creaArrayPerGraficoAnno(join, codominio, media) {
     while (meseIndex < 12) {
       arrayAppoggio = creaArrayPerGraficoMese(join, [getIntervalloMensile(new Date(Date.UTC(anno, meseIndex, 1))).inizio, getIntervalloMensile(new Date(Date.UTC(anno, meseIndex, 1))).fine], 3);
       if (meseIndex == 10) {
-        //console.log([getIntervalloMensile(new Date(Date.UTC(anno, meseIndex, 1))).inizio, getIntervalloMensile(new Date(Date.UTC(anno, meseIndex, 1))).fine]);
-        //console.log(arrayAppoggio);
       }
       var numeroSettimane = arrayAppoggio.length / 288;
       for (let j = 0; j < 288; j++) {
         for (let i = 0; i < numeroSettimane; i++) {
           if (meseIndex == 10 && j > 203 && j < 229) {
-            //console.log("Settimana " + i + " fascia " + j + " " + arrayAppoggio[i * 288 + j].settimana);
           }
           if (minimo > arrayAppoggio[i * 288 + j].valore) minimo = arrayAppoggio[j + i * 288].valore;
         }
         arrayFasce[meseIndex * 288 + j].valore = minimo;
         minimo = 100;
-        //console.log("---------------");
       }
 
       meseIndex = meseIndex + 1;

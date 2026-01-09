@@ -4,9 +4,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { useEffect } from "react";
 import React from "react";
-import Slider from "@mui/material/Slider";
 import { data_formatting } from "./Data_Formatting";
-import { setFinestra, calcolaAmpiezzaTemporale, calcola } from "./SliderObject_utility";
 import { arrayX, getIntervalloAnnuale, getIntervalloMensile, getIntervalloSettimanale, getScorrimentoX, getZoomX, getZoomY } from "./Utility";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
@@ -14,7 +12,6 @@ import FormControl from "@mui/material/FormControl";
 function setDataInChart(vista, x, y, height, myColor, mouseover, mousemove, mouseleave, tipologiaY, arrayFasce) {
   d3.select("#dati")
     .selectAll()
-    //.selectAll()
     .data(arrayFasce, function (d) {
       return d.giorno + ":" + d.valore;
     })
@@ -55,10 +52,8 @@ function setDataInChart(vista, x, y, height, myColor, mouseover, mousemove, mous
         if (previsione + 10 < arrayFasce.length && arrayFasce[previsione + 10] != 0) {
           return myColor(arrayFasce[previsione + 10].valore);
         }
-        console.log(-d.valore);
       }
       d.colore = myColor(d.valore + 15);
-      console.log(d.valore);
       return myColor(Math.floor(d.valore));
     })
     .on("mouseover", mouseover)
@@ -67,6 +62,12 @@ function setDataInChart(vista, x, y, height, myColor, mouseover, mousemove, mous
 }
 
 function updateDataInChart(scatter, vista, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce) {
+  // Recalculate color scale based on current data
+  const valori = arrayFasce.map((d) => d.valore);
+  const minValue = d3.min(valori) || 0;
+  const maxValue = d3.max(valori) || 10;
+  myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([minValue, maxValue]);
+
   scatter.selectAll(".dato").remove();
   scatter
     .selectAll("rect")
@@ -244,16 +245,12 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   //##                                                                                  ##
   //######################################################################################
 
-  var myColor;
-  if (tipologiaY === 1) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 10]);
-  if (tipologiaY === 2 && statisticaG == 1) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 50]);
-  if (tipologiaY === 2 && statisticaG == 2) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 10]);
-  if (tipologiaY === 2 && statisticaG == 3) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 10]);
-  if (tipologiaY === 2 && statisticaG == 4) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 10]);
-  if (tipologiaY === 3 && tipologiaY === 1) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 100]);
-  if (tipologiaY === 3 && tipologiaY === 2) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 10]);
-  if (tipologiaY === 3 && tipologiaY === 3) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 10]);
-  if (tipologiaY === 3 && tipologiaY === 4) myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([0, 10]);
+  // Calculate min and max values from the data
+  const valori = arrayFasce.map((d) => d.valore);
+  const minValue = d3.min(valori) || 0;
+  const maxValue = d3.max(valori) || 10;
+
+  var myColor = d3.scaleSequential().interpolator(d3.interpolateRgb("#f4f5f6", "orange")).domain([minValue, maxValue]);
 
   //######################################################################################
   //##                                                                                  ##
@@ -322,6 +319,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
     }
   };
   const mousemove = function (event, d) {
+    console.log(height);
     if (dragging) {
       const [mx, my] = d3.pointer(event);
       //Se ci sono persone
@@ -331,7 +329,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
         var testo = previsione.persone;
         tooltip_v2
           .text("N° persone: " + Math.floor(previsione.valore))
-          .style("font-size", 20 + "px")
+          .style("font-size", 0.03 * height + "px")
           .style("stroke", "red")
           .style("stroke-width", 0.5)
           .style("visibility", "visible")
@@ -339,15 +337,15 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
 
         tooltip
           .style("opacity", 1)
-          .attr("height", 50 + Math.floor(previsione.valore) * 27.5)
+          .attr("height", 50 + Math.floor(previsione.valore) * 0.04 * height)
           .attr("width", 300)
           .attr("x", mx + 160 + "px");
 
         tooltip_v3.style("visibility", "visible");
 
         if (my > (height - margin.top - margin.bottom) / 2 && previsione.valore > 2) {
-          tooltip.attr("y", my - (Math.floor(previsione.valore) * 27.5 + 50) / 2 + "px");
-          tooltip_v2.attr("y", my - (Math.floor(previsione.valore) * 27.5 + 50) / 2 + 30 + "px");
+          tooltip.attr("y", my - (Math.floor(previsione.valore) * 0.04 * height + 50) / 2 + "px");
+          tooltip_v2.attr("y", my - (Math.floor(previsione.valore) * 0.04 * height + 50) / 2 + 30 + "px");
         }
         if (my <= (height - margin.top - margin.bottom) / 2 || previsione.valore < 3) {
           tooltip.attr("y", my + 80 + "px");
@@ -359,9 +357,9 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
               .append("tspan")
               .style("stroke", "black")
               .style("stroke-width", 0.25)
-              .style("font-size", 15 + "px")
+              .style("font-size", 0.021 * height + "px")
               .attr("x", mx - 145 + "px") // reset x for each line
-              .attr("dy", 25 + "px") // vertical offset
+              .attr("dy", 0.0365 * height + "px") // vertical offset
               .text(line);
           });
           tooltip.attr("x", mx - 160 + "px");
@@ -373,9 +371,9 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
               .append("tspan")
               .style("stroke", "black")
               .style("stroke-width", 0.25)
-              .style("font-size", 15 + "px")
+              .style("font-size", 0.021 * height + "px")
               .attr("x", mx + 185 + "px") // reset x for each line
-              .attr("dy", 25 + "px") // vertical offset
+              .attr("dy", 0.0365 * height + "px") // vertical offset
               .text(line);
           });
           tooltip.attr("x", mx + 170 + "px");
@@ -401,48 +399,37 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
           tooltip_v2
             //.text("Valore: " + Math.floor(d.valore) + " presenze")
             .text("N° persone: " + Math.floor(previsione.valore))
-            .style("font-size", 20 + "px")
+            .style("font-size", 0.03 * height + "px")
             .style("stroke", "red")
             .style("stroke-width", 0.5)
             .style("visibility", "visible")
             .attr("x", mx + 165 + "px");
 
-          /*testo.split(",").forEach((line, i) => {
-            tooltip_v2
-              .append("tspan")
-              .style("stroke", "black")
-              .style("stroke-width", 0.25)
-              .style("font-size", 15 + "px")
-              .attr("x", mx + 170 + "px") // reset x for each line
-              .attr("dy", 25 + "px") // vertical offset
-              .text(line);
-          });*/
           tooltip
             .style("opacity", 1)
-            .attr("height", 50 + Math.floor(previsione.valore) * 27.5)
+            .attr("height", 50 + Math.floor(previsione.valore) * 0.04 * height)
             .attr("x", mx + 160 + "px")
             .attr("width", 300);
 
           tooltip_v3.style("visibility", "visible");
 
           if (my > (height - margin.top - margin.bottom) / 2 && previsione.valore > 2) {
-            tooltip.attr("y", my - (Math.floor(previsione.valore) * 27.5 + 50) / 2 + "px");
-            tooltip_v2.attr("y", my - (Math.floor(previsione.valore) * 27.5 + 50) / 2 + 30 + "px");
+            tooltip.attr("y", my - (Math.floor(previsione.valore) * height * 0.04 + 50) / 2 + "px");
+            tooltip_v2.attr("y", my - (Math.floor(previsione.valore) * height * 0.04 + 50) / 2 + 30 + "px");
           }
           if (my <= (height - margin.top - margin.bottom) / 2 || previsione.valore < 3) {
             tooltip.attr("y", my + 80 + "px");
             tooltip_v2.attr("y", my + 110 + "px");
           }
           if (mx > width / 2) {
-            console.log("BLOOOOO");
             testo.split(",").forEach((line, i) => {
               tooltip_v2
                 .append("tspan")
                 .style("stroke", "black")
                 .style("stroke-width", 0.25)
-                .style("font-size", 15 + "px")
+                .style("font-size", 0.021 * height + "px")
                 .attr("x", mx - 145 + "px") // reset x for each line
-                .attr("dy", 25 + "px") // vertical offset
+                .attr("dy", 0.0365 * height + "px") // vertical offset
                 .text(line);
             });
             tooltip.attr("x", mx - 160 + "px");
@@ -454,9 +441,9 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
                 .append("tspan")
                 .style("stroke", "black")
                 .style("stroke-width", 0.25)
-                .style("font-size", 15 + "px")
+                .style("font-size", 0.021 * height + "px")
                 .attr("x", mx + 185 + "px") // reset x for each line
-                .attr("dy", 25 + "px") // vertical offset
+                .attr("dy", 0.0365 * height + "px") // vertical offset
                 .text(line);
             });
             tooltip.attr("x", mx + 170 + "px");
@@ -474,7 +461,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
           tooltip_v2
             //.text("Valore: " + Math.floor(d.valore) + " presenze")
             .text("N° persone: " + Math.floor(previsione.valore))
-            .style("font-size", 20 + "px")
+            .style("font-size", 0.03 * height + "px")
             .style("stroke", "black")
             .style("stroke-width", 0.5)
             .style("visibility", "visible")
@@ -507,7 +494,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
           tooltip_v2
             //.text("Valore: " + Math.floor(d.valore) + " presenze")
             .text("N° persone: " + Math.floor(previsione.valore))
-            .style("font-size", 20 + "px")
+            .style("font-size", 0.03 * height + "px")
             .style("stroke", "black")
             .style("stroke-width", 0.5)
             .style("visibility", "visible")
@@ -735,8 +722,6 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
     if (tipologiaY === 3) dominio = [new Date(getIntervalloAnnuale(new Date(anno_corrente, 0, 1)).inizio), new Date(getIntervalloAnnuale(new Date(anno_corrente, 0, 1)).fine)];
 
     arrayFasce = data_formatting(db_fascia, db_data, dominio, tipologiaY, statisticaG);
-    //console.log(dominio);
-    //console.log(arrayFasce);
 
     updateDataInChart(scatter, vista, x, y, height, myColor, tipologiaY, mouseover, mousemove, mouseleave, arrayFasce);
   });
@@ -833,7 +818,6 @@ function App2() {
     if (dati_acquisiti.length !== null) {
       d3.csv("https://mrkprojects.altervista.org/dataVis/getFasciaOraria_raw.php?format=csv").then(function (f) {
         d3.csv("https://mrkprojects.altervista.org/dataVis/getCalendario_raw.php?format=csv").then(function (data) {
-          console.log(data);
           setDatiAcquisiti(data);
           setFascia(f);
           d3_create_graphic(data, f, periodo, statistica);
