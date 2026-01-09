@@ -137,5 +137,6 @@ In this chart there are 6 types of interaction:
 - Cliking on a node mantain a reference in the other chart (coordinated views)
 - Clicking out reset all colors
 
+<br/>
 
 # EXAMPLES
