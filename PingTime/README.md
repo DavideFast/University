@@ -139,4 +139,7 @@ In this chart there are 6 types of interaction:
 
 <br/>
 
+#ADD ON
+An other visual idiom has been added to the app as a sort of index or fast news. This idiom is called KPIcards.
+
 # EXAMPLES
