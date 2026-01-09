@@ -1,9 +1,9 @@
 # PINGTIME
-
+PingTime is an application developed for the "Models and Alghoritms For Data Visualization" exam.
 >[!CAUTION]
 >Due to privacy problem the previous API have been sostituted with simple JSON only for demonstration.
 
-PingTime is an application developed for the "Models and Alghoritms For Data Visualization" exam.
+
 
 > [!NOTE]
 > This project is made by Mirko Bruschi, Michele Dalmonte and me.
