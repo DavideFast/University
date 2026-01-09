@@ -63,8 +63,8 @@ It is a bidimensional Chart which have on the X-Axis the hours of a day and on t
 <br/>
 >**Note**
 **Marks:** Rectangular area
-<br/>
-**Channel:** Position X, Position Y and Color (gray to orange)
+><br/>
+>**Channel:** Position X, Position Y and Color (gray to orange)
 
 #### Line Chart
 
