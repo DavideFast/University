@@ -39,7 +39,7 @@ There are instead two types of dataset and in particular tables and network ones
 
 # TASK MODELLING
 
-The application could handle these task:
+The application should handle these task:
 
 - Find empty interval time in the gym
 - Identify interval time with low usage
