@@ -71,6 +71,7 @@ In this visual idiom on the x-Axis there are the weeks and on the y-Axis the qua
 #### Radial Chart
 
 Here the angular position means nothing, while the radial distance from the origin simbolize the quantitative of heterogenous match played with different players in the week. An higher value of heterogenous match is a good value and it is displayed newar the origin while a bad value is displayed far from the origin.
+<br/>
 **Marks:** circle area
 **Channel:** Radial position and color
 
