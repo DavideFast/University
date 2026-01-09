@@ -844,7 +844,7 @@ const createGraph = (data, pesato) => {
 //##                                                                                    ##
 //########################################################################################
 
-function App5() {
+function RadialCharts() {
   const [pesato, setPesato] = React.useState(false);
   const [settimane, setSettimane] = React.useState(2);
   const [anno, setAnno] = React.useState(2026);
@@ -1007,4 +1007,4 @@ function App5() {
   );
 }
 
-export default App5;
+export default RadialCharts;

@@ -2,10 +2,10 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import CardsKPI from "./cardsKPI/App.js";
 import LineChart from "./LineChart/Grafico.js";
-import App2 from "./Grafico1/Grafico.js";
+import HeatMap from "./Grafico1/Grafico.js";
 import reportWebVitals from "./reportWebVitals";
 
-import App5 from "./ForceDistanceSimulatingTheoreticDistance/Grafico.js";
+import RadialCharts from "./RadialBars/Grafico.js";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -14,7 +14,7 @@ root.render(
     <br />
     <br />
     <hr />
-    <App2 />
+    <HeatMap />
     <br />
     <br />
     <br />
@@ -26,7 +26,7 @@ root.render(
     <br />
     <br />
     <hr />
-    <App5 />
+    <RadialCharts />
   </div>
 );
 

@@ -807,7 +807,7 @@ function d3_create_graphic(db_data, db_fascia, tipologiaY, statisticaG) {
   );
 }
 
-function App2() {
+function HeatMap() {
   const [periodo, setPeriodo] = React.useState(1);
   const [statistica, setStatistica] = React.useState(1);
 
@@ -873,4 +873,4 @@ function App2() {
   );
 }
 
-export default App2;
+export default HeatMap;
