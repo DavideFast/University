@@ -64,7 +64,7 @@ It is a bidimensional Chart which have on the X-Axis the hours of a day and on t
 
 >**Marks:** Rectangular area
 ><br/>
->**Channel:** Position X, Position Y and Color (gray to orange)
+>**Channels:** Position X, Position Y and Color (gray to orange)
 
 #### Line Chart
 
@@ -73,7 +73,7 @@ In this visual idiom on the x-Axis there are the weeks and on the y-Axis the qua
 <br/>
 >**Marks:** Point, Line (continuos or scattered)
 ><br/>
->**Channel:** Position X, Position Y and color
+>**Channels:** Position X, Position Y and color
 
 #### Radial Chart
 
@@ -82,7 +82,7 @@ Here the angular position means nothing, while the radial distance from the orig
 <br/>
 >**Marks:** circle area
 ><br/>
->**Channel:** Radial position and color
+>**Channels:** Radial position and color
 
 # INTERACTION DESIGN
 Let's report all type of interaction for each visual idioms:
