@@ -1,11 +1,13 @@
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import CardsKPI from "./cardsKPI/App.js";
+
+import CardsKPI from "./CardsKPI/App.js";
+import HeatMap from "./HeatMap/Grafico.js";
 import LineChart from "./LineChart/Grafico.js";
-import HeatMap from "./Grafico1/Grafico.js";
+import RadialCharts from "./RadialChart/Grafico.js";
+
 import reportWebVitals from "./reportWebVitals";
 
-import RadialCharts from "./RadialBars/Grafico.js";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
