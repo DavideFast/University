@@ -43,6 +43,8 @@ This part is provided from both the Backend and Frontend. An example of the tran
 The data types are for the major part quantitative, but the are also categorical data.
 There are instead two types of dataset and in particular tables and network ones.
 
+<br/>
+
 # TASK MODELLING
 
 The application should handle these task:
