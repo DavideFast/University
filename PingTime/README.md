@@ -42,12 +42,20 @@ There are instead two types of dataset and in particular tables and network ones
 The application could handle these task:
 
 - Find empty interval time in the gym
--
--
--
--
--
--
+- Identify interval time with low usage
+- Compare gym usage among weeks, months or years
+- Analyze a specific interval time 
+
+- Monitoring attendences, absences and cancellations trends
+- Compare attendences, absences and cancellations through different periods of time
+- Analyze training trends of a specific athlete
+- Identify values anomalies in terms of attendances, absences and cancellations
+- Valutate the efficiency of new policies comparing precendent and successive time period metrics (attendences, absences and cancellations)
+
+- Identify players with poor interaction with other players
+- Verify with players with lot of training play with different players every time
+- Monitoring evolution of social hub through the weeks
+- Support conscious mathcmaking to make heterogeneus groups
 
 # VISUALIZATION DESIGN
 
