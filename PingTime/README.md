@@ -1,6 +1,6 @@
 # PINGTIME
 
->[!ERROR]
+>[!CAUTION]
 >Due to privacy problem the previous API have been sostituted with simple JSON.
 
 PingTime is an application developed for the "Models and Alghoritms For Data Visualization" exam.
