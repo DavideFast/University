@@ -86,17 +86,20 @@ In this chart there are 5 types of interaction:
 #### Line Chart
 
 In this chart there are 5 types of interaction:
-- Clicking 
+- Clicking on two date generate all metrics among this date
+- Clicking on the legend metrics permit to hide or show that metrics (a rescaling could happen)
+- Double clicking reset all chart
 
 
 #### Radial Chart
 
-In this chart there are 5 types of interaction:
+In this chart there are 6 types of interaction:
 - Zooming (with the mouse wheel) in the chart permit to zoom in/out the view (the center of zooming is always the origin)
 - Hovering a node pop out the name of the player
 - Hovering a circle pop out the number of player on that circle (of that value)
 - Clicking on a node pop out information about interaction of other players through a change of color and depending on the modality
 - Cliking on a node mantain a reference in the other chart (coordinated views)
+- Clicking out reset all colors
 
 
 # EXAMPLES
