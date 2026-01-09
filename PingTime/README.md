@@ -71,8 +71,10 @@ Here the angular position means nothing, while the radial distance from the orig
 # INTERACTION DESIGN
 Let's report all type of interaction for each visual idioms:
 #### Calendar HeatMap
-
-It is a bidimensional Chart which have on the X-Axis the hours of a day and on the Y-Axis the week days, the month weeks or the year months depend on the type of resolution is necessary.
+In this chart there are 5 types of interaction:
+- Zooming (with mouse wheel) in the chart increase/decrease the hour resolution
+- Dragging (with mouse) in the chart permit to move along x axis
+- Dragging (with mouse) or scrolling (with mouse wheel) over the y-axis permit to change the weeks/months/years time period
 
 #### Line Chart
 
