@@ -7,9 +7,9 @@ PingTime is an application developed for the "Models and Alghoritms For Data Vis
 # INTRODUCTION
 This project was designed for a table tennis club. The app's goal is to provide the club with tools to efficiently analyze attendance, absences, and cancellations, maximizing time slot utilization and promoting better training through informed matchmaking.
 
-Ci sono 2 categorie principali di utenti a cui è rivolto PingTime: 
-  - Consiglio della società
-  - Allenatori
+There are two main categories of users PingTime is aimed at:
+- Company Boards
+- Coaches
     
 # DATA MODELLING
 # TASK MODELLING
