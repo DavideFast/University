@@ -22,6 +22,8 @@ There are two main categories of users PingTime is aimed at:
 - Company Boards
 - Coaches
 
+<br/>
+
 # DATA MODELLING
 
 ### DATA GATHERING AND DATA EXTRACTION
