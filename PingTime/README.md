@@ -45,13 +45,17 @@ The application could handle these task:
 - Identify interval time with low usage
 - Compare gym usage among weeks, months or years
 - Analyze a specific interval time
+  
 <br/>
+
 - Monitoring attendences, absences and cancellations trends
 - Compare attendences, absences and cancellations through different periods of time
 - Analyze training trends of a specific athlete
 - Identify values anomalies in terms of attendances, absences and cancellations
 - Valutate the efficiency of new policies comparing precendent and successive time period metrics (attendences, absences and cancellations)
+  
 <br/>
+
 - Identify players with poor interaction with other players
 - Verify with players with lot of training play with different players every time
 - Monitoring evolution of social hub through the weeks
