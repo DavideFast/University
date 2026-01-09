@@ -85,7 +85,9 @@ In this chart there are 5 types of interaction:
 
 #### Line Chart
 
-In this visual idiom on the x-Axis there are the weeks and on the y-Axis the quantitative attribute of attendences, absences and cancellations.
+In this chart there are 5 types of interaction:
+- Clicking 
+
 
 #### Radial Chart
 
@@ -94,6 +96,7 @@ In this chart there are 5 types of interaction:
 - Hovering a node pop out the name of the player
 - Hovering a circle pop out the number of player on that circle (of that value)
 - Clicking on a node pop out information about interaction of other players through a change of color and depending on the modality
+- Cliking on a node mantain a reference in the other chart (coordinated views)
 
 
 # EXAMPLES
