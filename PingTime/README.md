@@ -59,23 +59,24 @@ The visual idioms choose for this application are mainly three:
 #### Calendar HeatMap
 
 It is a bidimensional Chart which have on the X-Axis the hours of a day and on the Y-Axis the week days, the month weeks or the year months depend on the type of resolution is necessary.
-Marks: Rectangular area
-Channel: Position X, Position Y and Color (gray to orange)
+**Marks:** Rectangular area
+**Channel:** Position X, Position Y and Color (gray to orange)
 
 #### Line Chart
 
 In this visual idiom on the x-Axis there are the weeks and on the y-Axis the quantitative attribute of attendences, absences and cancellations.
-Marks: Point, Line (continuos or scattered)
-Channel: Position X, Position Y and color
+**Marks:** Point, Line (continuos or scattered)
+**Channel:** Position X, Position Y and color
 
 #### Radial Chart
 
 Here the angular position means nothing, while the radial distance from the origin simbolize the quantitative of heterogenous match played with different players in the week. An higher value of heterogenous match is a good value and it is displayed newar the origin while a bad value is displayed far from the origin.
-Marks: circle area
-Channel: Radial position and color
+**Marks:** circle area
+**Channel:** Radial position and color
 
 # INTERACTION DESIGN
 Let's report all type of interaction for each visual idioms:
+
 #### Calendar HeatMap
 In this chart there are 5 types of interaction:
 - Zooming (with mouse wheel) in the chart increase/decrease the hour resolution
