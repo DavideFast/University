@@ -4,6 +4,7 @@
 > This project is made by Mirko Bruschi, Michele Dalmonte and me.
 
 PingTime is an application developed for the "Models and Alghoritms For Data Visualization" exam.
+
 # INTRODUCTION
 This project was designed for a table tennis club. The app's goal is to provide the club with tools to efficiently analyze attendance, absences, and cancellations, maximizing time slot utilization and promoting better training through informed matchmaking.
 
@@ -13,6 +14,7 @@ There are two main categories of users PingTime is aimed at:
     
 # DATA MODELLING
  ### DATA GATHERING AND DATA EXTRACTION
+ This two parts are interely carried by the Backend Part of the application. In fact the data are very structured data stored in a real relational database.
  ### DATA CLEANING
  ### DATA TRASFORMATION
  ### DATA TYPES AND DATASET TYPES
