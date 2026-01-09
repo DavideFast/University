@@ -65,6 +65,8 @@ Channel: Position X, Position Y and Color (gray to orange)
 #### Line Chart
 
 In this visual idiom on the x-Axis there are the weeks and on the y-Axis the quantitative attribute of attendences, absences and cancellations.
+Marks: Point, Line (continuos or scattered)
+Channel: Position X, Position Y and color
 
 #### Radial Chart
 
