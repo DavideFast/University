@@ -61,6 +61,7 @@ The visual idioms choose for this application are mainly three:
 It is a bidimensional Chart which have on the X-Axis the hours of a day and on the Y-Axis the week days, the month weeks or the year months depend on the type of resolution is necessary.
 <br/>
 <br/>
+>**Note**
 **Marks:** Rectangular area
 <br/>
 **Channel:** Position X, Position Y and Color (gray to orange)
