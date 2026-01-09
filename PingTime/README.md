@@ -47,6 +47,14 @@ The application could handle these task:
 
 # VISUALIZATION DESIGN
 
+The visual idioms choose for this application are mainly three:
+
+- Calendar HeatMap
+- Line Chart
+- Radial Chart
+
+#### Calendar HeatMap
+
 # INTERACTION DESIGN
 
 # EXAMPLES
