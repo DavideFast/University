@@ -1,0 +1,30 @@
+.container {
+  width: 100%;
+  position: absolute;
+  height: 100%;
+  text-align: center;
+  justify-content: center;
+  background-color: #ffffff;
+}
+
+.area_disegno {
+  margin-left: 0.5vw;
+  margin-bottom: 100px;
+}
+
+.flex {
+  width: 500px;
+  left: auto;
+  right: auto;
+  display: flex;
+  text-align: center;
+  justify-content: space-evenly;
+}
+.container_flex {
+  width: 50%;
+  margin-left: 25%;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  justify-items: center;
+}
