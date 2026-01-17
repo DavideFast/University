@@ -141,6 +141,8 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
   const rangeLabel = (() => {
     const minDataItem = d3.minIndex(displayArray, (d) => d.period);
     const maxDataItem = d3.maxIndex(displayArray, (d) => d.period);
+    console.log({ minDataItem, maxDataItem });
+    console.log({ displayArray });
     if (displayArray.length === 0) return "No data";
 
     const minD = displayArray[minDataItem >= 0 ? minDataItem : 0];
@@ -183,7 +185,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
         .tickFormat((d) => {
           const data = displayArray.find((w) => w.period === d);
           return data ? data.label : d;
-        })
+        }),
     )
     .selectAll("text")
     .style("text-anchor", "end")
@@ -300,7 +302,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
       d3
         .line()
         .x((d) => x(d.period))
-        .y((d) => y(d.presences))
+        .y((d) => y(d.presences)),
     )
     .style("cursor", "pointer")
     .on("mouseover", function () {
@@ -337,7 +339,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
       d3
         .line()
         .x((d) => x(d.period))
-        .y((d) => y(d.absences))
+        .y((d) => y(d.absences)),
     )
     .style("cursor", "pointer")
     .on("mouseover", function () {
@@ -374,7 +376,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
       d3
         .line()
         .x((d) => x(d.period))
-        .y((d) => y(d.cancellations))
+        .y((d) => y(d.cancellations)),
     )
     .style("cursor", "pointer")
     .on("mouseover", function () {
@@ -442,7 +444,8 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
       let strokeColor = "#000000"; // neutral
       if (dx !== 0) {
         const slope = dy / dx;
-        if (slope > 0) strokeColor = "#4CAF50"; // rising
+        if (slope > 0)
+          strokeColor = "#4CAF50"; // rising
         else if (slope < 0) strokeColor = "#F44336"; // falling
       }
 
@@ -544,7 +547,8 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
       let strokeColor = "#000000"; // neutral
       if (dx !== 0) {
         const slope = dy / dx;
-        if (slope < 0) strokeColor = "#4CAF50"; // falling, good
+        if (slope < 0)
+          strokeColor = "#4CAF50"; // falling, good
         else if (slope > 0) strokeColor = "#F44336"; // rising, bad
       }
 
@@ -647,7 +651,8 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
       let strokeColor = "#000000"; // neutral
       if (dx !== 0) {
         const slope = dy / dx;
-        if (slope < 0) strokeColor = "#4CAF50"; // falling, good
+        if (slope < 0)
+          strokeColor = "#4CAF50"; // falling, good
         else if (slope > 0) strokeColor = "#F44336"; // rising, bad
       }
 
@@ -796,7 +801,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
           `<strong>${d.label}</strong><br/>` +
             `<span style="color: #4CAF50;">● Presenze: ${d.presences}</span><br/>` +
             `<span style="color: #F44336;">● Assenze: ${d.absences}</span><br/>` +
-            `<span style="color: #FBC02D;">● Cancellazioni: ${d.cancellations}</span>`
+            `<span style="color: #FBC02D;">● Cancellazioni: ${d.cancellations}</span>`,
         )
         .style("left", event.pageX + 10 + "px")
         .style("top", event.pageY - 28 + "px");
@@ -831,7 +836,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
           innerChart
             .selectAll(".clicked-text")
             .filter(function () {
-              return d3.select(this).attr("data-period") === d.period;
+              return d3.select(this).attr("data-period") == d.period;
             })
             .raise();
         })
@@ -847,7 +852,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
           innerChart
             .selectAll(".clicked-text")
             .filter(function () {
-              return d3.select(this).attr("data-period") === d.period;
+              return d3.select(this).attr("data-period") == d.period;
             })
             .remove();
           // Update connection after removal
@@ -894,7 +899,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
           innerChart
             .selectAll(".clicked-line")
             .filter(function () {
-              return d3.select(this).attr("data-period") === d.period;
+              return d3.select(this).attr("data-period") == d.period;
             })
             .attr("stroke-width", 2);
         })
@@ -903,7 +908,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
           innerChart
             .selectAll(".clicked-line")
             .filter(function () {
-              return d3.select(this).attr("data-period") === d.period;
+              return d3.select(this).attr("data-period") == d.period;
             })
             .attr("stroke-width", 1.5);
         })
@@ -914,7 +919,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
           // Remove line group if present
           d3.selectAll(".clicked-line-group")
             .filter(function () {
-              return d3.select(this).attr("data-period") === d.period;
+              return d3.select(this).attr("data-period") == d.period;
             })
             .remove();
           // Update connection after removal
@@ -960,13 +965,13 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
       // Remove line group if present
       d3.selectAll(".clicked-line-group")
         .filter(function () {
-          return d3.select(this).attr("data-period") === d.period;
+          return d3.select(this).attr("data-period") == d.period;
         })
         .remove();
       // Remove associated text box
       d3.selectAll(".clicked-text")
         .filter(function () {
-          return d3.select(this).attr("data-period") === d.period;
+          return d3.select(this).attr("data-period") == d.period;
         })
         .remove();
       // Update connection after removal
@@ -1038,7 +1043,7 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
         d3
           .axisLeft(y)
           .ticks(Math.min(15, nextMax - nextMin))
-          .tickFormat(d3.format("d"))
+          .tickFormat(d3.format("d")),
       );
 
     const linePres = d3
@@ -1256,14 +1261,15 @@ function LineChart() {
 
   useEffect(() => {
     //Load athletes list from API (json containing only array of strings)
-    d3.json(process.env.REACT_APP_PLAYER_LIST).then((data) => {
+    d3.json("https://mrkprojects.altervista.org/dataVis/playerList.php").then((data) => {
       setPlayerList(data);
     });
     // Load data from CSV and draw chart
-    d3.csv(process.env.REACT_APP_ATTENDENCES + "?interval=W").then((data) => {
+    d3.csv("https://mrkprojects.altervista.org/dataVis/attendences.php?interval=W").then((data) => {
+      console.log(data);
       drawLineChart(data, "W", timeRange, setTimeRange, rangeOffset, setRangeOffset, selectedYear, setSelectedYear);
     });
-  }, [rangeOffset, selectedYear, timeRange]);
+  }, []);
 
   useEffect(() => {
     // Reset navigation offset when granularity or time window changes
@@ -1272,7 +1278,7 @@ function LineChart() {
 
   useEffect(() => {
     // Reload data and redraw chart on interval or athlete change
-    d3.csv(`${process.env.REACT_APP_ATTENDENCES}?interval=${interval}${athlete !== "All" ? `&athlete=${athlete}` : ""}`).then((data) => {
+    d3.csv(`https://mrkprojects.altervista.org/dataVis/attendences.php?interval=${interval}${athlete !== "All" ? `&athlete=${athlete}` : ""}`).then((data) => {
       drawLineChart(data, interval, timeRange, setTimeRange, rangeOffset, setRangeOffset, selectedYear, setSelectedYear);
     });
   }, [interval, athlete, timeRange, rangeOffset, selectedYear]);
@@ -1299,8 +1305,8 @@ function LineChart() {
       <Select sx={{ minWidth: "200px" }} labelId="linechart1-atleta-label" id="linechart1-atleta" value={athlete} label="Atleta" onChange={(event) => setAthlete(event.target.value)}>
         <MenuItem value={"All"}>All</MenuItem>
         {playerList.map((alias) => (
-          <MenuItem key={alias.alias} value={alias.alias}>
-            {alias.alias}
+          <MenuItem key={alias} value={alias}>
+            {alias}
           </MenuItem>
         ))}
       </Select>
