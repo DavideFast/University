@@ -27,6 +27,16 @@ To start the frontend:
 >  <br/>
 > npm start
 
+
+Or, launch the following command:
+> ./install.bat 
+> <br/>
+> ./start.bat
+
+> sh install.sh
+> <br/>
+> sh start.sh
+
 <br/>
 <br/>
 
