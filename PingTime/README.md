@@ -58,19 +58,18 @@ There are two main categories of users PingTime is aimed at:
 
 # 3. Data modeling
 
-### DATA GATHERING AND DATA EXTRACTION
-
+### 3.1 Data gathering and data extraction
 This two parts are interely carried by the Backend Part of the application. In fact data are very structured and stored in a real relational database.
 
-### DATA CLEANING
+### 3.2 Data cleaning
 
 This part is carried by the Backend API. The API return only desired data.
 
-### DATA TRASFORMATION
+### 3.2 Data transformation
 
 This part is provided from both the Backend and Frontend. An example of the transformation is the aggregation of attendance in a certain peeriod of time.
 
-### DATA TYPES AND DATASET TYPES
+### 3.3 Data types and dataset types
 
 Data types are for the major part quantitative, but there are also categorical data.
 There are instead two types of dataset and in particular tables and network ones.
