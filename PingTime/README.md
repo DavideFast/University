@@ -170,7 +170,7 @@ In this chart there are 6 types of interaction:
 
 <br/>
 
-# ARCHITECTURAL AND TECHNOLOGICAL DESIGN
+# 7. Architectural and technological design
 The entire app is based on the following structure:
 - React.js as frontend framework
 - D3.js as visual idioms technologies
@@ -180,7 +180,7 @@ The entire app is based on the following structure:
 
 <br/>
 
-# 7. Alghoritm engineering
+# 8. Alghoritm engineering
 The main algorithm used in this app is the Dijkstra one.
 It is used to calculate the shortest path among every pair of vertices of the players network.
 The original idea was to realize a force directed layout based on the theoric distance, but this is only going to be done in the future.
@@ -191,7 +191,7 @@ As Dijkstra is currently implemented it is used for other 2 purposes:
 
   <br/>
   
-# 8. Add on
+# 9. Add on
 Another visual idiom has been added to the app as a sort of index or fast news. This idiom is called KPIcards.
 
 <br/>
