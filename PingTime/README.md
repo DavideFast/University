@@ -196,7 +196,7 @@ Another visual idiom has been added to the app as a sort of index or fast news. 
 
 <br/>
 
-# FINAL RESULT
+# 10. Examples
 
 #### KPICards
 
