@@ -28,7 +28,7 @@ To start the frontend:
 > npm start
 
 
-Or, launch the following command from PingTime folder:
+Or, launch the following command from PingTime folder.
 
 WINDOWS:
 > ./install.bat 
