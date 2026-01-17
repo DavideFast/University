@@ -1,9 +1,7 @@
 export function registerAdjMatrixAPI(req, db) {
-  console.log("hello from adjMatrix API");
   const interval = req.query.interval ?? "W";
   const index = req.query.index ? Number(req.query.index) : null;
   const year = req.query.year ? Number(req.query.year) : null;
-  console.log(interval, index, year);
 
   // Validazioni (come PHP)
   if (interval !== "W") {
@@ -20,7 +18,6 @@ export function registerAdjMatrixAPI(req, db) {
 
   // Filtri fissi
   let rows = db.data.exam_Calendario.filter((r) => r.gruppo === 1 && r.effettivo === 1 && r.assente === 0);
-  console.log(db.data);
   // Filtri dinamici
   if (index !== null) {
     rows = rows.filter((r) => r.settimana === index);
