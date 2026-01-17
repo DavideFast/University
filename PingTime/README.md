@@ -15,17 +15,17 @@ PingTime is an application developed for the "Models and Alghoritms For Data Vis
 # 1. Initialization
 To start the application launch the following command from PingTime folder.
 
-WINDOWS:
+In WINDOWS:
 > ./install.bat 
 > <br/>
 > ./start.bat
 
-LINUX:
+In LINUX:
 > sh install.sh
 > <br/>
 > sh start.sh
 
-Or start and install dependencies manually.
+Or start and install dependencies manually. <br/>
 Starting backend and database as follow:
 
  > cd MY_PATH/PingTime/backend
