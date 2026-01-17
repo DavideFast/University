@@ -110,7 +110,7 @@ The visual idioms chosen for this application are mainly three:
 - Line Chart (check attendences, absences and cancellations trends)
 - Radial Chart (check players interactions)
 
-#### Calendar HeatMap
+### 5.1 Calendar HeatMap
 
 It is a bidimensional Chart which have on the X-Axis the hours of a day and on the Y-Axis week days, the month weeks or the year months depend on the type of resolution is necessary.
 <br/>
@@ -120,7 +120,7 @@ It is a bidimensional Chart which have on the X-Axis the hours of a day and on t
 ><br/>
 >**Channels:** Position X, Position Y and Color (gray to orange)
 
-#### Line Chart
+### 5.2 Line Chart
 
 In this visual idiom on the x-Axis there are the weeks and on the y-Axis the quantitative attribute of attendences, absences and cancellations.
 <br/>
@@ -129,7 +129,7 @@ In this visual idiom on the x-Axis there are the weeks and on the y-Axis the qua
 ><br/>
 >**Channels:** Position X, Position Y and color
 
-#### Radial Chart
+### 5.3 Radial Chart
 
 Here the angular position means nothing, while the radial distance from the origin simbolize the quantitative of heterogenous match played with different players in the week. An higher value of heterogenous match is a good value and it is displayed closer to the origin while a bad value is displayed further from the origin.
 This visual idiom has been choosen because a classical network design generates a lot of crossings among edges (the graph is strongly connected) and could be chaotic.
