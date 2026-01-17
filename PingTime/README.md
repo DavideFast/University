@@ -144,14 +144,14 @@ This visual idiom has been choosen because a classical network design generates 
 # 6. Interaction design
 Let's report all types of interaction for each visual idiom:
 
-#### Calendar HeatMap
+### 6.1 Calendar HeatMap
 In this chart there are 5 types of interaction:
 - Zooming (with the mouse wheel) in the chart increases/decreases the hour resolution
 - Dragging (with the mouse) in the chart permits to move along x axis
 - Dragging (with the mouse) or scrolling (with the mouse wheel) over the y-axis permits to change the weeks/months/years time period
 - Hovering a cell (with the mouse pointer) permits to obtain more details (detail on demand) and in particular number and names of the players
 
-#### Line Chart
+### 6.2 Line Chart
 
 In this chart there are 5 types of interaction:
 - Clicking on two or more dates generates all average metrics among themselves
@@ -159,7 +159,7 @@ In this chart there are 5 types of interaction:
 - Double clicking resets all chart
 
 
-#### Radial Chart
+### 6.3 Radial Chart
 
 In this chart there are 6 types of interaction:
 - Zooming (with the mouse wheel) in the chart permits to zoom in/out the view (the center of zooming is always the origin)
