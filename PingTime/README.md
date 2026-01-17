@@ -13,6 +13,20 @@ PingTime is an application developed for the "Models and Alghoritms For Data Vis
 <br/>
 
 # 1. Initialization
+Or, launch the following command from PingTime folder.
+
+WINDOWS:
+> ./install.bat 
+> <br/>
+> ./start.bat
+
+LINUX:
+> sh install.sh
+> <br/>
+> sh start.sh
+
+<br/>
+<br/>
 Starting backend and database as follow:
 
  > cd MY_PATH/PingTime/backend
@@ -30,20 +44,7 @@ Starting frontend as follow:
 > npm start
 
 
-Or, launch the following command from PingTime folder.
 
-WINDOWS:
-> ./install.bat 
-> <br/>
-> ./start.bat
-
-LINUX:
-> sh install.sh
-> <br/>
-> sh start.sh
-
-<br/>
-<br/>
 
 # 2. Introduction
 
@@ -58,18 +59,18 @@ There are two main categories of users PingTime is aimed at:
 
 # 3. Data modeling
 
-### 3.1 Data gathering and data extraction
+## 3.1 Data gathering and data extraction
 This two parts are interely carried by the Backend Part of the application. In fact data are very structured and stored in a real relational database.
 
-### 3.2 Data cleaning
+## 3.2 Data cleaning
 
 This part is carried by the Backend API. The API return only desired data.
 
-### 3.2 Data transformation
+## 3.2 Data transformation
 
 This part is provided from both the Backend and Frontend. An example of the transformation is the aggregation of attendance in a certain peeriod of time.
 
-### 3.3 Data types and dataset types
+## 3.3 Data types and dataset types
 
 Data types are for the major part quantitative, but there are also categorical data.
 There are instead two types of dataset and in particular tables and network ones.
