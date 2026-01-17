@@ -59,7 +59,7 @@ app.get("/dataVis/getFasciaOrariaRaw", (req, res) => {
 });
 
 // ===== Avvio server =====
-const PORT = 3000;
+const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server avviato su http://localhost:${PORT}`);
 });
