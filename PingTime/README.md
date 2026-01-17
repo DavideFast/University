@@ -187,7 +187,7 @@ Another visual idiom has been added to the app as a sort of index or fast news. 
 
 #### KPICards
 
-![image](https://github.com/DavideFast/University/blob/main/PingTime/KPICards.png)
+![image](https://github.com/DavideFast/University/blob/main/PingTime/README_img/KPICards.png)
 
 #### Calendar HeatMap
 
@@ -196,7 +196,7 @@ Another visual idiom has been added to the app as a sort of index or fast news. 
 #### Line Chart
 
 
-![image](https://github.com/DavideFast/University/blob/main/PingTime/LineChart.png)
+![image](https://github.com/DavideFast/University/blob/main/PingTime/README_img/LineChart.png)
 
 #### Radial Chart
 
