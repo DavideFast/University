@@ -10,7 +10,7 @@ PingTime is an application developed for the "Models and Alghoritms For Data Vis
 > These version is the exam one, but the project is evolving. Check for the last release here: https://github.com/0101mirko1010/PingTimeVis
 
 
-# HOW TO START THE APPLICATION
+# 1. Initialization
 To start the backend and the database:
 
  > cd MY_PATH/PingTime/backend
@@ -43,7 +43,7 @@ LINUX:
 <br/>
 <br/>
 
-# INTRODUCTION
+# 2. Introduction
 
 This project was designed for a table tennis club. The app's goal is to provide the club with tools to efficiently analyze attendance, absences, and cancellations, maximizing time slot utilization and promoting better training through informed matchmaking.
 
@@ -54,7 +54,7 @@ There are two main categories of users PingTime is aimed at:
 
 <br/>
 
-# DATA MODELLING
+# 3. Data modeling
 
 ### DATA GATHERING AND DATA EXTRACTION
 
@@ -75,7 +75,7 @@ There are instead two types of dataset and in particular tables and network ones
 
 <br/>
 
-# TASK MODELLING
+# 4. Task modeling
 
 The application should handle these tasks:
 
@@ -101,7 +101,7 @@ The application should handle these tasks:
 
 <br/>
 
-# VISUALIZATION DESIGN
+# 5. Visualization design
 
 The visual idioms chosen for this application are mainly three:
 
@@ -140,7 +140,7 @@ This visual idiom has been choosen because a classical network design generates 
 
 <br/>
 
-# INTERACTION DESIGN
+# 6. Interaction design
 Let's report all types of interaction for each visual idiom:
 
 #### Calendar HeatMap
@@ -180,7 +180,7 @@ The entire app is based on the following structure:
 
 <br/>
 
-# ALGORITHM ENGINEERING
+# 7. Alghoritm engineering
 The main algorithm used in this app is the Dijkstra one.
 It is used to calculate the shortest path among every pair of vertices of the players network.
 The original idea was to realize a force directed layout based on the theoric distance, but this is only going to be done in the future.
@@ -191,7 +191,7 @@ As Dijkstra is currently implemented it is used for other 2 purposes:
 
   <br/>
   
-# ADD ON
+# 8. Add on
 Another visual idiom has been added to the app as a sort of index or fast news. This idiom is called KPIcards.
 
 <br/>
