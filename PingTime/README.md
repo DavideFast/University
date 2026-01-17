@@ -29,10 +29,13 @@ To start the frontend:
 
 
 Or, launch the following command from PingTime folder:
+
+WINDOWS:
 > ./install.bat 
 > <br/>
 > ./start.bat
 
+LINUX:
 > sh install.sh
 > <br/>
 > sh start.sh
