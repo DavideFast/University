@@ -14,13 +14,17 @@ PingTime is an application developed for the "Models and Alghoritms For Data Vis
 To start the backend and the database:
 
  > cd ./....../PingTime/backend
+> <br/>
  > npm install
+> <br/>
  > node index.js
 
 To start the frontend:
 
 > cd ./..../PingTime/frontend
+> <br/>
 > npm install
+>  <br/>
 > npm start
 
 <br/>
