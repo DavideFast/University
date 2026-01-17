@@ -141,8 +141,6 @@ const drawLineChart = (data, interval, timeRange, onRangeChange, rangeOffset, on
   const rangeLabel = (() => {
     const minDataItem = d3.minIndex(displayArray, (d) => d.period);
     const maxDataItem = d3.maxIndex(displayArray, (d) => d.period);
-    console.log({ minDataItem, maxDataItem });
-    console.log({ displayArray });
     if (displayArray.length === 0) return "No data";
 
     const minD = displayArray[minDataItem >= 0 ? minDataItem : 0];
@@ -1261,12 +1259,11 @@ function LineChart() {
 
   useEffect(() => {
     //Load athletes list from API (json containing only array of strings)
-    d3.json(process.env.REACT_APP_PLAYER_LIST_API).then((data) => {
+    d3.json(process.env.REACT_APP_PLAYER_LIST).then((data) => {
       setPlayerList(data);
     });
     // Load data from CSV and draw chart
-    d3.csv(process.env.REACT_APP_ATTENDENCES_API + "?interval=W").then((data) => {
-      console.log(data);
+    d3.csv(process.env.REACT_APP_ATTENDENCES + "?interval=W").then((data) => {
       drawLineChart(data, "W", timeRange, setTimeRange, rangeOffset, setRangeOffset, selectedYear, setSelectedYear);
     });
   }, []);
@@ -1278,7 +1275,7 @@ function LineChart() {
 
   useEffect(() => {
     // Reload data and redraw chart on interval or athlete change
-    d3.csv(`${process.env.REACT_APP_ATTENDENCES_API}?interval=${interval}${athlete !== "All" ? `&athlete=${athlete}` : ""}`).then((data) => {
+    d3.csv(`${process.env.REACT_APP_ATTENDENCES}?interval=${interval}${athlete !== "All" ? `&athlete=${athlete}` : ""}`).then((data) => {
       drawLineChart(data, interval, timeRange, setTimeRange, rangeOffset, setRangeOffset, selectedYear, setSelectedYear);
     });
   }, [interval, athlete, timeRange, rangeOffset, selectedYear]);
