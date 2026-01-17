@@ -1261,11 +1261,11 @@ function LineChart() {
 
   useEffect(() => {
     //Load athletes list from API (json containing only array of strings)
-    d3.json("https://mrkprojects.altervista.org/dataVis/playerList.php").then((data) => {
+    d3.json(process.env.REACT_APP_PLAYER_LIST_API).then((data) => {
       setPlayerList(data);
     });
     // Load data from CSV and draw chart
-    d3.csv("https://mrkprojects.altervista.org/dataVis/attendences.php?interval=W").then((data) => {
+    d3.csv(process.env.REACT_APP_ATTENDENCES_API + "?interval=W").then((data) => {
       console.log(data);
       drawLineChart(data, "W", timeRange, setTimeRange, rangeOffset, setRangeOffset, selectedYear, setSelectedYear);
     });
@@ -1278,7 +1278,7 @@ function LineChart() {
 
   useEffect(() => {
     // Reload data and redraw chart on interval or athlete change
-    d3.csv(`https://mrkprojects.altervista.org/dataVis/attendences.php?interval=${interval}${athlete !== "All" ? `&athlete=${athlete}` : ""}`).then((data) => {
+    d3.csv(`${process.env.REACT_APP_ATTENDENCES_API}?interval=${interval}${athlete !== "All" ? `&athlete=${athlete}` : ""}`).then((data) => {
       drawLineChart(data, interval, timeRange, setTimeRange, rangeOffset, setRangeOffset, selectedYear, setSelectedYear);
     });
   }, [interval, athlete, timeRange, rangeOffset, selectedYear]);
