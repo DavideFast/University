@@ -10,6 +10,19 @@ PingTime is an application developed for the "Models and Alghoritms For Data Vis
 > These version is the exam one, but the project is evolving. Check for the last release here: https://github.com/0101mirko1010/PingTimeVis
 
 
+# HOW TO START THE APPLICATION
+To start the backend and the database:
+
+ > cd ./....../PingTime/backend
+ > npm install
+ > node index.js
+
+To start the frontend:
+
+> cd ./..../PingTime/frontend
+> npm install
+> npm start
+
 <br/>
 <br/>
 
