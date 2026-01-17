@@ -110,7 +110,7 @@ The visual idioms chosen for this application are mainly three:
 - Line Chart (check attendences, absences and cancellations trends)
 - Radial Chart (check players interactions)
 
-### 5.1 Calendar HeatMap
+## 5.1 Calendar HeatMap
 
 It is a bidimensional Chart which have on the X-Axis the hours of a day and on the Y-Axis week days, the month weeks or the year months depend on the type of resolution is necessary.
 <br/>
@@ -120,7 +120,7 @@ It is a bidimensional Chart which have on the X-Axis the hours of a day and on t
 ><br/>
 >**Channels:** Position X, Position Y and Color (gray to orange)
 
-### 5.2 Line Chart
+## 5.2 Line Chart
 
 In this visual idiom on the x-Axis there are the weeks and on the y-Axis the quantitative attribute of attendences, absences and cancellations.
 <br/>
@@ -129,7 +129,7 @@ In this visual idiom on the x-Axis there are the weeks and on the y-Axis the qua
 ><br/>
 >**Channels:** Position X, Position Y and color
 
-### 5.3 Radial Chart
+## 5.3 Radial Chart
 
 Here the angular position means nothing, while the radial distance from the origin simbolize the quantitative of heterogenous match played with different players in the week. An higher value of heterogenous match is a good value and it is displayed closer to the origin while a bad value is displayed further from the origin.
 This visual idiom has been choosen because a classical network design generates a lot of crossings among edges (the graph is strongly connected) and could be chaotic.
@@ -144,14 +144,14 @@ This visual idiom has been choosen because a classical network design generates 
 # 6. Interaction design
 Let's report all types of interaction for each visual idiom:
 
-### 6.1 Calendar HeatMap
+## 6.1 Calendar HeatMap
 In this chart there are 5 types of interaction:
 - Zooming (with the mouse wheel) in the chart increases/decreases the hour resolution
 - Dragging (with the mouse) in the chart permits to move along x axis
 - Dragging (with the mouse) or scrolling (with the mouse wheel) over the y-axis permits to change the weeks/months/years time period
 - Hovering a cell (with the mouse pointer) permits to obtain more details (detail on demand) and in particular number and names of the players
 
-### 6.2 Line Chart
+## 6.2 Line Chart
 
 In this chart there are 5 types of interaction:
 - Clicking on two or more dates generates all average metrics among themselves
@@ -159,7 +159,7 @@ In this chart there are 5 types of interaction:
 - Double clicking resets all chart
 
 
-### 6.3 Radial Chart
+## 6.3 Radial Chart
 
 In this chart there are 6 types of interaction:
 - Zooming (with the mouse wheel) in the chart permits to zoom in/out the view (the center of zooming is always the origin)
